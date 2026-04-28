@@ -1,0 +1,125 @@
+@import "tailwindcss";
+
+@theme {
+  --color-primary: #f2a444;
+  --color-secondary: #252526;
+  --color-body-text: #6e6d7a;
+  --color-ash: #9e9ea7;
+  --color-text: #402f10;
+  --color-c-black: #181b13;
+  --radius: 0.625rem;
+  --color-stock: #132144;
+  --color-c-gray: #6e6d7a;
+  --color-textColor: var(--color-text);
+  --color-textColor-2: #0f3b4d;
+  --color-c-black: var(--color-c-black);
+  --color-soft-white: #fcffff;
+  --color-darkGray: #3d3d3d;
+  --color-denger: #eb5757;
+  --color-c-green: #34c759;
+  --color-c-green-200: #0f5a46;
+  --color-colorBorder: #e7eaf3;
+  --color-c-gray: #e2e2e2;
+
+  --shadow-2: 0px 5px 20px 0px rgba(0, 0, 0, 0.05);
+  --shadow-7: 0px 0px 12px 0px rgba(204, 204, 204, 0.2);
+
+  --breakpoint-3xl: 120rem;
+}
+
+.no-spinner::-webkit-inner-spin-button,
+.no-spinner::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.no-spinner {
+  -moz-appearance: textfield;
+}
+
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(89, 86, 86, 0.5);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--color-primary);
+  border-radius: 10px;
+}
+
+.input-shadow {
+  box-shadow: 0px 0px 12px 0px rgba(204, 204, 204, 0.2);
+}
+
+.btn-shadow {
+  box-shadow: 0px 0px 12px 0px rgba(204, 204, 204, 0.2);
+}
+
+.box-shadow-7 {
+  box-shadow: 0px 0px 12px 0px rgba(204, 204, 204, 0.2);
+}
+
+.shadow-1 {
+  box-shadow: 0px 27px 80px 0px rgba(201, 203, 208, 0.27);
+}
+
+.light-shadow-lg {
+  box-shadow:
+    0px 8px 24px -6px rgba(0, 0, 0, 0.16),
+    0px 0px 1px 0px rgba(0, 0, 0, 0.4);
+}
+
+.flex-between {
+  @apply flex items-center justify-between;
+}
+
+.flex-center {
+  @apply flex items-center justify-center;
+}
+
+.card-wrapper {
+  @apply p-3.5 md:p-7 mt-5 bg-white shadow-2 rounded-[18px];
+}
+
+button:hover {
+  transform: scale(1.04);
+  transition: all 0.4s ease-out;
+}
+button:active {
+  transform: scale(0.9);
+  transition: all 0.4s ease-in-out;
+}
+button:disabled {
+  @apply bg-[#f3f3f3] text-body-text/70;
+}
+
+.asideCard:hover img {
+  @apply filter brightness-0 invert translate-0.5;
+}
+
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.dropdown {
+  animation: fadeIn 0.3s ease-in-out;
+}
+
+/* Hide scrollbar but allow scrolling */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
