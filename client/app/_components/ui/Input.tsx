@@ -3,7 +3,7 @@
 "use client";
 
 import { useEffect, useState, ChangeEvent, ReactNode } from "react";
-import { cn } from "../_lib/utils";
+import { cn } from "../../_lib/utils";
 import { error } from "console";
 
 type InputProps = {
@@ -61,7 +61,7 @@ export default function Input({
       <label
         htmlFor={name}
         className={cn(
-          "px-3 md:px-6 input-shadow border",
+          "px-2.7 md:px-5 input-shadow border",
           {
             "border-red-600": isErrorShow,
             "border-stock/10": !isErrorShow,
@@ -85,7 +85,7 @@ export default function Input({
             onChange={handleOnChange}
             onWheel={(e) => (e.target as HTMLInputElement).blur()}
             className={cn(
-              `border-0 focus:ring-0 w-full truncate h-full py-3.5 focus:border-0 placeholder:text-ash active:border-0 focus:outline-0`,
+              `border-0 focus:ring-0 w-full truncate h-full py-3 focus:border-0 placeholder:text-ash active:border-0 focus:outline-0`,
               { hidden: isFileType },
             )}
             {...props}
