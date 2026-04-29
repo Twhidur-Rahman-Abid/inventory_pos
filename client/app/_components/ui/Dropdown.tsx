@@ -8,7 +8,7 @@ import {
   useState,
   ReactNode,
 } from "react";
-import { cn } from "../_lib/utils";
+import { cn } from "../../_lib/utils";
 
 type DropdownContextType = {
   isOpen: boolean;

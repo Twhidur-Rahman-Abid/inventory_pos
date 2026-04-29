@@ -1,5 +1,5 @@
 import React from "react";
-import { cn } from "../_lib/utils";
+import { cn } from "../../_lib/utils";
 
 const Loading = ({ isBlack = false }) => {
   return (

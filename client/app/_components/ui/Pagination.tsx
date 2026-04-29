@@ -4,7 +4,7 @@
 import React, { useEffect, useRef, useState, ReactNode } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { cn } from "../_lib/utils";
+import { cn } from "../../_lib/utils";
 
 type OptionType = {
   value: string | number;

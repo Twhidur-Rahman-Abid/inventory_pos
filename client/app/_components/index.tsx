@@ -4,9 +4,12 @@ import ExportTable from "./ui/ExportTable";
 import Icon from "./ui/Icon";
 import ImportTable from "./ui/ImportTable";
 import InputGroup from "./ui/InputGroup";
+import Modal from "./ui/Modal";
 import PageTopBar from "./ui/PageTopBar";
 import Pagination from "./ui/Pagination";
 import Search from "./ui/Search";
+import Select from "./ui/Select";
+import ToggleSwitch from "./ui/ToggleSwitch";
 
 export {
   Arrow,
@@ -18,4 +21,7 @@ export {
   PageTopBar,
   Pagination,
   Search,
+  Modal,
+  Select,
+  ToggleSwitch,
 };

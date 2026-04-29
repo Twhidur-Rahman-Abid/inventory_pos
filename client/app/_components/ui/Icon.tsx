@@ -1,6 +1,6 @@
 import Image from "next/image";
 import React from "react";
-import { cn } from "../_lib/utils";
+import { cn } from "../../_lib/utils";
 
 const Icon = ({ className = "", src = "", size = 20, ...props }) => {
   return (

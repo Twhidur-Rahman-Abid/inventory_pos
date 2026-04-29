@@ -2,7 +2,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { cn } from "../_lib/utils";
+import { cn } from "../../_lib/utils";
 
 export default function SideLink({ href = "", label = "", iconSrc = "" }) {
   const pathname = usePathname();

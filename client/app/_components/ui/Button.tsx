@@ -3,7 +3,7 @@
 import React, { ReactNode, ButtonHTMLAttributes } from "react";
 import { useFormStatus } from "react-dom";
 
-import { cn } from "../_lib/utils";
+import { cn } from "../../_lib/utils";
 import Loading from "./Loading";
 
 type ButtonProps = {

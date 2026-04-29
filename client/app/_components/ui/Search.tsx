@@ -4,7 +4,7 @@ import React, { useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Icon from "./Icon";
 import Input from "./Input";
-import { debounce } from "../_lib/utils";
+import { debounce } from "../../_lib/utils";
 
 const Search = () => {
   const searchParams = useSearchParams();
