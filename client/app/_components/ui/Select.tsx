@@ -2,11 +2,13 @@
 import { cn } from "@/app/_lib/utils";
 import { useEffect, useRef, useState } from "react";
 import Arrow from "./Arrow";
+import Image from "next/image";
 
 // Option type
 type OptionType = {
   value: string | number;
   label: string;
+  img?: string;
 };
 
 // Props type
@@ -142,9 +144,18 @@ const Select: React.FC<SelectProps> = ({
           className,
         )}
       >
-        <span className="w-full whitespace-nowrap truncate">
+        <div className="w-full whitespace-nowrap truncate flex items-center gap-2.5">
+          {selectedValue?.img && (
+            <Image
+              src={selectedValue.img}
+              width={24}
+              height={24}
+              alt={selectedValue.label}
+              className="size-6 object-contain"
+            />
+          )}
           {selectedValue?.label}
-        </span>
+        </div>
         <Arrow move="down" />
       </div>
 
@@ -164,11 +175,21 @@ const Select: React.FC<SelectProps> = ({
               <li
                 key={i}
                 className={cn(
-                  "px-3 py-2 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100 cursor-pointer",
-                  option.label === selectedValue.label && "text-primary",
+                  "px-3 py-2 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100 cursor-pointer flex items-center gap-2.5",
+                  option.label === selectedValue.label &&
+                    "text-primary bg-gray-100",
                 )}
                 onClick={() => handleSelectChange(option)}
               >
+                {option?.img && (
+                  <Image
+                    src={option.img}
+                    width={24}
+                    height={24}
+                    alt={option.label}
+                    className="size-6 object-contain"
+                  />
+                )}
                 {option.label}
               </li>
             ))}
