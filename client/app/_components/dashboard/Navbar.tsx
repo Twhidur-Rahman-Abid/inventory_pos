@@ -8,14 +8,17 @@ type NavbarProps = {
   };
 };
 
+import logo from "@/public/logo.svg";
+import Image from "next/image";
+
 const Navbar = ({ myData }: NavbarProps) => {
   const { username, branch_name, first_name, email, role } = myData || {};
 
   return (
-    <header className="sticky top-0 left-0 z-60 box-shadow-7 bg-white h-[72px] flex justify-center items-center border-b border-stock/10">
-      <div className="container flex items-center justify-between ">
+    <header className="sticky top-0 left-0 z-60 box-shadow-7 bg-white h-18 flex justify-center items-center border-b border-stock/10">
+      <div className="px-5 w-full flex items-center justify-between ">
         <div className="flex items-center gap-20">
-          <h1>Logo</h1>
+          <Image src={logo} alt="logo" className="w-32" />
           <div className="hidden md:block">
             <h5 className="text-xl font-semibold text-textColor">
               Welcome {username} - {role} 👋
