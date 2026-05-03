@@ -16,7 +16,7 @@ export default function SideLink({ href = "", label = "", iconSrc = "" }) {
         href={hrefUrl}
         title={label}
         className={cn(
-          "group lg:w-[240px] p-2 md:p-[18px] flex gap-3 rounded-xl",
+          "group lg:w-60 p-2 md:p-4.5 flex gap-3 rounded-xl",
           isActive
             ? "bg-primary text-white"
             : "hover:bg-primary hover:text-white",
