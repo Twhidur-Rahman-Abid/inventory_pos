@@ -14,13 +14,18 @@ type OptionType = {
 type PaginationProps = {
   className?: string;
   totalPage: number;
-  options: OptionType[];
+  options?: OptionType[];
 };
 
-const Pagination = ({ className, totalPage, options }: PaginationProps) => {
+const Pagination = ({
+  className,
+  totalPage,
+  options = [],
+}: PaginationProps) => {
   const searchParams = useSearchParams();
   const page = Number(searchParams.get("page") || 1);
 
+  if (totalPage <= 1) return null;
   const nextDisabled = page >= totalPage;
   const prevDisabled = page <= 1;
 
