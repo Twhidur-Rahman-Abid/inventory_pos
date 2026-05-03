@@ -3,6 +3,8 @@ import Button from "./ui/Button";
 import ExportTable from "./ui/ExportTable";
 import Icon from "./ui/Icon";
 import ImportTable from "./ui/ImportTable";
+import InfoRow from "./ui/InfoRow";
+import Input from "./ui/Input";
 import InputGroup from "./ui/InputGroup";
 import Modal from "./ui/Modal";
 import PageTopBar from "./ui/PageTopBar";
@@ -24,4 +26,6 @@ export {
   Modal,
   Select,
   ToggleSwitch,
+  Input,
+  InfoRow,
 };
