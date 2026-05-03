@@ -1,3 +1,4 @@
+"use client";
 // import Logout from "@/components/dashboard/Logout";
 import React, { ReactNode } from "react";
 import Navbar from "../_components/dashboard/Navbar";
@@ -36,8 +37,9 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       label: "Products",
       icon: "/icon/i-product.svg",
     },
-    { label: "Online Order", icon: "/icon/i-order.svg" },
     { label: "Sold", icon: "/icon/i-sold.svg" },
+    { label: "Online Order", icon: "/icon/i-order.svg" },
+    { label: "Category", icon: "/icon/i-category.svg" },
 
     { label: "Employee", icon: "/icon/i-cashire.svg" },
     { label: "Reports", icon: "/icon/i-report.svg" },
