@@ -10,6 +10,7 @@ import { useRouter } from "next/navigation";
 import Input from "../ui/Input";
 import Button from "../ui/Button";
 import Loading from "../ui/Loading";
+import Link from "next/link";
 
 const LoginForm = () => {
   const [passwordInputType, setPasswordInputType] = useState("password");
@@ -36,7 +37,7 @@ const LoginForm = () => {
   //   }, [success, router]);
 
   return (
-    <form className="my-6 space-y-[18px]">
+    <form className="my-6 space-y-3 md:space-y-4.5">
       {/* {typeof resError !== "object" && (
         <p className="text-red-500 text-center">{resError}</p>
       )} */}
@@ -45,13 +46,13 @@ const LoginForm = () => {
         type="text"
         name="username"
         placeholder="User ID"
-        errorMessage={""}
+        error={""}
         LeftIcon={<LeftIcon iconImgPath="/i-user.svg" />}
       />
       <Input
         type={passwordInputType}
         name="password"
-        errorMessage={""}
+        error={""}
         placeholder="Password"
         LeftIcon={<LeftIcon iconImgPath="/i-Lock.svg" />}
         RightIcon={
@@ -70,10 +71,12 @@ const LoginForm = () => {
         }
       />
 
-      <Button type="submit" className="bg-secondary border border-stock/10">
-        Login
-        {/* {isPending ? <Loading /> : "Login"} */}
-      </Button>
+      <Link href="/dashboard">
+        <Button type="submit" className="bg-secondary border border-stock/10">
+          Login
+          {/* {isPending ? <Loading /> : "Login"} */}
+        </Button>
+      </Link>
     </form>
   );
 };
