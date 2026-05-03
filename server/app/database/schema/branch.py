@@ -1,7 +1,7 @@
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy import DateTime,func
 from datetime import datetime
-from .base import Base
+from ..db import Base
 
 class Branch(Base):
     __tablename__ = "branch"

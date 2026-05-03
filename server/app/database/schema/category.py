@@ -1,8 +1,7 @@
-# models/category.py
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy import String,DateTime,func
 from datetime import datetime
-from .base import Base
+from ..db import Base
 
 class Category(Base):
     __tablename__ = "categories"

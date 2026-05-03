@@ -2,7 +2,7 @@ from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy import String, Boolean, Enum, DateTime, func
 import enum
 from datetime import datetime
-
+from ..db import Base
 
 class UserRole(enum.Enum):
     ADMIN = "admin"

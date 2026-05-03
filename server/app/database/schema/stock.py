@@ -1,7 +1,7 @@
 
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy import ForeignKey, DateTime, func
-from .base import Base
+from ..db import Base
 from datetime import datetime
 
 class Stock(Base):

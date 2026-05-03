@@ -1,7 +1,6 @@
-# models/finance.py
 from sqlalchemy.orm import Mapped, mapped_column
 from sqlalchemy import ForeignKey, Numeric, DateTime,func
-from .base import Base
+from ..db import Base
 from datetime import datetime
 
 class CustomerCredit(Base):
