@@ -1,6 +1,6 @@
 import { cn } from "@/app/_lib/utils";
 import logo from "@/public/logo.svg";
-import logoI from "@/public/logo-icon.svg";
+import logoI from "@/public/logo-icon.png";
 import Image from "next/image";
 
 export const Logo = ({ className = "" }) => {
