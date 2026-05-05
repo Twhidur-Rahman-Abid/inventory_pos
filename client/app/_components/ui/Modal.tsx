@@ -45,4 +45,27 @@ const Modal = ({
   );
 };
 
+export const SimpleModal = ({
+  onClose,
+  children,
+}: {
+  onClose: () => void;
+  children: React.ReactNode;
+}) => {
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, []);
+  return (
+    <>
+      <div
+        onClick={onClose}
+        className="absolute top-0 left-0 min-h-screen h-full w-full bg-black/20 backdrop-blur-[4px] z-40"
+      ></div>
+      <div className="absolute top-[45vh] left-1/2 -translate-1/2 z-50   bg-white lg:w-[40vw] px-7 py-8 rounded-xl">
+        {children}
+      </div>
+    </>
+  );
+};
+
 export default Modal;

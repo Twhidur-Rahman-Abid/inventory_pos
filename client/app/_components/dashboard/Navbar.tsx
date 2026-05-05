@@ -8,9 +8,6 @@ type NavbarProps = {
   };
 };
 
-import logo from "@/public/logo.svg";
-import Image from "next/image";
-
 const Navbar = ({ myData }: NavbarProps) => {
   const { username, branch_name, first_name, email, role } = myData || {};
 
@@ -18,7 +15,6 @@ const Navbar = ({ myData }: NavbarProps) => {
     <header className="sticky top-0 left-0 z-60 box-shadow-7 bg-white h-18 flex justify-center items-center border-b border-stock/10">
       <div className="px-5 w-full flex items-center justify-between ">
         <div className="flex items-center gap-20">
-          <Image src={logo} alt="logo" className="w-32" />
           <div className="hidden md:block">
             <h5 className="text-xl font-semibold text-textColor">
               Welcome {username} - {role} 👋
@@ -31,11 +27,11 @@ const Navbar = ({ myData }: NavbarProps) => {
         </div>
 
         <div className="flex items-center gap-2.5 md:gap-6">
-          <div className="w-[1px] h-[30px] bg-[#ccc]"></div>
+          <div className="w-px h-7.5 bg-[#ccc]"></div>
 
-          <div className="flex items-center gap-2.5 md:gap-[15px]">
+          <div className="flex items-center gap-2.5 md:gap-3.75">
             <svg
-              className="hidden sm:block min-w-20"
+              className=" min-w-20"
               width={75}
               height={73}
               viewBox="0 0 75 73"
@@ -128,10 +124,10 @@ const Navbar = ({ myData }: NavbarProps) => {
             </svg>
 
             <div>
-              <h6 className="text-[1px] sm:text-sm leading-4 md:text-md font-semibold text-secondary mb-0">
+              <h6 className="text-sm sm:text-sm leading-4 md:text-md font-semibold text-secondary mb-0">
                 {branch_name}
               </h6>
-              <p className=" sm:text-base leading-4 text-body-text mb-0">
+              <p className="text-xs sm:text-base leading-4 text-body-text mb-0">
                 {first_name} <br /> {email}
               </p>
             </div>
