@@ -6,6 +6,7 @@ import ImportTable from "./ui/ImportTable";
 import InfoRow from "./ui/InfoRow";
 import Input from "./ui/Input";
 import InputGroup from "./ui/InputGroup";
+import { Logo, LogoIcon } from "./ui/Logo";
 import Modal from "./ui/Modal";
 import PageTopBar from "./ui/PageTopBar";
 import Pagination from "./ui/Pagination";
@@ -28,4 +29,6 @@ export {
   ToggleSwitch,
   Input,
   InfoRow,
+  Logo,
+  LogoIcon,
 };
