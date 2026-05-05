@@ -9,7 +9,7 @@ const page = async () => {
           <Image src={logo} alt="logo" className="w-32" />
 
           <h2 className="font-semibold text-3xl md:text-4xl text-secondary mt-8 md:mt-10">
-            Admin & Staff Login
+            Admin Login
           </h2>
           <p className="font-medium text-body-text">
             <span className="text-primary">Niamah Shop</span> admin panel
