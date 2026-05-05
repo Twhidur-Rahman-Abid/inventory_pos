@@ -1,7 +1,10 @@
 import React, { ReactNode } from "react";
 import { cn } from "../../_lib/utils";
-import { HeaderType } from "../../_lib/CommonTypes";
-// bg-[#E6F2F4]
+
+
+import { HeaderType } from "@/app/_lib/CommonTypes";
+
+
 type TableProps = {
   headers?: HeaderType[];
   className?: string;
