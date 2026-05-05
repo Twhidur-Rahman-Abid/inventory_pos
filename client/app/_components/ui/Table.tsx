@@ -1,6 +1,7 @@
 import React, { ReactNode } from "react";
 import { cn } from "../../_lib/utils";
-import { HeaderType } from "../../_lib/CommonTypes";
+
+import { HeaderType } from "@/app/_lib/CommonTypes";
 
 type TableProps = {
   headers?: HeaderType[];
