@@ -3,7 +3,8 @@
 import React, { ReactNode } from "react";
 import Navbar from "../_components/dashboard/Navbar";
 import SideLink from "../_components/dashboard/SideLInk";
-import { Logo } from "../_components";
+import { Logo, LogoIcon } from "../_components";
+import Logout from "../_components/dashboard/Logout";
 
 type DashboardLayoutProps = {
   children: ReactNode;
@@ -49,12 +50,13 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   return (
     <div>
       <main className="flex items-start w-full">
-        <aside className="min-h-screen min-w-fit sticky z-50 overflow-x-visible overflow-y-auto left-0 top-0 bg-primary-dark flex flex-col justify-between content-between px-3 md:px-7 py-[18px] border-r border-stock/10 aside-shadow">
-          <div className="w-full bg-white p-2.5 pt-2 rounded-xl">
-            {" "}
-            <Logo />
+        <aside className="min-h-screen lg:max-h-screen min-w-fit sticky z-50 overflow-x-visible lg:overflow-y-auto left-0 top-0 bg-primary-dark flex flex-col justify-between content-between px-3 md:px-7 py-4.5 gap-6 border-r border-stock/10 aside-shadow">
+          <div className="w-full bg-white p-1.5 pr-1 md:pr-2.5 md:p-2.5 md:pt-2 rounded-xl">
+            <Logo className="hidden lg:block " />
+
+            <LogoIcon className="lg:hidden" />
           </div>
-          <div>
+          <div className="flex-1">
             {sideLinks.map((link, i) => (
               <SideLink
                 href={i === 0 ? "/dashboard" : undefined}
@@ -66,8 +68,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           </div>
 
           <div className="border-t border-[#E2E2E2]">
-            {/* <Logout /> */}
-            Logout
+            <Logout />
           </div>
         </aside>
 
