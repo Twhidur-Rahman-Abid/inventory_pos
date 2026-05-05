@@ -27,11 +27,11 @@ const Navbar = ({ myData }: NavbarProps) => {
         </div>
 
         <div className="flex items-center gap-2.5 md:gap-6">
-          <div className="w-[1px] h-[30px] bg-[#ccc]"></div>
+          <div className="w-px h-7.5 bg-[#ccc]"></div>
 
-          <div className="flex items-center gap-2.5 md:gap-[15px]">
+          <div className="flex items-center gap-2.5 md:gap-3.75">
             <svg
-              className="hidden sm:block min-w-20"
+              className=" min-w-20"
               width={75}
               height={73}
               viewBox="0 0 75 73"
@@ -124,10 +124,10 @@ const Navbar = ({ myData }: NavbarProps) => {
             </svg>
 
             <div>
-              <h6 className="text-[1px] sm:text-sm leading-4 md:text-md font-semibold text-secondary mb-0">
+              <h6 className="text-sm sm:text-sm leading-4 md:text-md font-semibold text-secondary mb-0">
                 {branch_name}
               </h6>
-              <p className=" sm:text-base leading-4 text-body-text mb-0">
+              <p className="text-xs sm:text-base leading-4 text-body-text mb-0">
                 {first_name} <br /> {email}
               </p>
             </div>
