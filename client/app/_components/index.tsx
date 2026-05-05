@@ -7,7 +7,7 @@ import InfoRow from "./ui/InfoRow";
 import Input from "./ui/Input";
 import InputGroup from "./ui/InputGroup";
 import { Logo, LogoIcon } from "./ui/Logo";
-import Modal from "./ui/Modal";
+import Modal, { SimpleModal } from "./ui/Modal";
 import PageTopBar from "./ui/PageTopBar";
 import Pagination from "./ui/Pagination";
 import Search from "./ui/Search";
@@ -25,6 +25,7 @@ export {
   Pagination,
   Search,
   Modal,
+  SimpleModal,
   Select,
   ToggleSwitch,
   Input,
