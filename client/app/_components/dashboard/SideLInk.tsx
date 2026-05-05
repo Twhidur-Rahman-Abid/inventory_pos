@@ -8,7 +8,7 @@ export default function SideLink({ href = "", label = "", iconSrc = "" }) {
   const pathname = usePathname();
   const hrefUrl =
     href || `/dashboard/${label.split(" ").join("-").toLowerCase()}`;
-  const isActive = pathname.startsWith(hrefUrl) || pathname.endsWith(hrefUrl);
+  const isActive = pathname.startsWith(hrefUrl) && pathname.endsWith(hrefUrl);
 
   return (
     <div className="relative group">
@@ -16,10 +16,8 @@ export default function SideLink({ href = "", label = "", iconSrc = "" }) {
         href={hrefUrl}
         title={label}
         className={cn(
-          "group lg:w-60 p-2 md:p-4.5 flex gap-3 rounded-xl",
-          isActive
-            ? "bg-primary text-white"
-            : "hover:bg-primary hover:text-white",
+          "group lg:w-60 p-2 md:p-4.5 flex gap-3 rounded-xl text-white",
+          isActive ? "bg-primary " : "hover:bg-primary hover:text-white",
         )}
       >
         <Image
@@ -28,10 +26,10 @@ export default function SideLink({ href = "", label = "", iconSrc = "" }) {
           width={20}
           height={20}
           className={cn(
-            "min-w-5",
-            isActive
-              ? "filter invert brightness-0"
-              : "group-hover:filter group-hover:invert group-hover:brightness-0",
+            "min-w-5 filter invert brightness-0",
+            // isActive
+            //  s ? "filter invert brightness-0"
+            //   : "group-hover:filter group-hover:invert group-hover:brightness-0",
           )}
         />
         <div className="hidden lg:flex w-full justify-between">
