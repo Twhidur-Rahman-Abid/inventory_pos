@@ -1,7 +1,8 @@
+/* eslint-disable prefer-const */
 /* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
-import { Button, Icon, InputGroup, Modal, Select } from "@/app/_components";
+import { Button, Icon, InputGroup, Modal } from "@/app/_components";
 import Image from "next/image";
 import React, { useEffect, useState } from "react";
 
@@ -14,13 +15,18 @@ const ImageGroup = ({
   image: File | null;
   setImage: (file: File | null) => void;
 }) => {
-  const [preview, setPreview] = useState("/placeholder-img.svg");
+  const [preview, setPreview] = useState<string>("/placeholder-img.svg");
 
   useEffect(() => {
-    if (image) {
+    if (typeof window !== "undefined" && image) {
       const url = URL.createObjectURL(image);
       setPreview(url);
-      return () => URL.revokeObjectURL(url);
+
+      return () => {
+        URL.revokeObjectURL(url);
+      };
+    } else {
+      setPreview("/placeholder-img.svg");
     }
   }, [image]);
 
@@ -32,7 +38,7 @@ const ImageGroup = ({
           src={preview}
           width={144}
           height={144}
-          alt="inventory"
+          alt="category"
         />
       </div>
 
@@ -62,25 +68,34 @@ const CategoryModal: React.FC<CategoryModalProps> = ({ onClose }) => {
     e.preventDefault();
 
     const formData = new FormData(e.currentTarget);
-    const data = Object.fromEntries(formData.entries());
 
-    console.log("FORM DATA:", data);
+    // image manually append
+    if (image) {
+      formData.append("image", image);
+    }
+
+    // debug
+    for (let [key, value] of formData.entries()) {
+      console.log(key, value);
+    }
   };
 
   const handleReset = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     const form = e.currentTarget.closest("form");
     form?.reset();
+    setImage(null); // important
   };
 
   return (
     <Modal onClose={onClose} title="Add New Category">
       <form onSubmit={handleSubmit} className="space-y-[30px] pt-6">
         <InputGroup
-          name="first_name"
+          name="name"
           label="Category Name"
           placeholder="Enter category name"
         />
+
         <ImageGroup label="Category Image" setImage={setImage} image={image} />
 
         <div className="flex justify-end gap-5">
