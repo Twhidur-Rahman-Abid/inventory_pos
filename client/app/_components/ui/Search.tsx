@@ -1,12 +1,12 @@
 "use client";
-import React, { useCallback } from "react";
+import React, { Suspense, useCallback } from "react";
 
 import { useRouter, useSearchParams } from "next/navigation";
 import Icon from "./Icon";
 import Input from "./Input";
 import { debounce } from "../../_lib/utils";
 
-const Search = () => {
+const SearchComp = () => {
   const searchParams = useSearchParams();
   const search = searchParams.get("search") || "";
   const router = useRouter();
@@ -35,5 +35,11 @@ const Search = () => {
     />
   );
 };
+
+const Search = () => (
+  <Suspense>
+    <SearchComp />
+  </Suspense>
+);
 
 export default Search;

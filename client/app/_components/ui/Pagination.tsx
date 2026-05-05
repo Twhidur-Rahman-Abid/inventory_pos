@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import React, { useEffect, useRef, useState, ReactNode } from "react";
+import React, { useEffect, useRef, useState, ReactNode, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { cn } from "../../_lib/utils";
@@ -17,7 +17,7 @@ type PaginationProps = {
   options?: OptionType[];
 };
 
-const Pagination = ({
+const PaginationCom = ({
   className,
   totalPage,
   options = [],
@@ -77,6 +77,12 @@ const Pagination = ({
     </div>
   );
 };
+
+const Pagination = (props: PaginationProps) => (
+  <Suspense>
+    <PaginationCom {...props} />
+  </Suspense>
+);
 
 export default Pagination;
 
