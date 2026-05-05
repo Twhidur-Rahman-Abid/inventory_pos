@@ -3,6 +3,7 @@
 import React, { ReactNode } from "react";
 import Navbar from "../_components/dashboard/Navbar";
 import SideLink from "../_components/dashboard/SideLInk";
+import { Logo } from "../_components";
 
 type DashboardLayoutProps = {
   children: ReactNode;
@@ -47,10 +48,12 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 
   return (
     <div>
-      <Navbar myData={myData} />
-
-      <main className="flex items-start">
-        <aside className="max-h-[calc(100vh-72px)] min-h-[calc(100vh-72px)] min-w-fit sticky z-50 overflow-x-visible overflow-y-auto left-0 top-[73px] bg-white flex flex-col justify-between content-between px-3 md:px-7 py-[18px] border-r border-stock/10 aside-shadow">
+      <main className="flex items-start w-full">
+        <aside className="min-h-screen min-w-fit sticky z-50 overflow-x-visible overflow-y-auto left-0 top-0 bg-primary-dark flex flex-col justify-between content-between px-3 md:px-7 py-[18px] border-r border-stock/10 aside-shadow">
+          <div className="w-full bg-white p-2.5 pt-2 rounded-xl">
+            {" "}
+            <Logo />
+          </div>
           <div>
             {sideLinks.map((link, i) => (
               <SideLink
@@ -68,9 +71,12 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           </div>
         </aside>
 
-        <section className="min-h-[calc(100vh-72px)] bg-soft-white w-full overflow-x-hidden relative px-3 md:px-7 py-4 md:py-8 bg-[#FCFFFF]">
-          {children}
-        </section>
+        <div className="flex-1">
+          <Navbar myData={myData} />
+          <section className="min-h-[calc(100vh-72px)] bg-soft-white w-full overflow-x-hidden relative px-3 md:px-7 py-4 md:py-8 ">
+            {children}
+          </section>
+        </div>
       </main>
     </div>
   );
