@@ -12,7 +12,7 @@ const Navbar = ({ myData }: NavbarProps) => {
   const { username, branch_name, first_name, email, role } = myData || {};
 
   return (
-    <header className="sticky top-0 left-0 z-60 box-shadow-7 bg-white h-18 flex justify-center items-center border-b border-stock/10">
+    <header className="fixed top-0 left-16.75 md:left-28.25 w-[calc(100%-67px)] lg:left-75.75 flex-1 md:w-[calc(100%-113px)] lg:w-[calc(100%-303px)] z-60 box-shadow-7 bg-white h-18  flex justify-center items-center border-b border-stock/10">
       <div className="px-5 w-full flex items-center justify-between ">
         <div className="flex items-center gap-20">
           <div className="hidden md:block">

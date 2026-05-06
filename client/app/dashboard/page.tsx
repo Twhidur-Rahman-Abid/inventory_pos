@@ -6,6 +6,7 @@ import { Arrow } from "../_components";
 import Link from "next/link";
 import DashboardProductCard from "@/app/_components/dashboard/DashboardProductCard";
 import DashboardStats from "../_components/dashboard/DashboardStauts";
+import RecentOrder from "../_components/dashboard/RecentOrder";
 
 const Dashboard = () => {
   const salesSummaryTitle: string = "Today";
@@ -63,42 +64,44 @@ const Dashboard = () => {
               </Dropdown>
             </div>
           </div>
-          <div className="flex flex-wrap gap-6 justify-between mt-6">
-            <DashboardStats
-              title="Stock Value"
-              icon="/vector/v-product.svg"
-              total={0}
-              percentage={0}
-            />
-            <DashboardStats
-              title="Stock"
-              icon={"/vector/v-stock.svg"}
-              total={0}
-              percentage={0}
-            />
-            <DashboardStats
-              title="Order"
-              icon={"/vector/v-stock.svg"}
-              total={0}
-              percentage={0}
-            />
-            <DashboardStats
-              title="Revenue"
-              icon={"/vector/v-revenue.svg"}
-              total={0}
-              percentage={0}
-            />
-          </div>
+        </div>
+        <div className="flex flex-wrap gap-6 justify-between mt-6 w-full">
+          <DashboardStats
+            title="Today Sales"
+            icon={"/vector/total-sales.svg"}
+            total={0}
+            percentage={0}
+          />
+          <DashboardStats
+            title="Total Orders"
+            total={0}
+            icon="/vector/sales-shop.svg"
+            percentage={0}
+          />
+          <DashboardStats
+            title="Offline Sales"
+            icon={"/vector/offline-sales.svg"}
+            total={0}
+            percentage={0}
+          />
+          <DashboardStats
+            title="Online Sales"
+            icon={"/vector/online-sales.svg"}
+            total={0}
+            percentage={0}
+          />
         </div>
 
         <div className="flex flex-col md:flex-row gap-6">
           <SalesOverviewChart />
           <SalesDonutChart />
         </div>
+
+        <RecentOrder />
       </div>
       <div className="w-full flex flex-col md:flex-row xl:flex-col xl:w-fit gap-6 md:gap-8">
         <div className="mt-5 bg-white shadow-2 rounded-[18px] p-4 md:p-4 w-full">
-          <h3 className="text-c-green text-lg font-medium pb-3 border-b border-colorBorder mb-6">
+          <h3 className="text-c-green text-lg font-bold pb-3 border-b border-colorBorder mb-6">
             Top Selling
           </h3>
           <DashboardProductCard />
