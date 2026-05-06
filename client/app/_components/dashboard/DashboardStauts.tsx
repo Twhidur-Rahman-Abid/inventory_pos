@@ -8,15 +8,15 @@ export default function DashboardStats({
 }) {
   const isFall = percentage < 0;
   return (
-    <div className="py-3 md:py-4 px-4 md:px-5 grow max-w-90 rounded-xl shadow-2 flex justify-between items-center">
-      <div className="space-y-1.5">
+    <div className="py-3 md:py-4 px-4 md:px-5 grow max-w-90 rounded-xl bg-white shadow-2 flex justify-between items-center">
+      <div className="space-y-2.5">
         <h4 className="text-c-green text-[28px] leading-8 font-semibold">
           {total}
         </h4>
-        <p className="text-14 text-secondary font-medium">Total {title}</p>
+        <p className="text-14 text-secondary font-medium"> {title}</p>
       </div>
 
-      <div className="space-y-1.5">
+      <div className="space-y-2.5">
         <Image
           src={icon || "/placeholder-img.svg"}
           alt="product"
