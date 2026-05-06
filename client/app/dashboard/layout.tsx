@@ -49,7 +49,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
 
   return (
     <div>
-      <main className="flex items-start w-full">
+      <main className="flex items-start w-full ">
         <aside className="min-h-screen lg:max-h-screen min-w-fit sticky z-50 overflow-x-visible lg:overflow-y-auto left-0 top-0 bg-primary-dark flex flex-col justify-between content-between px-3 md:px-7 py-4.5 gap-6 border-r border-stock/10 aside-shadow">
           <div className="w-full bg-white p-1.5 pr-1 md:pr-2.5 md:p-2.5 md:pt-2 rounded-xl">
             <Logo className="hidden lg:block " />
@@ -72,9 +72,10 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           </div>
         </aside>
 
-        <div className="flex-1">
+        <div className="flex-1 w-full overflow-x-hidden  ">
           <Navbar myData={myData} />
-          <section className="min-h-[calc(100vh-72px)] bg-soft-white w-full overflow-x-hidden relative px-3 md:px-7 py-4 md:py-8 ">
+
+          <section className="min-h-[calc(100vh-72px)] bg-soft-white w-full overflow-x-hidden relative px-3 md:px-7 py-4 md:py-8 mt-15">
             {children}
           </section>
         </div>
