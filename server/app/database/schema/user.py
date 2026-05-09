@@ -1,18 +1,19 @@
 from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy import String, Boolean, Enum
+from sqlalchemy import String, Boolean, Enum, DateTime, func
 import enum
-from datetime import datetime, timezone
+from datetime import datetime,timezone
 from ..db import Base
 
 class UserRole(enum.Enum):
-    ADMIN = "admin"
-    MANAGER = "manager"
-    STAFF = "staff"
+    admin = "admin"
+    warehouse_manager = "warehouse_manager"
+    shop_manager = "shop_manager"
+    shop_staff = "shop_staff"
 
 class User(Base):
     __tablename__ = "users"
 
-    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True)
+    id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, index=True)
 
     name: Mapped[str] = mapped_column(String(100), nullable=False)
 
@@ -33,7 +34,7 @@ class User(Base):
     )
 
     role: Mapped[UserRole] = mapped_column(
-        Enum(UserRole),
+        Enum(UserRole,native_enum=False),
         nullable=False
     )
 
@@ -44,12 +45,13 @@ class User(Base):
     )
 
     created_at: Mapped[datetime] = mapped_column(
-        default=lambda: datetime.now(timezone.utc),
+        DateTime(timezone=True), 
+        default=lambda: datetime.now(timezone.utc), 
         nullable=False
     )
-
     updated_at: Mapped[datetime] = mapped_column(
-        default=lambda: datetime.now(timezone.utc),
+        DateTime(timezone=True), 
+        default=lambda: datetime.now(timezone.utc), 
         onupdate=lambda: datetime.now(timezone.utc),
         nullable=False
-    )
+    )   

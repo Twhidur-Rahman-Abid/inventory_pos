@@ -1,12 +1,12 @@
 from sqlalchemy.orm import Mapped, mapped_column, relationship
-from sqlalchemy import String, ForeignKey, Boolean, Numeric, Text
+from sqlalchemy import String, ForeignKey, Boolean, Numeric, Text,DateTime
 from ..db import Base
 from datetime import datetime,timezone
 
 class Product(Base):
     __tablename__ = "products"
 
-    id: Mapped[int] = mapped_column(primary_key=True,autoincrement=True)
+    id: Mapped[int] = mapped_column(primary_key=True,autoincrement=True, index=True)
     sku_code: Mapped[str] = mapped_column(String, unique=True,index=True,nullable=False)
     name: Mapped[str] = mapped_column(String, index=True, nullable=False)
     category_id: Mapped[int] = mapped_column(ForeignKey("categories.id"), nullable=False)
@@ -18,15 +18,16 @@ class Product(Base):
     details = relationship("ProductDetail", uselist=False)
     images = relationship("ProductImage")
     created_at: Mapped[datetime] = mapped_column(
-        default=lambda: datetime.now(timezone.utc),
+        DateTime(timezone=True), 
+        default=lambda: datetime.now(timezone.utc), 
         nullable=False
     )
-
     updated_at: Mapped[datetime] = mapped_column(
-        default=lambda: datetime.now(timezone.utc),
+        DateTime(timezone=True), 
+        default=lambda: datetime.now(timezone.utc), 
         onupdate=lambda: datetime.now(timezone.utc),
         nullable=False
-    )
+    )   
 
 
 class ProductDetail(Base):
