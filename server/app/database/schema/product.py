@@ -12,9 +12,11 @@ class Product(Base):
     category_id: Mapped[int] = mapped_column(ForeignKey("categories.id"), nullable=False)
 
     price: Mapped[float] = mapped_column(Numeric(10, 2),nullable=False)
-    discount_percentage: Mapped[float] 
-    is_by_one_get_one: Mapped[bool] = mapped_column(Boolean, default=False)
-
+    discount_percentage: Mapped[float] = mapped_column(Numeric(5, 2), default=0)
+    is_buy_one_get_one: Mapped[bool] = mapped_column(Boolean, default=False)
+    thumbnail: Mapped[str] = mapped_column(String, nullable=True)
+    quantity: Mapped[int] = mapped_column(nullable=False, default=0)
+    category = relationship("Category", uselist=False)
     details = relationship("ProductDetail", uselist=False)
     images = relationship("ProductImage")
     created_at: Mapped[datetime] = mapped_column(
@@ -33,13 +35,13 @@ class Product(Base):
 class ProductDetail(Base):
     __tablename__ = "product_details"
 
-    id: Mapped[int] = mapped_column(primary_key=True,autoincrement=True)
+    id: Mapped[int] = mapped_column(primary_key=True,autoincrement=True,index=True)
     product_id: Mapped[int] = mapped_column(ForeignKey("products.id"))
     description: Mapped[str] = mapped_column(Text,nullable=False)
 
 class ProductImage(Base):
     __tablename__ = "product_images"
 
-    id: Mapped[int] = mapped_column(primary_key=True)
+    id: Mapped[int] = mapped_column(primary_key=True,autoincrement=True,index=True)
     product_id: Mapped[int] = mapped_column(ForeignKey("products.id"))
     image_url: Mapped[str] = mapped_column(nullable=False)
