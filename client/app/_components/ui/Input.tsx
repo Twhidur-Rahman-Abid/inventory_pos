@@ -4,7 +4,6 @@
 
 import { useEffect, useState, ChangeEvent, ReactNode } from "react";
 import { cn } from "../../_lib/utils";
-import { error } from "console";
 
 type InputProps = {
   type?: string;
@@ -57,7 +56,7 @@ export default function Input({
   }, [setDirectValue]);
 
   return (
-    <>
+    <div className="space-y-1.5">
       <label
         htmlFor={name}
         className={cn(
@@ -110,6 +109,6 @@ export default function Input({
         {RightIcon}
       </label>
       {isErrorShow && <p className="text-red-600">{error}</p>}
-    </>
+    </div>
   );
 }
