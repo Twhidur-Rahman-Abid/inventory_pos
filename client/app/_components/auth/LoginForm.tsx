@@ -5,54 +5,43 @@ import React, { useActionState, useEffect, useState } from "react";
 import Image from "next/image";
 import { toast } from "react-toastify";
 import { useRouter } from "next/navigation";
+import { Button, Input } from "@/app/_components";
 
-// import error from "@/app/dashboard/error";
-import Input from "../ui/Input";
-import Button from "../ui/Button";
-import Loading from "../ui/Loading";
-import Link from "next/link";
+import { authAction } from "@/app/_actions/auth_actions";
 
 const LoginForm = () => {
   const [passwordInputType, setPasswordInputType] = useState("password");
-  //   const [state, action, isPending] = useActionState(authAction);
-  //   const { error: resError, success } = state || {};
+  const [state, action] = useActionState(authAction, null);
+  const { errors = {}, message, success } = state || {};
 
   const router = useRouter();
 
-  //   useEffect(() => {
-  //     if (resError) {
-  //       toast.error(
-  //         typeof resError === "string"
-  //           ? resError
-  //           : resError?.username || resError?.password || "Something went wrong",
-  //       );
-  //     }
-  //   }, [resError]);
-
-  //   useEffect(() => {
-  //     if (success) {
-  //       toast.success("User logged in successfully");
-  //       router.push("/dashboard");
-  //     }
-  //   }, [success, router]);
+  useEffect(() => {
+    if (success) {
+      toast.success("User logged in successfully");
+      router.push("/dashboard");
+    } else if (message) {
+      toast.error(message);
+    }
+  }, [success, message, router]);
 
   return (
-    <form className="my-6 space-y-3 md:space-y-4.5">
+    <form action={action} className="my-6 space-y-3 md:space-y-4.5">
       {/* {typeof resError !== "object" && (
         <p className="text-red-500 text-center">{resError}</p>
       )} */}
 
       <Input
         type="text"
-        name="username"
+        name="email"
         placeholder="User ID"
-        error={""}
+        error={errors?.email}
         LeftIcon={<LeftIcon iconImgPath="/i-user.svg" />}
       />
       <Input
         type={passwordInputType}
         name="password"
-        error={""}
+        error={errors?.password}
         placeholder="Password"
         LeftIcon={<LeftIcon iconImgPath="/i-Lock.svg" />}
         RightIcon={
@@ -71,12 +60,9 @@ const LoginForm = () => {
         }
       />
 
-      <Link href="/dashboard">
-        <Button type="submit" className="bg-c-green border border-stock/10">
-          Login
-          {/* {isPending ? <Loading /> : "Login"} */}
-        </Button>
-      </Link>
+      <Button type="submit" className="bg-c-green border border-stock/10">
+        Login
+      </Button>
     </form>
   );
 };
