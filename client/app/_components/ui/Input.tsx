@@ -61,14 +61,14 @@ export default function Input({
       <label
         htmlFor={name}
         className={cn(
-          "px-2.7 md:px-5 input-shadow border",
+          "px-2.5 md:px-5 input-shadow border",
           {
             "border-red-600": isErrorShow,
             "border-stock/10": !isErrorShow,
             "w-full h-full py-3.5": isFileType,
           },
           "rounded-xl flex items-center w-full",
-          "focus-within:border-primary",
+          "focus-within:border-c-green",
           className,
         )}
       >
