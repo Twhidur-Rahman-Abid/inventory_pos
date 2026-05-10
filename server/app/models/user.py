@@ -3,24 +3,29 @@ from pydantic import BaseModel, EmailStr,Field
 from enum import Enum
 
 from datetime import datetime
-from typing import List
+from typing import List, Optional
 from app.database.schema.user import UserRole
 
-class UserRole(str, Enum):
-    ADMIN = "admin"
-    WAREHOUSE_MANAGER = "warehouse_manager"
-    SHOP_MANAGER = "shop_manager"
-    SHOP_STAFF = "shop_staff"
+# class UserRole(str, Enum):
+#     ADMIN = "admin"
+#     WAREHOUSE_MANAGER = "warehouse_manager"
+#     SHOP_MANAGER = "shop_manager"
+#     SHOP_STAFF = "shop_staff"
 
 class User(BaseModel):
     name: str = Field(...,min_length=2, max_length=100)
     email: EmailStr
     mobile: str = Field(...,min_length=11,max_length=15)
-    password: str = Field(...,min_length=6, max_length=100)
+    password: str = Field(...,min_length=6, max_length=25)
+    branch_id: int
     role: UserRole
 
+class BranchMinimalResponse(BaseModel):
+    id: int
+    name: str
 
-
+    class Config:
+        from_attributes = True
 
 class UserResponse(BaseModel):
     id: int
@@ -29,20 +34,16 @@ class UserResponse(BaseModel):
     mobile: str
     role: str
     is_active: bool
+    branch: Optional[BranchMinimalResponse] = None 
 
     class Config:
         from_attributes = True
 
 class UserPaginationResponse(BaseModel):
-    total: int
+    count: int
     page: int
-    limit: int
     has_next: bool
-    users: List[UserResponse]
-
-
-
-
+    data: List[UserResponse]
 
 class RegisterSchema(BaseModel):
     name: str

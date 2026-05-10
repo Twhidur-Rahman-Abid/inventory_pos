@@ -1,5 +1,6 @@
-from sqlalchemy.orm import Mapped, mapped_column
-from sqlalchemy import String, Boolean, Enum, DateTime, func
+# branch.py
+from sqlalchemy.orm import Mapped, mapped_column, relationship
+from sqlalchemy import VARCHAR, String, Boolean, Enum, DateTime, func, ForeignKey
 import enum
 from datetime import datetime,timezone
 from ..db import Base
@@ -15,16 +16,16 @@ class User(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True, autoincrement=True, index=True)
 
-    name: Mapped[str] = mapped_column(String(100), nullable=False)
+    name: Mapped[str] = mapped_column(VARCHAR(100), nullable=False)
 
     email: Mapped[str] = mapped_column(
-        String(180),
+        VARCHAR(180),
         unique=True,
         nullable=False
     )
 
     mobile: Mapped[str] =  mapped_column(
-        String(15),
+        VARCHAR(15),
         unique=True,
         nullable=False
     )
@@ -43,6 +44,14 @@ class User(Base):
         default=True,
         nullable=False
     )
+
+    branch_id: Mapped[int] = mapped_column(
+        ForeignKey("branch.id"),
+        nullable=False
+    )
+    branch: Mapped["Branch"]  = relationship(back_populates="users")
+
+
 
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), 
