@@ -62,7 +62,12 @@ async def register(
     await db.refresh(user)
 
     access_token = create_access_token({
-        "sub": str(user.id)
+        "sub": str(user.id),
+        "user": {
+            "name": user.name,
+            "email": user.email,
+            "role": user.role.value
+        }
     })
 
     refresh_token = create_refresh_token({
@@ -108,7 +113,12 @@ async def login(
         )
 
     access_token = create_access_token({
-        "sub": str(user.id)
+        "sub": str(user.id),
+         "user": {
+            "name": user.name,
+            "email": user.email,
+            "role": user.role.value
+        }
     })
 
     refresh_token = create_refresh_token({
@@ -139,9 +149,11 @@ async def refresh_token(
         )
 
     user_id = payload.get("sub")
+    user = payload.get("user")
 
     new_access_token = create_access_token({
-        "sub": str(user_id)
+        "sub": str(user_id),
+        "user":user
     })
 
     new_refresh_token = create_refresh_token({
