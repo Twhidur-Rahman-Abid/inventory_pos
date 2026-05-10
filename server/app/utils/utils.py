@@ -21,7 +21,7 @@ async def save_image(
     upload_dir.mkdir(parents=True, exist_ok=True)
 
     # final filename
-    final_filename = f"{filename.replace(' ', '_')}.webp"
+    final_filename = f"{filename.replace(' ', '_').lower()}.webp"
 
     # full path
     file_path = upload_dir / final_filename
