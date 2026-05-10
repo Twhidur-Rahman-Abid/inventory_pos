@@ -8,23 +8,24 @@ export default function DashboardStats({
 }) {
   const isFall = percentage < 0;
   return (
-    <div className="py-3 md:py-4 px-4 md:px-5 grow max-w-90 rounded-xl bg-white shadow-2 flex justify-between items-center">
-      <div className="space-y-2.5">
-        <h4 className="text-c-green text-[28px] leading-8 font-semibold">
+    <div className="py-3 md:py-4 px-4 md:px-5 grow max-w-90 rounded-xl bg-white shadow-2 space-y-6">
+      <div className="w-full flex items-center justify-between gap-4">
+        <h4 className="text-c-green text-[28px] 2xl:text-[32px] leading-8 font-semibold">
           {total}
         </h4>
-        <p className="text-14 text-secondary font-medium"> {title}</p>
-      </div>
-
-      <div className="space-y-2.5">
         <Image
           src={icon || "/placeholder-img.svg"}
           alt="product"
-          width={40}
-          height={40}
+          width={50}
+          height={50}
+          className="size-10 2xl:size-13"
         />
+      </div>
+
+      <div className="w-full flex items-center justify-between gap-4">
+        <p className="text-14 text-secondary font-medium"> {title}</p>
         <div
-          className={`py-0.5 px-1.5  flex items-center rounded-full ${
+          className={`py-[1.5px] px-1.5 lg:px-2.5 flex items-center rounded-full ${
             isFall ? "bg-denger/10" : "bg-c-green/10"
           }`}
         >

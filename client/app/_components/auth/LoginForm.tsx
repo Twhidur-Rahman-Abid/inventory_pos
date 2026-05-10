@@ -72,7 +72,7 @@ const LoginForm = () => {
       />
 
       <Link href="/dashboard">
-        <Button type="submit" className="bg-secondary border border-stock/10">
+        <Button type="submit" className="bg-c-green border border-stock/10">
           Login
           {/* {isPending ? <Loading /> : "Login"} */}
         </Button>
@@ -87,7 +87,7 @@ function LeftIcon({ iconImgPath = "" }) {
   return (
     <>
       <Image src={iconImgPath} alt={iconImgPath} width={24} height={24} />
-      <div className="w-[1px] h-[19px] bg-c-gray mx-3 md:mx-6"></div>
+      <div className="w-px h-4.75 bg-c-gray mx-3 md:mx-6"></div>
     </>
   );
 }

@@ -25,7 +25,7 @@ export default function SideLink({ href = "", label = "", iconSrc = "" }) {
           alt={label}
           width={20}
           height={20}
-          className={cn("min-w-5 filter invert brightness-0")}
+          className={cn("min-w-5 xl:min-w-6 filter invert brightness-0")}
         />
         <div className="hidden lg:flex w-full justify-between">
           <p className="font-medium">{label}</p>

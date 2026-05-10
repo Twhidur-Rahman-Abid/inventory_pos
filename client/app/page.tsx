@@ -12,13 +12,13 @@ const page = async () => {
             Admin Login
           </h2>
           <p className="font-medium text-body-text">
-            <span className="text-primary">Niamah Shop</span> admin panel
+            <span className="text-c-green">Niamah Shop</span> admin panel
           </p>
 
           <LoginForm />
           <p className="text-body-text text-sm font-normal">
             Thank you for choosing{" "}
-            <span className="text-primary italic mt-10 md:mt-15 underline">
+            <span className="text-c-green italic mt-10 md:mt-15 underline">
               TRA Tech!
             </span>
           </p>
