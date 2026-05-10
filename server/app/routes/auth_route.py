@@ -155,7 +155,7 @@ async def refresh_token(
 
 
 # RESET PASSWORD
-@authRouter.post("/reset-password")
+@authRouter.post("/reset-password",dependencies=[Depends(get_current_user)])
 async def reset_password(
     data: ResetPasswordSchema,
     db: AsyncSession = Depends(get_db)
