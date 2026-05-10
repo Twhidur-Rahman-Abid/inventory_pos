@@ -40,11 +40,13 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       icon: "/icon/i-product.svg",
     },
     { label: "Sold", icon: "/icon/i-sold.svg" },
-    { label: "Online Order", icon: "/icon/i-order.svg" },
+    { label: "Online Order", icon: "/icon/i-online-order.svg" },
     { label: "Category", icon: "/icon/i-category.svg" },
+    { label: "Branch", icon: "/icon/i-branch.svg" },
 
     { label: "Employee", icon: "/icon/i-cashire.svg" },
     { label: "Reports", icon: "/icon/i-report.svg" },
+    { label: "Setting", icon: "/icon/i-setting-2.svg" },
   ];
 
   return (
