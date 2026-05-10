@@ -1,3 +1,5 @@
+const BASE_URL = "http://127.0.0.1:8000/api/v1";
+
 // MONEY SYMBOL BDT
 const MONEY_SYMBOL = "৳";
 const MONEY_TITLE = "BDT";
@@ -9,4 +11,4 @@ const PAYMENT_METHOD = [
   { value: "rocket", label: "Rocket", img: "/rocket.png" },
 ];
 
-export { MONEY_SYMBOL, MONEY_TITLE, PAYMENT_METHOD };
+export { MONEY_SYMBOL, MONEY_TITLE, PAYMENT_METHOD, BASE_URL };
