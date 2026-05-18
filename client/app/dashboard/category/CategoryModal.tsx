@@ -1,113 +1,132 @@
 /* eslint-disable prefer-const */
 /* eslint-disable react-hooks/set-state-in-effect */
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
-import { Button, Icon, InputGroup, Modal } from "@/app/_components";
+import { postData, putData } from "@/app/_actions";
+import { Button, Modal } from "@/app/_components";
+import { FormInput } from "@/app/_components/ui/Input";
+import { categorySchema } from "@/app/_schema/schema";
+import { CategoryType } from "@/app/_types/types";
+import { useForm } from "@conform-to/react";
+import { parseWithZod } from "@conform-to/zod/v4";
 import Image from "next/image";
-import React, { useEffect, useState } from "react";
+import { useActionState, useEffect, useState } from "react";
+import { toast } from "react-toastify";
 
-const ImageGroup = ({
-  image,
-  label = "",
-  setImage,
+const CategoryModal = ({
+  onClose = () => {},
+  fetcher = () => {},
+  editable,
 }: {
-  label: string;
-  image: File | null;
-  setImage: (file: File | null) => void;
+  onClose: () => void;
+  fetcher?: () => void;
+  editable?: null | (Partial<CategoryType> & { open?: boolean });
 }) => {
-  const [preview, setPreview] = useState<string>("/placeholder-img.svg");
+  const [selectedImage, setSelectedImage] = useState<File | null>(null);
+  const [preview, setPreview] = useState(
+    editable?.img || "/placeholder-img.svg",
+  );
+
+  // category data post and put action based on editable data
+  const [state, action] = useActionState(
+    async (_: unknown, formData: FormData) => {
+      if (selectedImage) formData.set("image", selectedImage);
+      return editable?.id
+        ? await putData({
+            endpoint: `/categories/${editable?.id}`,
+            formData,
+            schemaName: "branch",
+          })
+        : await postData({
+            endpoint: "/categories/",
+            formData,
+            schemaName: "branch",
+          });
+    },
+    editable?.id ? editable : undefined,
+  );
+
+  // category form
+  const [form, fields] = useForm({
+    id: state,
+    lastResult: state?.lastResult,
+    defaultValue: state?.lastResult?.initialValue || editable || undefined,
+    onValidate({ formData }) {
+      return parseWithZod(formData, { schema: categorySchema });
+    },
+
+    shouldValidate: "onBlur",
+    shouldRevalidate: "onInput",
+  });
 
   useEffect(() => {
-    if (typeof window !== "undefined" && image) {
-      const url = URL.createObjectURL(image);
-      setPreview(url);
-
-      return () => {
-        URL.revokeObjectURL(url);
-      };
-    } else {
-      setPreview("/placeholder-img.svg");
+    if (state?.status === "error") {
+      toast.error(state?.message);
+    } else if (state?.status === "success") {
+      fetcher();
+      toast.success(editable?.id ? "Branch edited!" : "Branch created!");
+      onClose();
     }
-  }, [image]);
+  }, [state]);
 
   return (
-    <div className="flex justify-between items-center">
-      <div className="py-2.5 text-center w-full">
-        <Image
-          className="mx-auto size-36 object-contain"
-          src={preview}
-          width={144}
-          height={144}
-          alt="category"
-        />
-      </div>
-
-      <div className="w-full">
-        <InputGroup
-          type="file"
-          label={label}
-          placeholder={image?.name || "Choose image"}
-          icon={<Icon src="/icon/i-file.svg" />}
-          setInputValue={(e: React.ChangeEvent<HTMLInputElement>) =>
-            setImage(e.target.files?.[0] || null)
-          }
-        />
-      </div>
-    </div>
-  );
-};
-
-interface CategoryModalProps {
-  onClose: () => void;
-}
-
-const CategoryModal: React.FC<CategoryModalProps> = ({ onClose }) => {
-  const [image, setImage] = useState<File | null>(null);
-
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    const formData = new FormData(e.currentTarget);
-
-    // image manually append
-    if (image) {
-      formData.append("image", image);
-    }
-
-    // debug
-    for (let [key, value] of formData.entries()) {
-      console.log(key, value);
-    }
-  };
-
-  const handleReset = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    const form = e.currentTarget.closest("form");
-    form?.reset();
-    setImage(null); // important
-  };
-
-  return (
-    <Modal onClose={onClose} title="Add New Category">
-      <form onSubmit={handleSubmit} className="space-y-[30px] pt-6">
-        <InputGroup
-          name="name"
-          label="Category Name"
-          placeholder="Enter category name"
+    <Modal
+      onClose={onClose}
+      title={
+        editable?.id ? `Edit ${editable.name} Category` : "Add New Category"
+      }
+    >
+      <form
+        id={form.id}
+        onSubmit={form.onSubmit}
+        action={action}
+        encType="multipart/form-data"
+        className="space-y-7 pt-6"
+      >
+        {/* Name Field */}
+        <FormInput
+          key={fields.name.key}
+          name={fields.name.name}
+          defaultValue={fields.name?.initialValue as string | undefined}
+          error={fields.name.errors}
+          placeholder="Enter name"
+          label="Name"
         />
 
-        <ImageGroup label="Category Image" setImage={setImage} image={image} />
+        {/* Image field with preview */}
+        <div className="flex justify-between items-center">
+          <div className="py-2.5 text-center w-full">
+            <Image
+              className="mx-auto size-36 object-contain"
+              src={preview}
+              width={144}
+              height={144}
+              alt="inventory"
+            />
+          </div>
+
+          <FormInput
+            type="file"
+            name={fields.image.name}
+            accept="image/*"
+            error={fields.image.errors}
+            required={false}
+            label="Image"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+
+              if (file) {
+                setSelectedImage(file);
+                setPreview(URL.createObjectURL(file));
+              }
+            }}
+          />
+        </div>
 
         <div className="flex justify-end gap-5">
-          <Button
-            onClick={handleReset}
-            className="text-body-text bg-c-gray max-w-min"
-          >
-            Reset
-          </Button>
-
           <Button type="submit" className="max-w-min">
-            Create Category
+            {editable?.id ? "Edit Category" : "Create Category"}
           </Button>
         </div>
       </form>
