@@ -11,4 +11,19 @@ const PAYMENT_METHOD = [
   { value: "rocket", label: "Rocket", img: "/rocket.png" },
 ];
 
-export { MONEY_SYMBOL, MONEY_TITLE, PAYMENT_METHOD, BASE_URL };
+const USER_ROLE = [
+  {
+    label: "Warehouse manager",
+    value: "warehouse_manager",
+  },
+  {
+    label: "Shop Manager",
+    value: "shop_manager",
+  },
+  {
+    label: "Shop Staff",
+    value: "shop_staff",
+  },
+];
+
+export { MONEY_SYMBOL, MONEY_TITLE, PAYMENT_METHOD, BASE_URL, USER_ROLE };
