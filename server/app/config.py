@@ -3,6 +3,7 @@ from functools import lru_cache
 
 class Config(BaseSettings):
     app_name:str= "Niamah Shop"
+    site_link:str
     db_url:str
     secret_key:str
     algorithm:str="HS256"
