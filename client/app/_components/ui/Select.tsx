@@ -1,13 +1,17 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 import { cn } from "@/app/_lib/utils";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, useMemo } from "react";
 import Arrow from "./Arrow";
 import Image from "next/image";
+import { _optional } from "zod/v4/core";
 
 // Option type
 type OptionType = {
-  value: string | number;
-  label: string;
+  value?: string | number;
+  label?: string;
+  id?: string | number;
+  name?: string;
   img?: string;
 };
 
@@ -128,9 +132,9 @@ const Select: React.FC<SelectProps> = ({
       <input
         type="hidden"
         name={name}
-        defaultValue={
-          selectedValue?.value === "hidden" ? "" : selectedValue?.value
-        }
+        key={selectedValue?.value}
+        value={selectedValue?.value ?? ""}
+        readOnly
       />
 
       <div
@@ -150,7 +154,7 @@ const Select: React.FC<SelectProps> = ({
               src={selectedValue.img}
               width={24}
               height={24}
-              alt={selectedValue.label}
+              alt={selectedValue?.label || selectedValue?.name || "option"}
               className="size-6 object-contain"
             />
           )}
@@ -186,11 +190,11 @@ const Select: React.FC<SelectProps> = ({
                     src={option.img}
                     width={24}
                     height={24}
-                    alt={option.label}
+                    alt={option?.label || option?.name || "option"}
                     className="size-6 object-contain"
                   />
                 )}
-                {option.label}
+                {option?.label || option?.name}
               </li>
             ))}
         </ul>
@@ -200,3 +204,200 @@ const Select: React.FC<SelectProps> = ({
 };
 
 export default Select;
+
+interface FormSelectProps {
+  options: OptionType[];
+  label?: string;
+  error?: string[];
+  className?: string;
+  defaultValue?: string | number;
+  getSelectValue?: (value: OptionType) => void;
+  name: string;
+  required?: boolean;
+  placeholder?: string;
+}
+
+export function FormSelect({
+  options = [],
+  label,
+  error,
+  className,
+  defaultValue,
+  getSelectValue,
+  name,
+  required = true,
+  placeholder = "Select Option",
+  ...props
+}: FormSelectProps) {
+  // Memoized initial option to avoid unnecessary re-calculations
+
+  const initialOption = useMemo(
+    () =>
+      options.find(
+        (opt) => opt.value === defaultValue || opt.id === defaultValue,
+      ) || null,
+    [defaultValue, options],
+  );
+
+  const [selectedValue, setSelectedValue] = useState<OptionType | null>(
+    initialOption,
+  );
+  const [isOpen, setIsOpen] = useState<boolean>(false);
+  const [position, setPosition] = useState<
+    "bottom-right" | "bottom-left" | "top-right" | "top-left"
+  >("bottom-right");
+
+  const triggerRef = useRef<HTMLDivElement | null>(null);
+
+  // Synchronize state if defaultValue changes (e.g., on form reset)
+  useEffect(() => {
+    setSelectedValue(initialOption);
+  }, [initialOption]);
+
+  const toggleDropdown = () => setIsOpen((prev) => !prev);
+
+  const handleSelectChange = (option: OptionType) => {
+    setSelectedValue(option);
+    setIsOpen(false);
+    if (getSelectValue) getSelectValue(option);
+  };
+
+  // Outside click logic
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (
+        triggerRef.current &&
+        !triggerRef.current.contains(event.target as Node)
+      ) {
+        setIsOpen(false);
+      }
+    };
+    if (isOpen) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [isOpen]);
+
+  // Dynamic Positioning logic
+  useEffect(() => {
+    if (isOpen && triggerRef.current) {
+      const rect = triggerRef.current.getBoundingClientRect();
+      const spaceBelow = window.innerHeight - rect.bottom;
+      const spaceRight = window.innerWidth - rect.right;
+
+      const vertical = spaceBelow < 250 ? "top" : "bottom";
+      const horizontal = spaceRight < 150 ? "left" : "right";
+
+      setPosition(`${vertical}-${horizontal}` as typeof position);
+    }
+  }, [isOpen]);
+
+  const dropdownPositionClass: Record<typeof position, string> = {
+    "bottom-right": "top-full left-0",
+    "bottom-left": "top-full right-0",
+    "top-right": "bottom-full left-0",
+    "top-left": "bottom-full right-0",
+  };
+
+  return (
+    <div className="flex flex-col gap-3 w-full">
+      {label && (
+        <label className="text-secondary font-medium text-base">
+          {label} {required && <span className="text-red-600">*</span>}
+        </label>
+      )}
+
+      {/* Conform and native form submission support */}
+      <input
+        type="hidden"
+        name={name}
+        {...props}
+        value={selectedValue?.value || selectedValue?.id || ""}
+      />
+
+      <div className="relative" ref={triggerRef}>
+        <div
+          onClick={toggleDropdown}
+          className={cn(
+            "px-2.5 md:px-5 py-3.5 input-shadow border rounded-xl flex items-center justify-between w-full cursor-pointer transition-all bg-white",
+            isOpen ? "border-c-green" : "border-stock/10",
+            {
+              "border-red-600": error && error.length > 0,
+            },
+            className,
+          )}
+        >
+          <div className="flex items-center gap-2.5 truncate text-secondary">
+            {selectedValue?.img && (
+              <Image
+                src={selectedValue.img}
+                width={24}
+                height={24}
+                alt=""
+                className="size-6 object-contain"
+              />
+            )}
+            <span className={cn(!selectedValue && "text-ash")}>
+              {selectedValue
+                ? selectedValue?.label || selectedValue?.name
+                : placeholder}
+            </span>
+          </div>
+          <div
+            className={cn(
+              "transition-transform duration-200",
+              isOpen && "rotate-180",
+            )}
+          >
+            <Arrow move="down" />
+          </div>
+        </div>
+
+        {isOpen && (
+          <ul
+            className={cn(
+              "absolute z-100 my-2 p-2 bg-white rounded-xl max-h-[250px] overflow-auto shadow-2xl border border-gray-100 min-w-full animate-in fade-in zoom-in duration-150",
+              dropdownPositionClass[position],
+            )}
+          >
+            {options.length > 0 ? (
+              options.map((option, i) => (
+                <li
+                  key={i}
+                  className={cn(
+                    "px-4 py-3 text-sm font-medium rounded-lg text-secondary hover:bg-gray-50 cursor-pointer flex items-center gap-2.5 transition-colors",
+                    (option?.value === selectedValue?.value ||
+                      option?.id === selectedValue?.id) &&
+                      "bg-gray-100 text-c-green",
+                  )}
+                  onClick={() => handleSelectChange(option)}
+                >
+                  {option.img && (
+                    <Image
+                      src={option.img}
+                      width={20}
+                      height={20}
+                      alt=""
+                      className="size-5 object-contain"
+                    />
+                  )}
+                  {option?.label || option?.name}
+                </li>
+              ))
+            ) : (
+              <li className="px-4 py-3 text-sm text-ash text-center">
+                No options found
+              </li>
+            )}
+          </ul>
+        )}
+      </div>
+
+      {error?.map((err, index) => (
+        <p key={index} className="text-sm text-red-600">
+          {err}
+        </p>
+      ))}
+    </div>
+  );
+}
