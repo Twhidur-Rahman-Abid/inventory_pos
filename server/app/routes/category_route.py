@@ -1,3 +1,5 @@
+import os
+
 from fastapi import APIRouter, Depends, UploadFile, File, Form, status
 from fastapi.responses import JSONResponse 
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -7,7 +9,7 @@ from app.database.schema.category import Category
 from sqlalchemy import select, func
 import logging
 
-from app.utils.utils import get_skip, has_next, save_image
+from app.utils.utils import BASE_UPLOAD_DIR, delete_image_from_url, get_skip, has_next, save_image
 from app.models.category import CategoryResponse, CategoryCreate
 from app.database.schema.user import UserRole, User
 from app.utils.dependencies import role_required 
@@ -69,20 +71,26 @@ async def create_category(
 async def get_categories(
     page: int = 1,
     limit: int = 10,
+    pagination: bool = False,
     db: AsyncSession = Depends(get_db)
 ):
     try:
         count_val = await db.execute(select(func.count(Category.id)))
         count = count_val.scalar() or 0
-        
-        skip = get_skip(page, limit)
-        result = await db.execute(select(Category).offset(skip).limit(limit))
-        categories = result.scalars().all()
+        if pagination:
+            skip = get_skip(page, limit)
+            result = await db.execute(select(Category).offset(skip).limit(limit))
+            categories = result.scalars().all()
+            has_next_val = has_next(count, skip, limit)
+        else:
+            result = await db.execute(select(Category))
+            categories = result.scalars().all()
+            has_next_val = False
 
         return {
             "data": categories,
             "count": count,
-            "has_next": has_next(count, skip, limit)
+            "has_next": has_next_val
         }
     except Exception as e:
         logger.error(f"Error fetching categories: {str(e)}")
@@ -119,6 +127,8 @@ async def update_category(
             db_category.name = name
 
         if image:
+            if db_category.img:
+                delete_image_from_url(db_category.img)
             new_filename = await save_image(
                 file=image,
                 folder="categories",
@@ -140,15 +150,14 @@ async def update_category(
         )
 
 # --- Delete Category ---
-@categoryRouter.delete("/{category_id}",status_code=204)
-async def delete_category(
-    category_id: int,
-    current_user: User = Depends(
+@categoryRouter.delete("/{category_id}",status_code=204,dependencies=[Depends(
         role_required([
             UserRole.admin,
             UserRole.warehouse_manager
         ])
-    ),
+    )])
+async def delete_category(
+    category_id: int,
     db: AsyncSession = Depends(get_db)
 ):
     try:
@@ -160,6 +169,9 @@ async def delete_category(
                 status_code=404,
                 content={"message": "Category not found"}
             )
+
+        if db_category.img:
+            delete_image_from_url(db_category.img)
 
         await db.delete(db_category)
         await db.commit()
