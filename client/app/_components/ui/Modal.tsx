@@ -12,14 +12,6 @@ const Modal = ({
   onClose: () => void;
   children: ReactNode;
 }) => {
-  useEffect(() => {
-    document.body.style.overflow = "hidden"; // Disable scrolling
-
-    // Clean up on component unmount or when modal is closed
-    return () => {
-      document.body.style.overflow = "auto"; // Ensure scrolling is enabled on unmount
-    };
-  }, []);
   return createPortal(
     <>
       <div
@@ -28,7 +20,7 @@ const Modal = ({
       ></div>
       <div className="fixed top-[45vh] left-1/2 -translate-1/2 z-[410] max-h-[80vh] overflow-auto scale-[.65] md:scale-100 bg-white lg:w-[45vw]  lg:max-w-[800px] px-7 pb-8 rounded-xl">
         <div className="py-[18px] w-full border-b border-[#E2E2E2] relative">
-          <p className="text-2xl font-semibold text-secondary text-center min-w-100 ">
+          <p className="text-2xl font-semibold text-secondary text-center min-w-100 upper">
             {title}
           </p>
           <Icon
@@ -52,19 +44,17 @@ export const SimpleModal = ({
   onClose: () => void;
   children: React.ReactNode;
 }) => {
-  useEffect(() => {
-    window.scrollTo({ top: 0, behavior: "smooth" });
-  }, []);
-  return (
+  return createPortal(
     <>
       <div
         onClick={onClose}
-        className="absolute top-0 left-0 min-h-screen h-full w-full bg-black/20 backdrop-blur-[4px] z-40"
+        className="fixed top-0 left-0 min-h-screen h-full w-full bg-black/20 backdrop-blur-[4px] z-40"
       ></div>
-      <div className="absolute top-[45vh] left-1/2 -translate-1/2 z-50   bg-white lg:w-[40vw] px-7 py-8 rounded-xl">
+      <div className="fixed top-[45vh] left-1/2 -translate-1/2 z-50   bg-white lg:w-[40vw] px-7 py-8 rounded-xl">
         {children}
       </div>
-    </>
+    </>,
+    document.body,
   );
 };
 
