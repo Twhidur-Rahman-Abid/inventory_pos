@@ -4,6 +4,7 @@
 
 import { useEffect, useState, ChangeEvent, ReactNode } from "react";
 import { cn } from "../../_lib/utils";
+import Image from "next/image";
 
 type InputProps = {
   type?: string;
@@ -109,6 +110,114 @@ export default function Input({
         {RightIcon}
       </label>
       {isErrorShow && <p className="text-red-600">{error}</p>}
+    </div>
+  );
+}
+
+type FormInputProps = {
+  label?: string;
+  error?: string[];
+  LeftIcon?: ReactNode;
+  RightIcon?: ReactNode;
+  required?: boolean;
+} & React.InputHTMLAttributes<HTMLInputElement>;
+
+export function FormInput({
+  label,
+  error,
+  LeftIcon,
+  RightIcon,
+  className,
+  type = "text",
+  required = true,
+  ...props
+}: FormInputProps) {
+  const isFileType = type === "file";
+
+  return (
+    <div className="flex flex-col gap-3 w-full">
+      {label && (
+        <label htmlFor={label} className="text-secondary font-medium text-base">
+          {label} {required && <span className="text-red-600">*</span>}
+        </label>
+      )}
+
+      <div
+        className={cn(
+          "px-2.5 md:px-5 input-shadow border rounded-xl flex items-center w-full focus-within:border-c-green",
+          {
+            "border-red-600": error?.length,
+            "border-stock/10": !error?.length,
+            "py-px": isFileType,
+          },
+          className,
+        )}
+      >
+        {LeftIcon}
+
+        <input
+          type={type}
+          className="border-0 focus:ring-0 w-full h-full py-3.5 placeholder:text-ash focus:outline-0 bg-transparent"
+          {...props}
+        />
+
+        {RightIcon}
+      </div>
+
+      {error?.map((err, index) => (
+        <p key={index} className="text-sm text-red-600">
+          {err}
+        </p>
+      ))}
+    </div>
+  );
+}
+
+type FormFileProps = {
+  previewImg?: string;
+  label?: string;
+  accept?: string;
+  onChange?: (e: ChangeEvent<HTMLInputElement>) => void;
+} & React.InputHTMLAttributes<HTMLInputElement>;
+
+export function FormFile({
+  previewImg = "",
+  label = "File",
+  accept = "image/*",
+  onChange,
+  ...props
+}: FormFileProps) {
+  const [preview, setPreview] = useState(previewImg || "/placeholder-img.svg");
+  return (
+    <div className="flex justify-between items-center">
+      <div className="py-2.5 text-center w-full">
+        <Image
+          className="mx-auto size-36 object-contain"
+          src={preview}
+          width={144}
+          height={144}
+          alt="inventory"
+        />
+      </div>
+
+      <FormInput
+        type="file"
+        accept={accept}
+        label={label}
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+
+          if (file) {
+            setPreview(URL.createObjectURL(file));
+          }
+          if (file) {
+            setPreview(URL.createObjectURL(file));
+          }
+
+          if (onChange) onChange(e);
+        }}
+        {...props}
+      />
     </div>
   );
 }
