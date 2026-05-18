@@ -8,8 +8,23 @@ from app.routes.category_route import categoryRouter
 from app.routes.auth_route import authRouter
 from app.routes.product_route import productRouter
 from app.routes.branch_route import branchRouter
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title=get_config().app_name)
+
+# Configure CORS
+origins = [
+    "http://localhost",
+    "http://localhost:3000",  
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=origins,       
+    allow_credentials=True,      
+    allow_methods=["*"],         
+    allow_headers=["*"],       
+)
 
 
 app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
