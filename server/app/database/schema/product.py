@@ -9,16 +9,23 @@ class Product(Base):
     id: Mapped[int] = mapped_column(primary_key=True,autoincrement=True, index=True)
     sku_code: Mapped[str] = mapped_column(String, unique=True,index=True,nullable=False)
     name: Mapped[str] = mapped_column(String, index=True, nullable=False)
-    category_id: Mapped[int] = mapped_column(ForeignKey("categories.id"), nullable=False)
 
+    category_id: Mapped[int] = mapped_column(
+        ForeignKey("categories.id", ondelete="CASCADE"), 
+        nullable=False
+    )
+
+  
     price: Mapped[float] = mapped_column(Numeric(10, 2),nullable=False)
     discount_percentage: Mapped[float] = mapped_column(Numeric(5, 2), default=0)
     is_buy_one_get_one: Mapped[bool] = mapped_column(Boolean, default=False)
     thumbnail: Mapped[str] = mapped_column(String, nullable=True)
     quantity: Mapped[int] = mapped_column(nullable=False, default=0)
-    category = relationship("Category", uselist=False)
-    details = relationship("ProductDetail", uselist=False)
-    images = relationship("ProductImage")
+    category = relationship("Category", back_populates="products")
+    details = relationship("ProductDetail", uselist=False, cascade="all, delete-orphan",
+        passive_deletes=True)
+    images = relationship("ProductImage", cascade="all, delete-orphan",
+        passive_deletes=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), 
         default=lambda: datetime.now(timezone.utc), 
@@ -36,12 +43,12 @@ class ProductDetail(Base):
     __tablename__ = "product_details"
 
     id: Mapped[int] = mapped_column(primary_key=True,autoincrement=True,index=True)
-    product_id: Mapped[int] = mapped_column(ForeignKey("products.id"))
+    product_id: Mapped[int] = mapped_column(ForeignKey("products.id", ondelete="CASCADE"),)
     description: Mapped[str] = mapped_column(Text,nullable=False)
 
 class ProductImage(Base):
     __tablename__ = "product_images"
 
     id: Mapped[int] = mapped_column(primary_key=True,autoincrement=True,index=True)
-    product_id: Mapped[int] = mapped_column(ForeignKey("products.id"))
+    product_id: Mapped[int] = mapped_column(ForeignKey("products.id",ondelete="CASCADE"))
     image_url: Mapped[str] = mapped_column(nullable=False)
