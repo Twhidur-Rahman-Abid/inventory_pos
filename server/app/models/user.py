@@ -20,6 +20,14 @@ class User(BaseModel):
     branch_id: int
     role: UserRole
 
+class UserUpdate(BaseModel):
+    name: Optional[str] = Field(None, min_length=2, max_length=100)
+    email: Optional[EmailStr] = None
+    mobile: Optional[str] = Field(None, min_length=11, max_length=15)
+    branch_id: Optional[int] = None
+    role: Optional[UserRole] = None
+    is_active: Optional[bool]
+
 class BranchMinimalResponse(BaseModel):
     id: int
     name: str
