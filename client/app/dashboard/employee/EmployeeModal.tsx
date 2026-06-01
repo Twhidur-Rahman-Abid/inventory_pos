@@ -1,117 +1,163 @@
+/* eslint-disable prefer-const */
+/* eslint-disable react-hooks/set-state-in-effect */
 /* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
-import { Button, InputGroup, Modal, Select } from "@/app/_components";
-import React, { useEffect, useState } from "react";
+import { postJSONData, putJSONData } from "@/app/_actions";
+import { Button, Modal } from "@/app/_components";
+import { FormInput } from "@/app/_components/ui/Input";
+import { FormSelect } from "@/app/_components/ui/Select";
+import { InputSkeleton } from "@/app/_components/ui/Skeleton";
+import { USER_ROLE } from "@/app/_constants";
+import useFetchWAuth from "@/app/_hooks/useAuthFetch";
+import { EmployeeSchema } from "@/app/_schema/schema";
+import { EmployeeType } from "@/app/_types/types";
+import { useForm } from "@conform-to/react";
+import { parseWithZod } from "@conform-to/zod/v4";
 
-interface OptionType {
-  value: string | number;
-  label: string;
-}
+import { useActionState, useEffect } from "react";
+import { toast } from "react-toastify";
 
-interface EmployeeModalProps {
+const EmployeeModal = ({
+  onClose = () => {},
+  fetcher = () => {},
+  editable,
+}: {
   onClose: () => void;
-}
+  fetcher?: () => void;
+  editable?: null | Partial<EmployeeType & { branch_id: number | string }>;
+}) => {
+  // fetch branch
+  // TODO: implement cache
+  const { data: branch, isLoading: isBranchLoading } = useFetchWAuth({
+    endpoint: "/branches",
+  });
 
-const EmployeeModal: React.FC<EmployeeModalProps> = ({ onClose }) => {
-  const [branchOption, setBranchOption] = useState<OptionType[]>([
-    { value: "hidden", label: "Select Branch..." },
-  ]);
+  // Create and edit employee action
+  const [state, action] = useActionState(
+    async (_: unknown, formData: FormData) =>
+      editable?.id
+        ? await putJSONData({
+            endpoint: `/users/${editable?.id}`,
+            formData,
+            schemaName: "employee",
+          })
+        : await postJSONData({
+            endpoint: "/users/",
+            formData,
+            schemaName: "employee",
+          }),
+    editable?.id ? editable : undefined,
+  );
 
-  const roleOptions: OptionType[] = [
-    { value: "storeManager", label: "Store Manager" },
-    { value: "warehouseStaff", label: "Warehouse Staff" },
-    { value: "cashier", label: "Cashier" },
-  ];
+  const { lastResult } = state || {};
 
-  // Dummy branch data (since backend removed)
+  // Conform state
+  const [form, fields] = useForm({
+    id: state,
+    lastResult,
+    defaultValue: lastResult?.initialValue || editable || undefined,
+    onValidate({ formData }) {
+      return parseWithZod(formData, {
+        schema: editable?.id
+          ? EmployeeSchema.omit("password").optional()
+          : EmployeeSchema,
+      });
+    },
+
+    shouldValidate: "onBlur",
+    shouldRevalidate: "onInput",
+  });
+
+  // Show Toast message
   useEffect(() => {
-    const dummyBranches = [
-      { label: "Main Branch", value: 1 },
-      { label: "Warehouse", value: 2 },
-    ];
-
-    setBranchOption((prev) => [...prev, ...dummyBranches]);
-  }, []);
-
-  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    const formData = new FormData(e.currentTarget);
-    const data = Object.fromEntries(formData.entries());
-
-    console.log("FORM DATA:", data);
-  };
-
-  const handleReset = (e: React.MouseEvent<HTMLButtonElement>) => {
-    e.preventDefault();
-    const form = e.currentTarget.closest("form");
-    form?.reset();
-  };
+    if (state?.status === "error") {
+      toast.error(state?.message);
+    } else if (state?.status === "success") {
+      fetcher();
+      toast.success(editable?.id ? "Employee edited!" : "Employee created!");
+      onClose();
+    }
+  }, [state]);
 
   return (
-    <Modal onClose={onClose} title="Add New Employee">
-      <form onSubmit={handleSubmit} className="space-y-[30px] pt-6">
-        <div className="flex gap-6">
-          <InputGroup
-            name="first_name"
-            label="First name"
-            placeholder="Enter first name"
-          />
-          <InputGroup
-            name="last_name"
-            label="Last Name"
-            required={false}
-            placeholder="Enter last name"
-          />
-        </div>
-
-        <InputGroup
-          name="username"
-          label="Username"
-          placeholder="Enter username"
+    <Modal
+      onClose={onClose}
+      title={
+        editable?.id ? `Edit ${editable.name} Employee` : "Add New Employee"
+      }
+    >
+      <form
+        id={form.id}
+        onSubmit={form.onSubmit}
+        action={action}
+        className="space-y-7 pt-6"
+      >
+        <FormInput
+          key={fields.name.key}
+          name={fields.name.name}
+          defaultValue={fields.name?.initialValue as string | undefined}
+          error={fields.name.errors}
+          placeholder="Enter name"
+          label="Name"
         />
-
-        <InputGroup
-          name="email"
+        <FormInput
+          key={fields.email.key}
+          name={fields.email.name}
+          defaultValue={fields.email?.initialValue as string | undefined}
+          error={fields.email.errors}
+          placeholder="Enter email"
           label="Email"
-          type="email"
-          placeholder="Enter user email"
         />
-
-        <InputGroup
-          name="password"
-          label="Password"
-          type="password"
-          placeholder="Enter user password"
+        <FormInput
+          key={fields.mobile.key}
+          name={fields.mobile.name}
+          defaultValue={fields.mobile?.initialValue as string | undefined}
+          error={fields.mobile.errors}
+          placeholder="Enter phone"
+          label="Phone"
         />
+        {!editable && (
+          <FormInput
+            key={fields.password.key}
+            name={fields.password.name}
+            defaultValue={fields.password?.initialValue as string | undefined}
+            error={fields.password.errors}
+            placeholder="******"
+            type="password"
+            label="Password"
+          />
+        )}
 
-        <div className="flex items-start gap-6">
-          <Select
-            name="role"
+        <div className="w-full flex flex-col gap-6 lg:flex-row">
+          <FormSelect
             label="Role"
-            className="py-3.5"
-            options={roleOptions}
+            key={fields.role.key}
+            name={fields.role.name}
+            defaultValue={fields.role.initialValue as string | undefined}
+            error={fields.role.errors}
+            options={USER_ROLE}
+            placeholder="Choose a role"
           />
-
-          <Select
-            name="branch"
-            label="Branch"
-            className="py-3.5"
-            options={branchOption}
-          />
+          {isBranchLoading ? (
+            <InputSkeleton label="Branch" />
+          ) : (
+            <FormSelect
+              label="Branch"
+              name={fields.branch_id.name}
+              defaultValue={
+                fields.branch_id.initialValue as string | number | undefined
+              }
+              error={fields.branch_id.errors}
+              options={branch?.map((b) => ({ value: b.id, label: b.name }))}
+              placeholder="Choose a branch"
+            />
+          )}
         </div>
 
         <div className="flex justify-end gap-5">
-          <Button
-            onClick={handleReset}
-            className="text-body-text bg-c-gray max-w-min"
-          >
-            Reset
-          </Button>
-
           <Button type="submit" className="max-w-min">
-            Create Employee
+            {editable?.id ? "Edit Employee" : "Create Employee"}
           </Button>
         </div>
       </form>
