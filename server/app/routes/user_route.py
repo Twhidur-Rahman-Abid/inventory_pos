@@ -6,7 +6,7 @@ from sqlalchemy import select, func, or_
 
 from app.database.db import get_db
 from app.database.schema.user import User
-from app.models.user import User as UserModel, UserPaginationResponse, UserResponse
+from app.models.user import User as UserModel, UserPaginationResponse, UserResponse, UserUpdate
 from typing import Optional
 from app.utils.auth import hash_password
 from app.utils.utils import get_skip, has_next
@@ -19,6 +19,7 @@ from app.utils.dependencies import admin_required
 userRouter = APIRouter(prefix="/users",tags=["Users"],dependencies=[Depends(admin_required)])
 
 
+# --- Create inventory user ---
 @userRouter.post("/",response_model=UserResponse,status_code=201)
 async def create_user(payload: UserModel, db: AsyncSession = Depends(get_db)):
 
@@ -66,6 +67,7 @@ async def create_user(payload: UserModel, db: AsyncSession = Depends(get_db)):
 
     return user
 
+# --- Get inventory user without admin ---
 @userRouter.get("/", response_model=UserPaginationResponse)
 async def get_users(
     page: int = 1, 
@@ -79,6 +81,9 @@ async def get_users(
         # Base queries with eager loading
         data_query = select(User).options(selectinload(User.branch))
         count_query = select(func.count()).select_from(User)
+
+        data_query = data_query.where(User.role != "admin")
+        count_query = count_query.where(User.role != "admin")
 
         # Apply search filter
         if search:
@@ -123,7 +128,7 @@ async def get_users(
             }
         )
 
-
+# --- Edit Inventory User ---
 @userRouter.get("/{user_id}", response_model=UserResponse)
 async def get_user_by_id(user_id: int, db: AsyncSession = Depends(get_db)):
     try:
@@ -160,17 +165,16 @@ async def get_user_by_id(user_id: int, db: AsyncSession = Depends(get_db)):
                 "message": "An unexpected error occurred!"
             }
         )           
-          
 
-
+# --- Delete Inventory User ---
 @userRouter.put("/{user_id}", response_model=UserResponse)
 async def update_user(
     user_id: int, 
-    payload: dict, 
+    payload: UserUpdate, 
     db: AsyncSession = Depends(get_db)
 ):
     try:
-       
+
         query = select(User).options(selectinload(User.branch)).where(User.id == user_id)
         result = await db.execute(query)
         user = result.scalar_one_or_none()
@@ -178,18 +182,19 @@ async def update_user(
         if not user:
             return JSONResponse(
                 status_code=404,
-                content={
-                    "message": "User not found"
-                }
+                content={"message": "User not found"}
             )
 
-   
-        for key, value in payload.items():
-            if hasattr(user, key) and value is not None:
-                if key == "password":
-                    value = hash_password(value)
+
+        update_data = payload.model_dump(exclude_unset=True)
+
+       
+        for key, value in update_data.items():
+            if hasattr(user, key):
+                
                 setattr(user, key, value)
 
+     
         await db.commit()
         await db.refresh(user, attribute_names=["branch"])
         
@@ -197,10 +202,9 @@ async def update_user(
 
     except SQLAlchemyError as e:
         await db.rollback()
-        print(f"DB Error: {e}")
+
+        print(f"DB Error: {e}") 
         return JSONResponse(
             status_code=500,
-            content={
-                "message": "Update failed"
-            }
+            content={"message": "Update failed"}
         )
