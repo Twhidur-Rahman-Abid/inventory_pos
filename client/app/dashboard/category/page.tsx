@@ -9,9 +9,8 @@ import {
   Search,
   DeleteItem,
 } from "@/app/_components";
-import Table, { Td } from "@/app/_components/ui/Table";
+import Table, { TableSkeleton, Td } from "@/app/_components/ui/Table";
 import useFetchWAuth from "@/app/_hooks/useAuthFetch";
-import Loading from "@/app/_components/ui/Loading";
 import { ErrorMessage, NotFoundMessage } from "@/app/_components/ui/Alert";
 import Image from "next/image";
 import { CategoryType } from "@/app/_types/types";
@@ -25,10 +24,13 @@ const tableHeaders: HeaderType[] = [
   { label: "Actions", key: "Actions", align: "center" },
 ];
 
-const BranchPage = () => {
+const CategoryPage = () => {
+  // Category Modal state
   const [categoryOpen, setCategoryOpen] = useState<
     null | (Partial<CategoryType> & { open?: boolean })
   >(null);
+
+  // Fetch category
   const { data, isLoading, status, error, fetcher } = useFetchWAuth<{
     count: number;
     data: CategoryType[];
@@ -44,7 +46,7 @@ const BranchPage = () => {
 
   // decide what to render based fetch response
   let content;
-  if (isLoading) content = <Loading />;
+  if (isLoading) content = <TableSkeleton />;
   else if (!isLoading && status === "error")
     content = <ErrorMessage message={error || "Failed to load data."} />;
   else if (!isLoading && status === "success" && data?.count === 0)
@@ -119,4 +121,4 @@ const BranchPage = () => {
   );
 };
 
-export default BranchPage;
+export default CategoryPage;
