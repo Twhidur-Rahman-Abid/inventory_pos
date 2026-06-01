@@ -1,4 +1,5 @@
 # user.py
+# order.py
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import  DateTime,VARCHAR
 from datetime import datetime, timezone
@@ -22,4 +23,8 @@ class Branch(Base):
         default=lambda: datetime.now(timezone.utc), 
         onupdate=lambda: datetime.now(timezone.utc),
         nullable=False
-    )   
+    )
+    orders = relationship(
+    "Order",
+    back_populates="branch"
+    )
