@@ -3,10 +3,9 @@ import { useState } from "react";
 
 import { HeaderType } from "@/app/_lib/CommonTypes";
 import { Button, Icon, PageTopBar, Search } from "@/app/_components";
-import Table, { Td } from "@/app/_components/ui/Table";
+import Table, { TableSkeleton, Td } from "@/app/_components/ui/Table";
 import BranchModal from "./BranchModal";
 import useFetchWAuth from "@/app/_hooks/useAuthFetch";
-import Loading from "@/app/_components/ui/Loading";
 import { ErrorMessage, NotFoundMessage } from "@/app/_components/ui/Alert";
 import Image from "next/image";
 import DeleteItem from "@/app/_components/ui/DeleteItem";
@@ -49,7 +48,7 @@ const BranchPage = () => {
 
   // decide what to render based on fetched data
   let content;
-  if (isLoading) content = <Loading />;
+  if (isLoading) content = <TableSkeleton />;
   else if (!isLoading && status === "error")
     content = <ErrorMessage message={error || "Failed to load data."} />;
   else if (!isLoading && status === "success" && data?.length === 0)
