@@ -5,6 +5,7 @@ import React, { useEffect, useRef, useState, ReactNode, Suspense } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { cn } from "../../_lib/utils";
+import Arrow from "./Arrow";
 
 type OptionType = {
   value: string | number;
@@ -13,17 +14,18 @@ type OptionType = {
 
 type PaginationProps = {
   className?: string;
-  totalPage: number;
-  options?: OptionType[];
+  count: number;
 };
 
-const PaginationCom = ({
-  className,
-  totalPage,
-  options = [],
-}: PaginationProps) => {
+const PaginationCom = ({ className, count }: PaginationProps) => {
   const searchParams = useSearchParams();
   const page = Number(searchParams.get("page") || 1);
+  const totalPage = Math.ceil(count / 10);
+
+  const options = Array.from({ length: totalPage }, (_, i) => ({
+    value: i + 1,
+    label: i + 1,
+  }));
 
   if (totalPage <= 1) return null;
   const nextDisabled = page >= totalPage;
@@ -61,7 +63,7 @@ const PaginationCom = ({
               prevDisabled ? "opacity-50 pointer-events-none" : "cursor-pointer"
             }
           >
-            <span className="text-xl">←</span>
+            <Arrow move="left" className="w-3" />
           </Link>
 
           <Link
@@ -70,7 +72,7 @@ const PaginationCom = ({
               nextDisabled ? "opacity-50 pointer-events-none" : "cursor-pointer"
             }
           >
-            <span className="text-xl">→</span>
+            <Arrow move="right" className="w-3" />
           </Link>
         </div>
       </div>
