@@ -7,6 +7,7 @@ class Category(BaseModel):
     name: str
 
 class ProductImageBase(BaseModel):
+    id: int
     image_url: str
     model_config = ConfigDict(from_attributes=True)
 
@@ -19,7 +20,7 @@ class ProductBase(BaseModel):
     name: str
     category_id: int
     price: float
-    discount_percentage: float
+    discount_percentage: Optional[float]
     is_buy_one_get_one: bool = False
     thumbnail: Optional[str] = None
     quantity: int = 0
@@ -35,3 +36,7 @@ class ProductListResponse(BaseModel):
     data: List[ProductResponse]
     count: int
     has_next: bool
+
+
+class StockUpdate(BaseModel):
+    quantity: int
