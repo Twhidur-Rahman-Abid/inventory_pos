@@ -36,12 +36,12 @@ const CategoryModal = ({
         ? await putData({
             endpoint: `/categories/${editable?.id}`,
             formData,
-            schemaName: "branch",
+            schemaName: "category",
           })
         : await postData({
             endpoint: "/categories/",
             formData,
-            schemaName: "branch",
+            schemaName: "category",
           });
     },
     editable?.id ? editable : undefined,
@@ -65,7 +65,7 @@ const CategoryModal = ({
       toast.error(state?.message);
     } else if (state?.status === "success") {
       fetcher();
-      toast.success(editable?.id ? "Branch edited!" : "Branch created!");
+      toast.success(editable?.id ? "Category edited!" : "Category created!");
       onClose();
     }
   }, [state]);
@@ -81,7 +81,6 @@ const CategoryModal = ({
         id={form.id}
         onSubmit={form.onSubmit}
         action={action}
-        encType="multipart/form-data"
         className="space-y-7 pt-6"
       >
         {/* Name Field */}
