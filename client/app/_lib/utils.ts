@@ -62,3 +62,6 @@ export const getOrderStatusColor = (status: OrderStatus) => {
   }
   return color;
 };
+
+export const getSerial = (page: number, index: number) =>
+  (page - 1) * 10 + index + 1;
