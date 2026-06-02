@@ -2,7 +2,13 @@
 import { useState } from "react";
 
 import { HeaderType } from "@/app/_lib/CommonTypes";
-import { Button, Icon, PageTopBar, Search } from "@/app/_components";
+import {
+  Button,
+  ExportTable,
+  Icon,
+  PageTopBar,
+  Search,
+} from "@/app/_components";
 import Table, { TableSkeleton, Td } from "@/app/_components/ui/Table";
 import BranchModal from "./BranchModal";
 import useFetchWAuth from "@/app/_hooks/useAuthFetch";
@@ -17,11 +23,11 @@ type BranchType = {
   location?: string;
 };
 const tableHeaders: HeaderType[] = [
-  { label: "Sl.", key: "serial" },
+  { label: "ID.", key: "id" },
   { label: "Name", key: "name" },
-  { label: "Image", key: "img" },
+  { label: "Image" },
   { label: "Location", key: "location" },
-  { label: "Actions", key: "Actions", align: "center" },
+  { label: "Actions", align: "center" },
 ];
 
 const BranchPage = () => {
@@ -118,8 +124,15 @@ const BranchPage = () => {
       </PageTopBar>
 
       <div className="card-wrapper space-y-6">
-        <div className="flex gap-6 items-center justify-between flex-wrap">
+        <div className="flex gap-6 items-center justify-between flex-wrap w-full">
           <Search />
+          <div className="flex gap-6 items-center">
+            <ExportTable
+              headers={tableHeaders}
+              tableData={data}
+              filename={`Branch`}
+            />
+          </div>
         </div>
         {content}
       </div>

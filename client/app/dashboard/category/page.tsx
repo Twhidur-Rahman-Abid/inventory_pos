@@ -8,6 +8,7 @@ import {
   PageTopBar,
   Search,
   DeleteItem,
+  ExportTable,
 } from "@/app/_components";
 import Table, { TableSkeleton, Td } from "@/app/_components/ui/Table";
 import useFetchWAuth from "@/app/_hooks/useAuthFetch";
@@ -18,9 +19,9 @@ import CategoryModal from "./CategoryModal";
 import { useSearchParams } from "next/navigation";
 
 const tableHeaders: HeaderType[] = [
-  { label: "Sl.", key: "serial" },
+  { label: "ID.", key: "Id" },
   { label: "Name", key: "name" },
-  { label: "Image", key: "img" },
+  { label: "Image" },
   { label: "Actions", key: "Actions", align: "center" },
 ];
 
@@ -105,8 +106,15 @@ const CategoryPage = () => {
       </PageTopBar>
 
       <div className="card-wrapper space-y-6">
-        <div className="flex gap-6 items-center justify-between flex-wrap">
+        <div className="flex gap-6 items-center justify-between flex-wrap w-full">
           <Search />
+          <div className="flex gap-6 items-center">
+            <ExportTable
+              headers={tableHeaders}
+              tableData={data?.data}
+              filename={`Category`}
+            />
+          </div>
         </div>
         {content}
       </div>

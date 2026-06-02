@@ -154,7 +154,11 @@ const EmployeePage = () => {
         <div className="flex gap-6 items-center justify-between flex-wrap">
           <Search />
           <div className="flex gap-6 items-center">
-            <ExportTable headers={tableHeaders} tableData={[]} />
+            <ExportTable
+              headers={tableHeaders}
+              tableData={data?.data}
+              filename={`employee_${page}`}
+            />
           </div>
         </div>
 
