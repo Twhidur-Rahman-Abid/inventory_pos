@@ -1,4 +1,4 @@
-import React from "react";
+"use client";
 import SalesOverviewChart from "@/app/_components/dashboard/SalesOverviewChart";
 import SalesDonutChart from "@/app/_components/dashboard/OnlineOflineChart";
 import Dropdown, { DropdownItem } from "@/app/_components/ui/Dropdown";
@@ -7,6 +7,10 @@ import Link from "next/link";
 import DashboardProductCard from "@/app/_components/dashboard/DashboardProductCard";
 import DashboardStats from "../_components/dashboard/DashboardStauts";
 import RecentOrder from "../_components/dashboard/RecentOrder";
+import TopSelling from "../_components/dashboard/TopSelling";
+import LowStock from "../_components/dashboard/LowStock";
+import SalesCharts from "../_components/dashboard/SalesCharts";
+import DashboardSummery from "../_components/dashboard/DashboardSummery";
 
 const Dashboard = () => {
   const salesSummaryTitle: string = "Today";
@@ -65,61 +69,15 @@ const Dashboard = () => {
             </div>
           </div>
         </div>
-        <div className="flex flex-wrap gap-6 justify-between mt-6 w-full">
-          <DashboardStats
-            title="Today Sales"
-            icon={"/vector/total-sales.svg"}
-            total={0}
-            percentage={0}
-          />
-          <DashboardStats
-            title="Total Orders"
-            total={0}
-            icon="/vector/sales-shop.svg"
-            percentage={0}
-          />
-          <DashboardStats
-            title="Offline Sales"
-            icon={"/vector/offline-sales.svg"}
-            total={0}
-            percentage={0}
-          />
-          <DashboardStats
-            title="Online Sales"
-            icon={"/vector/online-sales.svg"}
-            total={0}
-            percentage={0}
-          />
-        </div>
+        <DashboardSummery />
 
-        <div className="flex flex-col md:flex-row gap-6">
-          <SalesOverviewChart />
-          <SalesDonutChart />
-        </div>
+        <SalesCharts />
 
         <RecentOrder />
       </div>
       <div className="w-full flex flex-col md:flex-row xl:flex-col xl:w-fit gap-6 md:gap-8">
-        <div className="mt-5 bg-white shadow-2 rounded-[18px] p-4 md:p-4 w-full">
-          <h3 className="text-c-green text-lg font-bold pb-3 border-b border-colorBorder mb-6">
-            Top Selling
-          </h3>
-          <DashboardProductCard />
-          <DashboardProductCard />
-          <DashboardProductCard />
-          <DashboardProductCard />
-          <DashboardProductCard />
-        </div>
-        <div className="mt-5 bg-white shadow-2 rounded-[18px] p-4 md:p-4 w-full">
-          <h3 className="text-lg text-denger font-medium pb-3 border-b border-colorBorder mb-6">
-            Low Stock
-          </h3>
-          <DashboardProductCard totalTitle="Stock" />
-          <DashboardProductCard totalTitle="Stock" />
-          <DashboardProductCard totalTitle="Stock" />
-          <DashboardProductCard totalTitle="Stock" />
-          <DashboardProductCard totalTitle="Stock" />
-        </div>
+        <TopSelling />
+        <LowStock />
       </div>
     </div>
   );
