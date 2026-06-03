@@ -8,6 +8,8 @@ from app.routes.category_route import categoryRouter
 from app.routes.auth_route import authRouter
 from app.routes.product_route import productRouter
 from app.routes.branch_route import branchRouter
+from app.routes.order_route import orderRouter
+from app.routes.dashboard_route import dashboard_router
 from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title=get_config().app_name)
@@ -49,6 +51,8 @@ v1RRouter.include_router(router=userRouter)
 v1RRouter.include_router(router=authRouter)
 v1RRouter.include_router(router=categoryRouter)
 v1RRouter.include_router(router=productRouter)
+v1RRouter.include_router(router=orderRouter)
+v1RRouter.include_router(router=dashboard_router)
 
 app.include_router(v1RRouter)
 
