@@ -5,6 +5,8 @@ import { parseWithZod } from "@conform-to/zod/v4";
 import schemaMap from "../_schema";
 import { cookies } from "next/headers";
 import { BASE_URL } from "../_constants";
+import { revalidateTag } from "next/cache";
+import { updateTag } from "next/cache";
 
 // get auth token func
 async function getAuthTokens() {
@@ -24,10 +26,12 @@ export async function postData({
   endpoint = "",
   formData,
   schemaName,
+  revalidate,
 }: {
   endpoint: string;
   formData: FormData;
   schemaName?: keyof typeof schemaMap;
+  revalidate?: string;
 }) {
   let schema = null;
   let submission: any = null;
@@ -93,6 +97,9 @@ export async function postData({
         return { status: "error", message, errors: data?.errors };
       }
     }
+    if (revalidate?.length) {
+      revalidateTag(revalidate, "");
+    }
     return { status: "success" };
   } catch (error) {
     console.log(error);
@@ -118,7 +125,7 @@ export async function postJSONData({
   schemaName,
 }: {
   endpoint: string;
-  formData: FormData;
+  formData: FormData | any;
   schemaName?: keyof typeof schemaMap;
 }) {
   let schema = null;
@@ -143,7 +150,9 @@ export async function postJSONData({
     // post data
     const res = await fetch(`${BASE_URL}${endpoint}`, {
       method: "POST",
-      body: JSON.stringify(Object.fromEntries(formData)),
+      body: JSON.stringify(
+        formData instanceof FormData ? Object.fromEntries(formData) : formData,
+      ),
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${accessToken}`,
@@ -197,7 +206,7 @@ export async function putJSONData({
   schemaName,
 }: {
   endpoint: string;
-  formData: FormData;
+  formData: FormData | any;
   schemaName?: keyof typeof schemaMap;
 }) {
   let schema = null;
@@ -208,7 +217,7 @@ export async function putJSONData({
 
     // Check schema validation
     if (schemaName) {
-      schema = schemaMap[schemaName];
+      schema = schemaMap[schemaName].partial();
       submission = parseWithZod(formData, {
         schema,
       });
@@ -218,15 +227,17 @@ export async function putJSONData({
       }
     }
 
-    console.log(
-      "== from data ==",
-      JSON.stringify(Object.fromEntries(formData)),
-    );
+    const body =
+      formData instanceof FormData
+        ? JSON.stringify(Object.fromEntries(formData))
+        : JSON.stringify(formData);
+
+    console.log("== from data ==", body);
 
     // put data
     const res = await fetch(`${BASE_URL}${endpoint}`, {
       method: "PUT",
-      body: JSON.stringify(Object.fromEntries(formData)),
+      body,
       headers: {
         "Content-Type": "application/json",
         Authorization: `Bearer ${accessToken}`,
