@@ -19,7 +19,7 @@ const data = [
   { name: "16 May", online: 25000, offline: 13000 },
 ];
 
-export default function SalesOverviewChart() {
+export default function SalesOverviewChart({ data = [] }) {
   return (
     <div className="bg-white rounded-2xl p-5 shadow-sm w-full">
       <div className="flex justify-between mb-4">
@@ -54,6 +54,42 @@ export default function SalesOverviewChart() {
           />
         </LineChart>
       </ResponsiveContainer>
+    </div>
+  );
+}
+
+export function SalesOverviewSkeleton() {
+  return (
+    <div className="bg-white rounded-2xl p-5 shadow-sm w-full animate-pulse">
+      {/* Header Skeleton */}
+      <div className="flex justify-between mb-8">
+        <div className="space-y-2">
+          <div className="h-5 w-32 bg-gray-200 rounded-md"></div>
+          <div className="h-3 w-24 bg-gray-100 rounded-md"></div>
+        </div>
+        <div className="flex gap-4">
+          <div className="h-4 w-20 bg-gray-100 rounded-full"></div>
+          <div className="h-4 w-20 bg-gray-100 rounded-full"></div>
+        </div>
+      </div>
+
+      {/* Chart Area Skeleton */}
+      <div className="relative h-[300px] w-full flex items-end gap-4 px-2">
+        {/* Y-Axis Lines simulation */}
+        <div className="absolute inset-0 flex flex-col justify-between py-2">
+          {[...Array(5)].map((_, i) => (
+            <div key={i} className="border-b border-gray-50 w-full"></div>
+          ))}
+        </div>
+
+        {/* Bars simulation to mimic chart activity */}
+        {[...Array(7)].map((_, i) => (
+          <div key={i} className="flex-1 flex flex-col gap-2 items-center">
+            <div className="w-full bg-gray-100 rounded-t-lg"></div>
+            <div className="h-3 w-10 bg-gray-100 rounded"></div>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }

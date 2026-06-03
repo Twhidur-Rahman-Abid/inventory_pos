@@ -68,3 +68,27 @@ export default function DashboardStats({
     </div>
   );
 }
+
+export function DashboardStatsSkeleton() {
+  return (
+    <div className="py-3 md:py-4 px-4 md:px-5 grow max-w-90 rounded-xl bg-white shadow-2 animate-pulse">
+      {/* top */}
+      <div className="w-full flex items-center justify-between gap-4">
+        <div className="h-8 w-24 rounded bg-gray-200" />
+
+        <div className="size-10 2xl:size-13 rounded-full bg-gray-200" />
+      </div>
+
+      {/* bottom */}
+      <div className="w-full flex items-center justify-between gap-4 mt-6">
+        <div className="h-4 w-28 rounded bg-gray-200" />
+
+        <div className="py-[1.5px] px-2.5 flex items-center gap-2 rounded-full bg-gray-100">
+          <div className="size-3 rounded-full bg-gray-200" />
+
+          <div className="h-3 w-10 rounded bg-gray-200" />
+        </div>
+      </div>
+    </div>
+  );
+}
