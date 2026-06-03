@@ -5,15 +5,64 @@ import { useState } from "react";
 
 import { Button, Modal, Input, Select, InfoRow } from "@/app/_components";
 import { PAYMENT_METHOD } from "@/app/_constants";
+import { postJSONData } from "@/app/_actions";
+import { toast } from "react-toastify";
+import Loading from "@/app/_components/ui/Loading";
+import { useCart } from "@/app/_context/productOrderCartContext";
 
-export default function PaymentModal({ onClose = () => {} }) {
+type ModalProps = {
+  onClose: () => void;
+  orderPayload: {
+    branch_id: number;
+    extra_discount: number;
+    delivery: number;
+    payment_method?: any;
+    total: number;
+    items: {
+      product_id: number;
+      qty: number;
+    }[];
+  };
+  onRightSideClose: () => void;
+};
+
+export default function PaymentModal({
+  onClose = () => {},
+  orderPayload,
+  onRightSideClose = () => {},
+}: ModalProps) {
+  const [paymentMethod, setPaymentMethod] = useState<string | null>(null);
   const [paymentStatus, setPaymentStatus] = useState("full");
-  const [paymentMethod, setPaymentMethod] = useState<any>(null);
+
   const [advancePay, setAdvancePay] = useState("");
   const [cash, setCash] = useState("");
   const [note, setNote] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+  const { clearCart, handleProductQuantity } = useCart();
 
-  const total = 500;
+  const orderAction = async () => {
+    setIsLoading(true);
+    const res = await postJSONData({
+      endpoint: "/orders",
+      formData: {
+        ...orderPayload,
+        payment_method: paymentMethod || "cash",
+        note,
+      },
+    });
+
+    setIsLoading(false);
+
+    if (res?.status === "success") {
+      handleProductQuantity(orderPayload?.items || []);
+      toast.success("Order confirmed!");
+      onClose();
+      onRightSideClose();
+      clearCart();
+    } else {
+      toast.error(res?.message);
+    }
+  };
 
   return (
     <Modal title="Payment" onClose={onClose}>
@@ -21,11 +70,27 @@ export default function PaymentModal({ onClose = () => {} }) {
         {/* Pay */}
         <InfoRow
           Left={<p className="w-full">Pay</p>}
-          Right={<p className="w-full text-xl font-semibold">{total} Tk</p>}
+          Right={
+            <p className="w-full text-xl font-semibold">
+              {orderPayload?.total} TK
+            </p>
+          }
         />
 
+        <InfoRow
+          Left={<p className="w-full">Type</p>}
+          Right={
+            <Select
+              options={PAYMENT_METHOD}
+              className="w-full py-3"
+              getSelectValue={(val) =>
+                setPaymentMethod((val?.id || val?.value) as string)
+              }
+            />
+          }
+        />
         {/* Payment Type */}
-        {paymentStatus !== "due" && (
+        {/* {paymentStatus !== "due" && (
           <InfoRow
             Left={<p className="w-full">Type</p>}
             Right={
@@ -36,10 +101,10 @@ export default function PaymentModal({ onClose = () => {} }) {
               />
             }
           />
-        )}
+        )} */}
 
         {/* Payment Status */}
-        <InfoRow
+        {/* <InfoRow
           Left={<p className="w-full">Payment Status</p>}
           Right={
             <div className="w-full flex gap-2 justify-between">
@@ -62,10 +127,10 @@ export default function PaymentModal({ onClose = () => {} }) {
               ))}
             </div>
           }
-        />
+        /> */}
 
         {/* Advance */}
-        {paymentStatus === "advance" && (
+        {/* {paymentStatus === "advance" && (
           <>
             <InfoRow
               Left={<p className="w-full">Advance Pay</p>}
@@ -96,10 +161,10 @@ export default function PaymentModal({ onClose = () => {} }) {
               </div>
             </div>
           </>
-        )}
+        )} */}
 
         {/* Due */}
-        {paymentStatus === "due" && (
+        {/* {paymentStatus === "due" && (
           <div className="grid grid-cols-2 gap-6">
             <div className="p-3 rounded-md bg-[#FBEDDB] text-center">
               <p className="font-semibold text-[#F2A444]">Due</p>
@@ -116,7 +181,7 @@ export default function PaymentModal({ onClose = () => {} }) {
               />
             </div>
           </div>
-        )}
+        )} */}
 
         {/* Note */}
         <InfoRow
@@ -132,7 +197,9 @@ export default function PaymentModal({ onClose = () => {} }) {
         />
 
         {/* Button */}
-        <Button>Order</Button>
+        <Button onClick={orderAction} disabled={isLoading}>
+          {isLoading ? <Loading /> : "Order"}
+        </Button>
       </div>
     </Modal>
   );
