@@ -132,9 +132,9 @@ const Select: React.FC<SelectProps> = ({
       <input
         type="hidden"
         name={name}
-        key={selectedValue?.value}
-        value={selectedValue?.value ?? ""}
-        readOnly
+        key={selectedValue?.value || selectedValue?.id}
+        value={selectedValue?.value || selectedValue?.id}
+        // readOnly
       />
 
       <div
@@ -361,29 +361,36 @@ export function FormSelect({
             )}
           >
             {options.length > 0 ? (
-              options.map((option, i) => (
-                <li
-                  key={i}
-                  className={cn(
-                    "px-4 py-3 text-sm font-medium rounded-lg text-secondary hover:bg-gray-50 cursor-pointer flex items-center gap-2.5 transition-colors",
-                    (option?.value === selectedValue?.value ||
-                      option?.id === selectedValue?.id) &&
-                      "bg-gray-100 text-c-green",
-                  )}
-                  onClick={() => handleSelectChange(option)}
-                >
-                  {option.img && (
-                    <Image
-                      src={option.img}
-                      width={20}
-                      height={20}
-                      alt=""
-                      className="size-5 object-contain"
-                    />
-                  )}
-                  {option?.label || option?.name}
-                </li>
-              ))
+              options.map((option, i) => {
+                let isSelected = false;
+                if (
+                  (option?.id && option?.id === selectedValue?.id) ||
+                  (option?.value && option?.value === selectedValue?.value)
+                )
+                  isSelected = true;
+
+                return (
+                  <li
+                    key={i}
+                    className={cn(
+                      "px-4 py-3 text-sm font-medium rounded-lg text-secondary hover:bg-gray-50 cursor-pointer flex items-center gap-2.5 transition-colors",
+                      isSelected && "bg-gray-100 text-c-green",
+                    )}
+                    onClick={() => handleSelectChange(option)}
+                  >
+                    {option.img && (
+                      <Image
+                        src={option.img}
+                        width={20}
+                        height={20}
+                        alt=""
+                        className="size-5 object-contain"
+                      />
+                    )}
+                    {option?.label || option?.name}
+                  </li>
+                );
+              })
             ) : (
               <li className="px-4 py-3 text-sm text-ash text-center">
                 No options found
