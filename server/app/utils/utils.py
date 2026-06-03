@@ -57,11 +57,9 @@ async def save_image(
     return config.site_link + '/' + str(file_path).replace("\\", "/")
 
 
-def delete_image_from_url(image_url: str | None) -> bool:
-   
+def delete_image_from_url(image_url: str | None) -> bool: 
     if not image_url:
-        return False
-        
+        return False      
     try:
       
         if "uploads/" in image_url:
