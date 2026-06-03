@@ -1,24 +1,20 @@
 "use client";
 
+import { useCart } from "@/app/_context/productOrderCartContext";
+import { CategoryType } from "@/app/_types/types";
 import Image from "next/image";
 import React from "react";
 
 interface CategoryCardProps {
-  src?: string;
-  category: string;
-  isActive?: boolean;
-  onClick?: (category: string) => void;
+  category: CategoryType;
 }
 
-const CategoryCard: React.FC<CategoryCardProps> = ({
-  src,
-  category,
-  isActive = false,
-  onClick,
-}) => {
+const CategoryCard: React.FC<CategoryCardProps> = ({ category }) => {
+  const { selectedCategory, setSelectedCategory } = useCart() || {};
+  const isActive = selectedCategory?.id === category.id;
   return (
     <div
-      onClick={() => onClick?.(category)}
+      onClick={() => setSelectedCategory(category)}
       className={`shadow-2 flex gap-3 items-center p-0.5 pr-4 rounded-[74px] cursor-pointer transition-all ${
         isActive ? "bg-primary" : "bg-white"
       }`}
@@ -26,10 +22,10 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
       <div className="size-17.5 rounded-[70px] flex justify-center items-center bg-[#FFF6F0]">
         <Image
           className="w-10 h-10 object-contain"
-          src={src || "/placeholder-img.svg"}
+          src={category.img || "/placeholder-img.svg"}
           width={40}
           height={40}
-          alt={category}
+          alt={category.name}
         />
       </div>
 
@@ -38,7 +34,7 @@ const CategoryCard: React.FC<CategoryCardProps> = ({
           isActive ? "text-white" : "text-primary"
         }`}
       >
-        {category}
+        {category.name}
       </p>
     </div>
   );
