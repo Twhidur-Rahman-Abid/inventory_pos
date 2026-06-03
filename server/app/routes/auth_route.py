@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
+from sqlalchemy.orm import selectinload
 
 from app.database.db import get_db
 from app.database.schema.user import User, UserRole
@@ -66,7 +67,8 @@ async def register(
         "user": {
             "name": user.name,
             "email": user.email,
-            "role": user.role.value
+            "role": user.role.value,
+            "branch": {'id': user.branch.id, 'name': user.branch.name} if user.branch else None
         }
     })
 
@@ -90,7 +92,7 @@ async def login(
 ):
 
     result = await db.execute(
-        select(User).where(User.email == data.email)
+         select(User).options(selectinload(User.branch)).where(User.email == data.email)
     )
 
     user = result.scalar_one_or_none()
@@ -111,13 +113,14 @@ async def login(
             status_code=400,
             detail="Invalid credentials"
         )
-
+    print('user:',user)
     access_token = create_access_token({
         "sub": str(user.id),
          "user": {
             "name": user.name,
             "email": user.email,
-            "role": user.role.value
+            "role": user.role.value,
+            "branch": {'id': user.branch.id, 'name': user.branch.name} if user.branch else None
         }
     })
 
@@ -193,7 +196,7 @@ async def reset_password(
     if not is_valid:
         raise HTTPException(
             status_code=400,
-            detail="Old password incorrect"
+            detail="Invalid password "
         )
 
     user.password = hash_password(
@@ -215,33 +218,3 @@ async def me(
 
     return current_user
 
-
-# ADMIN ONLY
-@authRouter.get("/admin")
-async def admin_route(
-    current_user: User = Depends(
-        role_required([
-            UserRole.admin
-        ])
-    )
-):
-
-    return {
-        "message": "Admin route"
-    }
-
-
-# ADMIN + MANAGER
-@authRouter.get("/manager")
-async def manager_route(
-    current_user: User = Depends(
-        role_required([
-            UserRole.admin,
-            UserRole.warehouse_manager
-        ])
-    )
-):
-
-    return {
-        "message": "Manager route"
-    }
