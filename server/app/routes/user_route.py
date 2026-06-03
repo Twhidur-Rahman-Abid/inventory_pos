@@ -201,36 +201,56 @@ async def get_admin_users(
                 "message": "An unexpected error occurred!"
             }
         )
-    
 
-
-# --- Edit Inventory User ---
-@userRouter.get("/{user_id}", response_model=UserResponse,dependencies=[Depends(admin_required)])
-async def edit_user(user_id: int, db: AsyncSession = Depends(get_db)):
+# --- Get inventory users ---
+@userRouter.get("/", response_model=UserPaginationResponse,dependencies=[Depends(admin_required)])
+async def get_users(
+    page: int = 1, 
+    limit: int = 10,
+    search: Optional[str] = None, 
+    db: AsyncSession = Depends(get_db)
+):
     try:
+        skip = get_skip(page, limit)
 
-        query = select(User).options(selectinload(User.branch)).where(User.id == user_id)
-        
-        result = await db.execute(query)
-        user = result.scalar_one_or_none()
+        # Base queries with eager loading
+        data_query = select(User).options(selectinload(User.branch))
+        count_query = select(func.count()).select_from(User)
 
-        if not user:
+        data_query = data_query.where(User.role != "admin")
+        count_query = count_query.where(User.role != "admin")
 
-            return JSONResponse(
-                status_code=404,
-                content={
-                    "message": "User not found"
-                }
+        # Apply search filter
+        if search:
+            search_filter = or_(
+                User.mobile.ilike(f"{search}%"), 
+                User.email.ilike(f"{search}%"),
+                User.name.ilike(f"{search}%"),
             )
-        
-        return user
+            count_query = count_query.where(search_filter)
+            data_query = data_query.where(search_filter)
+
+        # Execute Count
+        count_result = await db.execute(count_query)
+        total_count = count_result.scalar() or 0
+
+        # Execute Data Fetch
+        result = await db.execute(data_query.offset(skip).limit(limit))
+        users = result.scalars().all()
+
+        return {
+            "count": total_count,
+            "page": page,
+            "has_next": has_next(total_count, skip, limit),
+            "data": users
+        }
 
     except SQLAlchemyError as e:
-        print(f"Database Error: {str(e)}")
+        print(f"Database Error: {str(e)}") 
         return JSONResponse(
             status_code=500,
             content={
-                "message": "Database exception occurred!"
+                "message": "Could not fetch users due to a database error. Please try again later."
             }
         )
     except Exception as e:
@@ -240,11 +260,12 @@ async def edit_user(user_id: int, db: AsyncSession = Depends(get_db)):
             content={
                 "message": "An unexpected error occurred!"
             }
-        ) 
+        )
+    
 
 
 # --- Get Inventory User by id ---
-@userRouter.get("/{user_id}", response_model=UserResponse)
+@userRouter.get("/{user_id}", response_model=UserResponse,dependencies=[Depends(admin_required)])
 async def get_user_by_id(user_id: int, db: AsyncSession = Depends(get_db)):
     try:
 
