@@ -45,12 +45,14 @@ class User(Base):
         nullable=False
     )
 
-    branch_id: Mapped[int] = mapped_column(
+    branch_id: Mapped[int | None] = mapped_column(
         ForeignKey("branch.id"),
-        nullable=False
+        nullable=True
     )
-    branch: Mapped["Branch"]  = relationship(back_populates="users")
 
+    branch: Mapped["Branch | None"] = relationship(
+        back_populates="users"
+    )
 
 
     created_at: Mapped[datetime] = mapped_column(
