@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, UploadFile, File, Form, Query
 from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, desc, asc, or_
-from sqlalchemy.orm import selectinload
+from sqlalchemy.orm import selectinload, load_only
 from typing import Optional, List
 import logging
 
@@ -91,36 +91,52 @@ async def create_product(
 async def get_product_list(
     page: int = 1,
     limit: int = 10,
+    pagination: bool = True,
     search: Optional[str] = None,
-    sort: str = Query("latest", enum=["a-z", "z-a", "l-h", "h-l", "latest"]),
+    sort: str = Query(
+        "latest",
+        enum=["a-z", "z-a", "l-h", "h-l", "latest"]
+    ),
     db: AsyncSession = Depends(get_db)
 ):
-    query = select(
-        Product.id,
-        Product.sku_code,
-        Product.name,
-        Product.price,
-        Product.thumbnail,
-        Product.discount_percentage,
-        Product.is_buy_one_get_one,
-        Product.quantity,
-    )
+    skip = (page - 1) * limit
 
-    # Search Product list bia name and sku code
-    if search:
-        query = query.where(or_(
-            Product.name.ilike(f"%{search}%"),
-            Product.sku_code.ilike(f"%{search}%")
-        ))
-
-        count_query = count_query.where(
-            or_(
-                Product.name.ilike(f"%{search}%"),
-                Product.sku_code.ilike(f"%{search}%")
+    # product + category
+    query = (
+        select(Product)
+        .options(
+            load_only(
+                Product.id,
+                Product.sku_code,
+                Product.name,
+                Product.price,
+                Product.thumbnail,
+                Product.discount_percentage,
+                Product.is_buy_one_get_one,
+                Product.quantity,
+                Product.category_id,
+                Product.created_at,
+            ),
+            selectinload(Product.category).load_only(
+                Category.id,
+                Category.name,
             )
         )
-    
-    # Sort product
+    )
+
+    # count query
+    count_query = select(func.count()).select_from(Product)
+
+    # SEARCH
+    if search:
+        search_filter = or_(
+            Product.name.ilike(f"%{search}%"),
+            Product.sku_code.ilike(f"%{search}%")
+        )
+        query = query.where(search_filter)
+        count_query = count_query.where(search_filter)
+
+    # sort
     if sort == "a-z":
         query = query.order_by(asc(Product.name))
     elif sort == "z-a":
@@ -129,22 +145,33 @@ async def get_product_list(
         query = query.order_by(asc(Product.price))
     elif sort == "h-l":
         query = query.order_by(desc(Product.price))
+    else:
+        query = query.order_by(desc(Product.created_at))
 
-    total_count = (
-        await db.execute(
-            select(func.count()).select_from(Product)
-        )
-    ).scalar()
+ 
+    total_count = (await db.execute(count_query)).scalar() or 0
 
-    skip = (page - 1) * limit
+   
+    if not pagination:
+        result = await db.execute(query)
+        products = result.scalars().all()
+
+        return {
+            "data": products,
+            "count": total_count,
+            "has_next": False
+        }
 
     result = await db.execute(
         query.offset(skip).limit(limit)
     )
 
+    products = result.scalars().all()
+
     return {
-        "data": result.mappings().all(),
+        "data": products,
         "count": total_count,
+        "has_next": total_count > (skip + limit)
     }
 
 #  --- Get Product list with category id and name ---
@@ -174,6 +201,8 @@ async def get_product_list_with_category(
         .join(Category, Product.category_id == Category.id)
     )
 
+    count_query = select(func.count()).select_from(Product)
+    
     if search:
         query = query.where(
             or_(
