@@ -57,7 +57,7 @@ export default function Input({
   }, [setDirectValue]);
 
   return (
-    <div className="space-y-1.5">
+    <div className="space-y-1.5 flex-1">
       <label
         htmlFor={name}
         className={cn(
@@ -157,6 +157,7 @@ export function FormInput({
 
         <input
           type={type}
+          onWheel={(e) => e.currentTarget.blur()}
           className="border-0 focus:ring-0 w-full h-full py-3.5 placeholder:text-ash focus:outline-0 bg-transparent"
           {...props}
         />
