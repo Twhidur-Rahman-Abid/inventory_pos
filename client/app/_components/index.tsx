@@ -1,5 +1,5 @@
 import Arrow from "./ui/Arrow";
-import Button from "./ui/Button";
+import Button, { StatusButton } from "./ui/Button";
 import DeleteItem from "./ui/DeleteItem";
 import ExportTable from "./ui/ExportTable";
 import Icon from "./ui/Icon";
@@ -39,4 +39,5 @@ export {
   FormSelect,
   DeleteItem,
   InputSkeleton,
+  StatusButton,
 };
