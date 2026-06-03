@@ -43,6 +43,7 @@ export async function authAction(_: any, formData: FormData) {
     } else {
       return {
         success: false,
+        message: data?.message || data?.detail || data?.error || "Login failed",
         ...data,
         formData: Object.fromEntries(formData.entries()),
       };
