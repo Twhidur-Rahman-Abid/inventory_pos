@@ -1,5 +1,5 @@
-/* eslint-disable react-hooks/use-memo */
 /* eslint-disable react-hooks/set-state-in-effect */
+/* eslint-disable react-hooks/use-memo */
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
@@ -7,15 +7,22 @@ import { useEffect, useState, useCallback } from "react";
 import { toast } from "react-toastify";
 import { useUser } from "../_context/userContext";
 import { BASE_URL } from "../_constants";
+import { FetchStatus } from "../_types/types";
 
 interface FetchDataProps {
   endpoint: string;
   method?: "GET" | "POST" | "PATCH" | "PUT" | "DELETE";
   isFetch?: boolean;
   isChange?: any | any[];
-  cacheStrategy?: RequestCache;
+
+  // browser cache
+  cache?: RequestCache;
+
+  // nextjs server cache
   revalidate?: number | false;
   tags?: string[];
+
+  enableCache?: boolean;
 }
 
 interface FetchResponse<T> {
@@ -31,42 +38,60 @@ const useFetchWAuth = <T = any[]>({
   method = "GET",
   isFetch = true,
   isChange,
-  cacheStrategy = "force-cache",
+
+  cache = "default",
   revalidate = false,
   tags = [],
+
+  enableCache = false,
 }: FetchDataProps): FetchResponse<T> => {
   const [data, setData] = useState<T>([] as unknown as T);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [status, setStatus] = useState<"start" | "success" | "error">("start");
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [status, setStatus] = useState<FetchStatus>("start");
   const [error, setError] = useState<string | null>(null);
 
   const { token } = useUser();
 
   const fetcher = useCallback(async () => {
     setIsLoading(true);
+
     try {
       const fetchOptions: RequestInit & {
-        next?: { revalidate?: number | false; tags?: string[] };
+        next?: {
+          revalidate?: number | false;
+          tags?: string[];
+        };
       } = {
         method,
+
         headers: {
           ...(token && {
             Authorization: `Bearer ${token}`,
           }),
           "Content-Type": "application/json",
         },
-        // cache: cacheStrategy,
-        // next: {
-        //   ...(revalidate !== false && { revalidate }),
-        //   ...(tags.length > 0 && { tags }),
-        // },
       };
 
+      // optional browser cache
+      if (enableCache) {
+        fetchOptions.cache = cache;
+      } else {
+        fetchOptions.cache = "no-store";
+      }
+
+      // nextjs server cache
+      if (revalidate || tags.length > 0) {
+        fetchOptions.next = {
+          revalidate,
+          tags,
+        };
+      }
+
       const response = await fetch(`${BASE_URL}${endpoint}`, fetchOptions);
+
       const resData = await response.json();
 
       if (response.status === 401) {
-        // signOut({ callbackUrl: window.location.origin });
         setStatus("error");
         setError("Unauthorized! Please log in again.");
         toast.error("Unauthorized! Please log in again.");
@@ -78,15 +103,19 @@ const useFetchWAuth = <T = any[]>({
         setStatus("success");
       } else {
         setStatus("error");
-        setError(resData?.message || resData?.detail || resData?.error);
-        // Error message handling logic
+
         const message = resData?.message || resData?.detail || resData?.error;
+
+        setError(message);
+
         toast.error(message || "An error occurred while fetching data.");
+
         setData([] as unknown as T);
       }
     } catch (error: any) {
       setStatus("error");
       setError("Server error!");
+
       console.error(`Fetch error [${endpoint}]:`, error?.message);
     } finally {
       setIsLoading(false);
@@ -95,24 +124,28 @@ const useFetchWAuth = <T = any[]>({
     endpoint,
     method,
     token,
-    cacheStrategy,
+    cache,
+    enableCache,
     revalidate,
     JSON.stringify(tags),
   ]);
 
   useEffect(() => {
-    let ignore = false;
-    if (isFetch && !ignore) {
+    if (isFetch) {
       fetcher();
-    } else if (!isFetch) {
+    } else {
+      setIsLoading(false);
       setData([] as unknown as T);
     }
-    return () => {
-      ignore = true;
-    };
   }, [isFetch, fetcher, ...(Array.isArray(isChange) ? isChange : [isChange])]);
 
-  return { data, isLoading, fetcher, status, error };
+  return {
+    data,
+    isLoading,
+    fetcher,
+    status,
+    error,
+  };
 };
 
 export default useFetchWAuth;
