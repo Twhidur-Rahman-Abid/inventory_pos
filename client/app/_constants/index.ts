@@ -6,7 +6,7 @@ const MONEY_TITLE = "BDT";
 
 const PAYMENT_METHOD = [
   { value: "cash", label: "Cash", img: "/cash.svg" },
-  { value: "Bkhas", label: "Bkash", img: "/BKash.svg" },
+  { value: "bkash", label: "Bkash", img: "/BKash.svg" },
   { value: "nagad", label: "Nagad", img: "/Nagad.svg" },
   { value: "rocket", label: "Rocket", img: "/rocket.png" },
 ];
@@ -26,4 +26,18 @@ const USER_ROLE = [
   },
 ];
 
-export { MONEY_SYMBOL, MONEY_TITLE, PAYMENT_METHOD, BASE_URL, USER_ROLE };
+const ORDER_TRACKING_OPTIONS = [
+  { value: "processing", label: "Processing" },
+  { value: "packing", label: "Packing" },
+  { value: "out_for_delivery", label: "Out For Delivery" },
+  { value: "delivered", label: "Delivered" },
+];
+
+export {
+  MONEY_SYMBOL,
+  MONEY_TITLE,
+  PAYMENT_METHOD,
+  BASE_URL,
+  USER_ROLE,
+  ORDER_TRACKING_OPTIONS,
+};
