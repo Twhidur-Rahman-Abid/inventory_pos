@@ -43,3 +43,46 @@ export default function DashboardProductCard({
     </div>
   );
 }
+export function DashboardProductCardSkeleton({}) {
+  return (
+    <div className="w-full flex gap-6 2xl:gap-8 2xl:min-w-75 py-1.5  justify-between rounded-xl rounded-b-none animate-pulse">
+      <div className="flex items-center gap-6">
+        <div className="p-0.5 border border-[#E9F5FF] rounded-sm">
+          <Image
+            src={"/placeholder-img.svg"}
+            alt={"product img"}
+            width={40}
+            height={50}
+            className="object-cover "
+          />
+        </div>
+        <div>
+          <div className="w-6 h-1.5 rounded-sm bg-gray-200" />
+          <div className="w-2.5 h-1.5 rounded-sm bg-gray-200" />
+        </div>
+      </div>
+
+      <div className="text-center">
+        <div className="w-3.5 h-1.5 rounded-sm bg-gray-200" />
+        <div
+          className={cn(
+            `py-1 px-2 text-12 rounded-sm bg-[#F1FFF9] leading-3 text-[#0F5A46]`,
+          )}
+        />
+      </div>
+    </div>
+  );
+}
+
+export function DashboardProductCardSkeletonList() {
+  return (
+    <>
+      <DashboardProductCardSkeleton />
+      <DashboardProductCardSkeleton />
+      <DashboardProductCardSkeleton />
+      <DashboardProductCardSkeleton />
+      <DashboardProductCardSkeleton />
+      <DashboardProductCardSkeleton />
+    </>
+  );
+}
