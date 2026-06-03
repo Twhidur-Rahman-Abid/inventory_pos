@@ -20,6 +20,24 @@ class User(BaseModel):
     branch_id: int
     role: UserRole
 
+class AdminUser(BaseModel):
+    name: str = Field(...,min_length=2, max_length=100)
+    email: EmailStr
+    mobile: str = Field(...,min_length=11,max_length=15)
+    password: str = Field(...,min_length=6, max_length=25)
+    branch_id: int
+    role: UserRole = Field(default=UserRole.admin)
+    admin_secret_key: str = Field(...)
+
+class AdminUserUpdate(BaseModel):
+    name: str | None = None
+    email: EmailStr | None = None
+    mobile: str | None = None
+    password: str | None = None
+    branch_id: int | None = None
+    role: UserRole | None = None
+    admin_secret_key: str | None = None
+
 class UserUpdate(BaseModel):
     name: Optional[str] = Field(None, min_length=2, max_length=100)
     email: Optional[EmailStr] = None
