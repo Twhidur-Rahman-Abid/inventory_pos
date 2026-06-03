@@ -25,7 +25,7 @@ const Button = ({
   return (
     <button
       className={cn(
-        `flex items-center whitespace-nowrap justify-center gap-2 md:gap-3.5 px-6  py-3  rounded-xl w-full text-white font-semibold cursor-pointer bg-primary`,
+        `flex items-center whitespace-nowrap justify-center gap-2 md:gap-3.5 px-6  py-3  rounded-xl w-full text-white font-semibold cursor-pointer bg-primary disabled:cursor-not-allowed`,
         className,
         {
           "bg-[#f3f3f3] text-body-text": isCancel,
@@ -41,3 +41,21 @@ const Button = ({
 };
 
 export default Button;
+
+export const StatusButton = ({
+  className,
+  children,
+  ...props
+}: ButtonProps) => {
+  return (
+    <button
+      className={cn(
+        "px-2.5 py-1 rounded-3xl font-medium text-sm shadow-7 bg-[#FF6B00]  text-white   cursor-pointer capitalize",
+        className,
+      )}
+      {...props}
+    >
+      {children}
+    </button>
+  );
+};
