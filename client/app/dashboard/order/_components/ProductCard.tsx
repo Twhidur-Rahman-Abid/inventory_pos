@@ -4,41 +4,30 @@ import { Icon } from "@/app/_components";
 import Image from "next/image";
 import React from "react";
 import { MONEY_SYMBOL } from "@/app/_constants";
-
-interface Product {
-  name?: string;
-  product_img?: string;
-  selling_price?: number | string;
-  discount_percentage?: number;
-  is_buyOneGetOne?: boolean;
-}
+import { ProductType } from "@/app/_types/types";
+import { useCart } from "@/app/_context/productOrderCartContext";
 
 interface ProductCardProps {
-  product: Product;
+  product: ProductType;
 }
 
 const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
-  const {
-    name,
-    product_img,
-    selling_price,
-    discount_percentage,
-    is_buyOneGetOne,
-  } = product || {};
+  const { name, thumbnail, discount_percentage, is_buy_one_get_one, price } =
+    product || {};
+
+  const { addToCart } = useCart();
 
   // -------- Simplified Discount Logic --------
-  let finalPrice = Number(selling_price);
+  let finalPrice = Number(price);
 
-  if (!is_buyOneGetOne && discount_percentage) {
-    finalPrice =
-      Number(selling_price) -
-      (Number(selling_price) * discount_percentage) / 100;
+  if (!is_buy_one_get_one && discount_percentage) {
+    finalPrice = Number(price) - (Number(price) * discount_percentage) / 100;
   }
 
   // -------- Discount Tag --------
   let DiscountTag: React.ReactNode = null;
 
-  if (is_buyOneGetOne) {
+  if (is_buy_one_get_one) {
     DiscountTag = (
       <span className="bg-primary px-2 py-1.5 rounded-3xl text-white font-medium text-12">
         Buy 1 Get 1
@@ -57,7 +46,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
       <div className="absolute top-4 left-4">{DiscountTag}</div>
 
       <Image
-        src={product_img || "/placeholder-img.svg"}
+        src={thumbnail || "/placeholder-img.svg"}
         width={100}
         height={150}
         alt={name || "product"}
@@ -75,11 +64,11 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
               {MONEY_SYMBOL}
             </p>
 
-            {!is_buyOneGetOne && discount_percentage && (
+            {!is_buy_one_get_one && discount_percentage && (
               <p className="text-12 text-body-text">
                 (
                 <span className="line-through">
-                  {selling_price}
+                  {price}
                   {MONEY_SYMBOL}
                 </span>
                 )
@@ -88,7 +77,12 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           </div>
 
           {/* Button (UI only) */}
-          <button className="p-1.5 flex gap-1 border border-primary rounded-full bg-transparent text-12 leading-3 text-primary">
+          <button
+            onClick={() => {
+              addToCart({ ...product, qty: 1 });
+            }}
+            className="p-1.5 flex gap-1 border border-primary rounded-full bg-transparent text-12 leading-3 text-primary cursor-pointer"
+          >
             <Icon src="/icon/i-plus-box.svg" size={12} />
             Add
           </button>

@@ -3,110 +3,125 @@
 
 import { Icon, Input } from "@/app/_components";
 import Dropdown, { DropdownItem } from "@/app/_components/ui/Dropdown";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import ProductCard from "./ProductCard";
+import { ProductType } from "@/app/_types/types";
+import Loading from "@/app/_components/ui/Loading";
+import { useCart } from "@/app/_context/productOrderCartContext";
+import { ErrorMessage } from "@/app/_components/ui/Alert";
 
-// dummy products
-const dummyProducts = [
-  {
-    id: 1,
-    name: "Laptop",
-    sku_code: "LAP123",
-    selling_price: 500,
-    discount_percentage: 10,
-    is_buyOneGetOne: false,
-    current_stock: 10,
-    category_name: "All",
-  },
-  {
-    id: 2,
-    name: "T-Shirt",
-    sku_code: "TSH456",
-    selling_price: 20,
-    discount_percentage: 0,
-    is_buyOneGetOne: true,
-    current_stock: 5,
-    category_name: "All",
-  },
-  {
-    id: 3,
-    name: "Phone",
-    sku_code: "PHN789",
-    selling_price: 300,
-    discount_percentage: 5,
-    is_buyOneGetOne: false,
-    current_stock: 8,
-    category_name: "All",
-  },
-];
-
-const getPriceAfterDiscount = (product: any) => {
-  if (product.is_buyOneGetOne) return product.selling_price;
+const getPriceAfterDiscount = (product: ProductType) => {
+  if (product.is_buy_one_get_one) return product.price;
 
   if (product.discount_percentage) {
-    return (
-      product.selling_price -
-      (product.selling_price * product.discount_percentage) / 100
-    );
+    return product.price - (product.price * product.discount_percentage) / 100;
   }
 
-  return product.selling_price;
+  return product.price;
 };
 
 const ProductList: React.FC = () => {
   const [search, setSearch] = useState("");
   const [productFilter, setProductFilter] = useState("");
+  const { selectedCategory, setSelectedCategory, addToCart, productState } =
+    useCart();
 
-  const products = dummyProducts;
+  const {
+    products,
+    productsLoading,
+    productsStatus,
+    productsError,
+    productCount,
+  } = productState;
 
-  // -------- Filter Logic --------
-  const handleProductFilter = () => {
+  // -------- Filter  Logic --------
+  const filteredProducts = useMemo(() => {
     switch (productFilter) {
       case "l-h":
-        return [...products].sort(
+        return products.toSorted(
           (a, b) => getPriceAfterDiscount(a) - getPriceAfterDiscount(b),
         );
+
       case "h-l":
-        return [...products].sort(
+        return products.toSorted(
           (a, b) => getPriceAfterDiscount(b) - getPriceAfterDiscount(a),
         );
+
       case "d":
         return products.filter((p) => p.discount_percentage);
+
       case "1-1":
-        return products.filter((p) => p.is_buyOneGetOne);
+        return products.filter((p) => p.is_buy_one_get_one);
+
       default:
         return products;
     }
-  };
+  }, [products, productFilter]);
 
-  // -------- Search Filter --------
-  const filterProduct = (product: any) => {
-    if (!search) return product.current_stock > 0;
-
+  // product to render after search, quantity and category filter
+  const productToRender = useMemo(() => {
     const searchLower = search.toLowerCase();
 
-    return (
-      product.current_stock > 0 &&
-      (product.name.toLowerCase().includes(searchLower) ||
-        product.sku_code.toLowerCase().includes(searchLower))
-    );
-  };
+    return filteredProducts.filter((product) => {
+      const searchFilter = search
+        ? product.name.toLowerCase().includes(searchLower) ||
+          product.sku_code.toLowerCase().includes(searchLower)
+        : true;
 
-  const productToRender = handleProductFilter().filter(filterProduct);
+      const categoryFilter =
+        selectedCategory.id === "all"
+          ? true
+          : selectedCategory.id === product.category_id;
 
+      return product.quantity > 0 && searchFilter && categoryFilter;
+    });
+  }, [filteredProducts, search, selectedCategory.id]);
+
+  // reset all filters
   const resetFilter = () => {
     setProductFilter("");
     setSearch("");
+    setSelectedCategory({
+      id: "all",
+      name: "All",
+    });
   };
+
+  // Handle search by SKU or name
+  // if SKU matches, add to cart immediately, otherwise just filter the products
+  const handleSearch = (val: string) => {
+    const matchSku = productToRender?.find((v) => v.sku_code === val);
+    if (matchSku) addToCart({ ...matchSku, qty: 1 });
+    setSearch(val);
+  };
+
+  // decide what to render
+  let ProductRender = null;
+  if (productsLoading) ProductRender = <Loading />;
+  else if (!productsLoading && productsStatus === "error")
+    ProductRender = (
+      <ErrorMessage message={productsError || "Error occurred"} />
+    );
+  else if (
+    productsStatus === "success" &&
+    (productToRender?.length === 0 || !productCount)
+  )
+    ProductRender = (
+      <p className="text-center text-yellow-600">Product not found</p>
+    );
+  else
+    ProductRender = productToRender?.map((product) => (
+      <ProductCard key={product.id} product={product} />
+    ));
 
   return (
     <div className="bg-white rounded-xl p-3 md:p-6 shadow-1">
       {/* Search + Filter */}
-      <div className="flex gap-2.5 items-center">
+      <div className="flex gap-2.5 items-center w-full">
         <Input
           placeholder="Search Here..."
-          className="border-[1.5px] w-full border-none shadow-1 rounded-full"
-          getInputValue={(val: string) => setSearch(val)}
+          className="border-[1.5px] min-w-full border-none shadow-1 rounded-full flex-1"
+          getInputValue={handleSearch}
           setDirectValue={search}
           LeftIcon={
             <Icon src="/icon/i-search.svg" className="mx-2.5 md:mx-[15px]" />
@@ -159,14 +174,8 @@ const ProductList: React.FC = () => {
       </div>
 
       {/* Product Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-1 lg:grid-cols-2 3xl:grid-cols-3 gap-6 mt-10">
-        {productToRender.length > 0 ? (
-          productToRender.map((product) => (
-            <ProductCard key={product.id} product={product} />
-          ))
-        ) : (
-          <p className="text-center text-yellow-600">Product not found</p>
-        )}
+      <div className="grid grid-cols-1 sm:grid-cols-2  lg:grid-cols-2 3xl:grid-cols-3 gap-6 mt-10">
+        {ProductRender}
       </div>
     </div>
   );
