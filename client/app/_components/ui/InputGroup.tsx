@@ -21,8 +21,8 @@ export default function InputGroup({
   ...props
 }: InputGroupProps) {
   return (
-    <div className="w-full flex flex-col gap-[18px]">
-      <label htmlFor={name} className="text-secondary">
+    <div className="w-full flex flex-col gap-3">
+      <label htmlFor={name} className="text-secondary font-medium text-base">
         {label} {required && <span className="text-red-600">*</span>}
       </label>
 
