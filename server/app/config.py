@@ -7,6 +7,7 @@ class Config(BaseSettings):
     db_url:str
     secret_key:str
     algorithm:str="HS256"
+    admin_secret_key:str = "niamah-admin-shop"
     access_token_expire_minutes:int=30
     refresh_token_expire_days:int=7
 
