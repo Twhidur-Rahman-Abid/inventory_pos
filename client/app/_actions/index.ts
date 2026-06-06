@@ -21,6 +21,35 @@ async function getAuthTokens() {
   };
 }
 
+// get data from server
+export async function getData(endpoint: string) {
+  try {
+    const { accessToken, refreshToken } = await getAuthTokens();
+    const res = await fetch(`${BASE_URL}${endpoint}`, {
+      method: "GET",
+      headers: {
+        Authorization: `Bearer ${accessToken}`,
+      },
+    });
+    const data = await res.json();
+    if (!res.ok) {
+      return {
+        data: null,
+        status: "error",
+        message:
+          data?.message ||
+          data?.detail ||
+          data.error ||
+          "There was an error occur!",
+      };
+    }
+    return { data, status: "success", message: "" };
+  } catch (error) {
+    console.error("Error fetching data:", error);
+    return { data: null, status: "error", message: "Server Error!" };
+  }
+}
+
 // post data to server
 export async function postData({
   endpoint = "",
