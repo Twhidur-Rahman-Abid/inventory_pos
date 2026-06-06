@@ -8,7 +8,7 @@ from fastapi.responses import JSONResponse
 
 from app.database.schema.order import Order,OrderItem, OrderStatus
 from app.database.schema.customer import Customer
-from app.models.order import OrderCreate, OrderStatusUpdate
+from app.models.order import OrderCreate, OrderStatusUpdate, OrderDetailsResponse
 from app.database.db import get_db
 from app.database.schema import Product
 from app.models.user import UserRole
@@ -328,4 +328,23 @@ async def get_order_items(
     }
 
 
-
+@orderRouter.get("/{order_id}/details", response_model=OrderDetailsResponse)
+async def get_order_details(
+    order_id: int,
+    db: AsyncSession = Depends(get_db)
+):
+    query = await db.execute(
+        select(Order)
+        .options(
+            selectinload(Order.customer),
+            selectinload(Order.items).selectinload(OrderItem.product)
+        )
+        .where(Order.id == order_id)
+    )
+    order = query.scalar_one_or_none()
+    if not order:
+        return JSONResponse(
+            status_code=404,
+            content={"message": "Order not found"}
+        )
+    return {"data": order}
