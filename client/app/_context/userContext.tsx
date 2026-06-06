@@ -8,10 +8,14 @@ export type UserContextType = {
     name: string;
     email: string;
     role: string;
+    branch: {
+      id: number;
+      name: string;
+    };
   };
 };
 
-const userContext = createContext<UserContextType | undefined>(undefined);
+const userContext = createContext<UserContextType>({} as UserContextType);
 
 export const UserProvider = ({
   value,
@@ -23,8 +27,8 @@ export const UserProvider = ({
   return <userContext.Provider value={value}>{children}</userContext.Provider>;
 };
 
-export const useUser = () => {
-  const context = useContext<UserContextType | undefined>(userContext);
+export const useUser = (): UserContextType => {
+  const context = useContext<UserContextType>(userContext);
   if (!context) {
     throw new Error("useUser must be used within a UserProvider");
   }
