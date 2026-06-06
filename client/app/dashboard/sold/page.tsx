@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import { HeaderType } from "@/app/_lib/CommonTypes";
@@ -21,6 +22,12 @@ import { formatDate, getOrderStatusColor, getSerial } from "@/app/_lib/utils";
 import { OrderStatus, PaymentMethod } from "@/app/_types/types";
 import Image from "next/image";
 import { PAYMENT_METHOD } from "@/app/_constants";
+import { useEffect, useRef, useState } from "react";
+import { useUser } from "@/app/_context/userContext";
+import { useReactToPrint } from "react-to-print";
+import { toast } from "react-toastify";
+import { getData } from "@/app/_actions";
+import PrintInvoice from "./PrintInvoice";
 
 const headers: HeaderType[] = [
   { label: "SL." },
@@ -31,6 +38,7 @@ const headers: HeaderType[] = [
   { label: "Status", key: "status" },
   { label: "Payment Method", key: "payment_method" },
   { label: "View", align: "center" },
+  { label: "Print" },
 ];
 
 type OrderType = {
@@ -44,15 +52,14 @@ type OrderType = {
 };
 
 export default function SoldPage() {
-  // 🔹 get page from URL
-
+  // 🔹 Search and pagination
   const searchParams = useSearchParams();
-
   const page = Number(searchParams.get("page") || 1);
   const search = searchParams.get("search");
   let endpoint = `/orders?page=${page}`;
   if (search) endpoint += `&search=${search}`;
 
+  // fetch order data
   const { data, isLoading, status, error } = useFetchWAuth<{
     count: number;
     data: OrderType[];
@@ -61,6 +68,7 @@ export default function SoldPage() {
     isChange: [page, search],
   });
 
+  // Decide what to render based on the fetch status
   let content;
   if (isLoading) content = <TableSkeleton />;
   else if (!isLoading && status === "error")
@@ -115,6 +123,9 @@ export default function SoldPage() {
                     <Icon src="/icon/i-eye-view.svg" size={24} />
                   </div>
                 </Td>
+                <Td>
+                  <PrintInvoice id={id} />
+                </Td>
               </tr>
             );
           })}
@@ -124,6 +135,8 @@ export default function SoldPage() {
 
   return (
     <>
+      {/* page content */}
+
       <div className="space-y-7">
         <PageTopBar title="Sold" quantity={data?.count || 0}></PageTopBar>
 
