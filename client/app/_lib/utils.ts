@@ -7,6 +7,7 @@ export function cn(...inputs: ClassValue[]) {
 }
 
 export const formatDate = (isoStr: string | Date): string => {
+  if (!isoStr) return "";
   const date = new Date(isoStr);
 
   const formattedDate = new Intl.DateTimeFormat("en-GB", {
