@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, or_, String, cast
 from sqlalchemy.orm import selectinload
-from typing import Optional
+from typing import Optional, Any
 from decimal import Decimal
 from fastapi.responses import JSONResponse
 
@@ -13,6 +13,7 @@ from app.database.db import get_db
 from app.database.schema import Product
 from app.models.user import UserRole
 from app.routes.auth_route import role_required
+from app.utils.dependencies import get_current_user
 
 
 
@@ -119,11 +120,13 @@ async def get_orders(
     customer_id: Optional[int] = None,
 
     search: Optional[str] = None,
-
+    current_user: Any = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
 
     offset = (page - 1) * limit
+
+    branch_id = current_user.branch_id
 
     query = (
         select(Order)
@@ -131,6 +134,9 @@ async def get_orders(
             selectinload(Order.customer)
         ).where(Order.is_online == False)
     )
+
+    if current_user.role != UserRole.admin:
+        query=query.where(Order.branch_id == branch_id)
 
     # with items
     if with_items:
@@ -198,11 +204,13 @@ async def get__online_orders(
     customer_id: Optional[int] = None,
 
     search: Optional[str] = None,
-
+    current_user: Any = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
 
     offset = (page - 1) * limit
+
+    branch_id = current_user.branch_id
 
     query = (
         select(Order)
@@ -210,6 +218,9 @@ async def get__online_orders(
             selectinload(Order.customer)
         ).where(Order.is_online == True)
     )
+
+    if current_user.role != UserRole.admin:
+        query=query.where(Order.branch_id == branch_id)
 
     # with items
     if with_items:
