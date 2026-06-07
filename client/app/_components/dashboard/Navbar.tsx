@@ -1,15 +1,17 @@
 type NavbarProps = {
   myData?: {
-    username?: string;
-    branch_name?: string;
-    first_name?: string;
+    name?: string;
     email?: string;
     role?: string;
+    branch?: {
+      id: number;
+      name: string;
+    };
   };
 };
 
 const Navbar = ({ myData }: NavbarProps) => {
-  const { username, branch_name, first_name, email, role } = myData || {};
+  const { name, branch, email, role } = myData || {};
 
   return (
     <header className="fixed top-0 left-16.75 md:left-28.25 w-[calc(100%-67px)] lg:left-75.75 flex-1 md:w-[calc(100%-113px)] lg:w-[calc(100%-303px)] z-60 box-shadow-7 bg-white h-18  flex justify-center items-center border-b border-stock/10">
@@ -17,7 +19,7 @@ const Navbar = ({ myData }: NavbarProps) => {
         <div className="flex items-center gap-20">
           <div className="hidden md:block">
             <h5 className="text-xl font-semibold text-textColor">
-              Welcome {username} - {role} 👋
+              Welcome {name} - {role?.split("_").join(" ")} 👋
             </h5>
             <p className="text-sm text-c-black">
               <span className="text-body-text ">Here your</span> Fresh Food
@@ -124,11 +126,11 @@ const Navbar = ({ myData }: NavbarProps) => {
             </svg>
 
             <div>
-              <h6 className="text-sm sm:text-sm leading-4 md:text-md font-semibold text-secondary mb-0">
-                {branch_name}
+              <h6 className="text-sm  leading-4 md:text-md font-semibold text-secondary mb-0">
+                {branch?.name}
               </h6>
-              <p className="text-xs sm:text-base leading-4 text-body-text mb-0">
-                {first_name} <br /> {email}
+              <p className="text-xs leading-4 text-body-text mb-0">
+                {name} <br /> {email}
               </p>
             </div>
           </div>

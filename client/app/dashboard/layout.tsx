@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import React, { ReactNode } from "react";
+import React, { ReactNode, Suspense } from "react";
 import Navbar from "../_components/dashboard/Navbar";
 import SideLink from "../_components/dashboard/SideLInk";
 import { Logo, LogoIcon } from "../_components";
@@ -12,35 +12,24 @@ type DashboardLayoutProps = {
   children: ReactNode;
 };
 
-const DashboardLayout = async ({ children }: DashboardLayoutProps) => {
+const DashboardLayout = ({ children }: DashboardLayoutProps) => {
+  return (
+    <Suspense>
+      <LayoutComponent>{children}</LayoutComponent>
+    </Suspense>
+  );
+};
+
+export default DashboardLayout;
+
+async function LayoutComponent({ children }: DashboardLayoutProps) {
   const cookieStore = await cookies();
   const token = cookieStore.get("accessToken")?.value;
   const decoded = (jwtDecode(token || "") as any) || {};
+  const user = decoded?.user;
   const value: UserContextType = {
     token: token || "",
-    user: {
-      id: Number(decoded?.sub),
-      email: decoded?.user?.email || "",
-      name: decoded?.user?.name || "",
-      role: decoded?.user?.role || "",
-    },
-  };
-  console.log(value);
-  const role = "admin";
-
-  const isAdmin = role === "admin";
-  const isWarehouseStaff = false;
-  const isWarehouse = isAdmin || isWarehouseStaff;
-  const isBranch = ["storeManager", "cashier", "warehouseStaff"].includes(role);
-  const isStoreManager = false;
-
-  // ✅ static navbar data
-  const myData = {
-    username: "DemoUser",
-    branch_name: "Main Branch",
-    first_name: "Towhid",
-    email: "demo@email.com",
-    role,
+    user,
   };
 
   const sideLinks = [
@@ -55,6 +44,10 @@ const DashboardLayout = async ({ children }: DashboardLayoutProps) => {
     },
     { label: "Sold", icon: "/icon/i-sold.svg" },
     { label: "Online Order", icon: "/icon/i-online-order.svg" },
+    {
+      label: "Stock",
+      icon: "/icon/i-product.svg",
+    },
     { label: "Category", icon: "/icon/i-category.svg" },
     { label: "Branch", icon: "/icon/i-branch.svg" },
 
@@ -90,7 +83,7 @@ const DashboardLayout = async ({ children }: DashboardLayoutProps) => {
           </aside>
 
           <div className="flex-1 w-full overflow-x-hidden  ">
-            <Navbar myData={myData} />
+            <Navbar myData={user} />
 
             <section className="min-h-[calc(100vh-72px)] bg-soft-white w-full overflow-x-hidden relative px-3 md:px-7 py-4 md:py-8 mt-15">
               {children}
@@ -100,6 +93,4 @@ const DashboardLayout = async ({ children }: DashboardLayoutProps) => {
       </div>
     </UserProvider>
   );
-};
-
-export default DashboardLayout;
+}
