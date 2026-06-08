@@ -77,7 +77,7 @@ export const ProductOrderCartProvider = ({
     count: number;
     data: ProductType[];
   }>({
-    endpoint: "/products?pagination=false",
+    endpoint: "/stocks?pagination=false",
   });
 
   // Sync fetched products into local state
