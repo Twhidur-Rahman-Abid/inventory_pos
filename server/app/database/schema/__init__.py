@@ -5,6 +5,6 @@ from .customer import Customer
 from .finance import CustomerCredit,CustomerDue
 from .order import Order,OrderItem
 from .product import Product,ProductDetail,ProductImage
-from .stock import Stock
+from .stock import Stock, StockTransfer
 
-__all__ = ["User","Branch","Category","Customer","CustomerCredit","CustomerDue","Stock","ProductImage","ProductDetail","Product","Order","OrderItem"]
+__all__ = ["User","Branch","Category","Customer","CustomerCredit","CustomerDue","Stock","StockTransfer","ProductImage","ProductDetail","Product","Order","OrderItem"]
