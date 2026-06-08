@@ -21,7 +21,7 @@ interface SelectProps {
   label?: string;
   className?: string;
   defaultValue?: OptionType;
-  getSelectValue?: (value: OptionType) => void;
+  getSelectValue?: (value: string | number | undefined) => void;
   errorMessage?: string;
   name?: string;
 }
@@ -114,7 +114,7 @@ const Select: React.FC<SelectProps> = ({
   };
 
   useEffect(() => {
-    getSelectValue(selectedValue);
+    getSelectValue(selectedValue.value || selectedValue.id);
   }, [selectedValue, getSelectValue]);
 
   return (
