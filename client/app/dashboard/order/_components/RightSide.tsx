@@ -7,6 +7,7 @@ import Table, { Td } from "@/app/_components/ui/Table";
 import { cn } from "@/app/_lib/utils";
 import PaymentModal from "./PaymentModal";
 import { CartType, useCart } from "@/app/_context/productOrderCartContext";
+import { useUser } from "@/app/_context/userContext";
 
 const tableHeaders = [
   { label: "Item" },
@@ -25,9 +26,10 @@ const RightSide = () => {
 
   const subtotal = carts.reduce((acc, item) => acc + item.price * item.qty, 0);
   const total = subtotal - discount + delivery;
+  const { user } = useUser();
 
   const orderPayload = {
-    branch_id: 1,
+    branch_id: user.branch.id,
     extra_discount: discount,
     delivery: delivery,
     items: carts?.map((cart) => ({ product_id: cart.id, qty: cart.qty })),
