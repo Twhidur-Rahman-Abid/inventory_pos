@@ -25,7 +25,6 @@ class AdminUser(BaseModel):
     email: EmailStr
     mobile: str = Field(...,min_length=11,max_length=15)
     password: str = Field(...,min_length=6, max_length=25)
-    branch_id: int
     role: UserRole = Field(default=UserRole.admin)
     admin_secret_key: str = Field(...)
 
