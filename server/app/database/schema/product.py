@@ -1,3 +1,4 @@
+# stock.py
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import String, ForeignKey, Boolean, Numeric, Text,DateTime
 from ..db import Base
@@ -37,6 +38,12 @@ class Product(Base):
         onupdate=lambda: datetime.now(timezone.utc),
         nullable=False
     )   
+
+    stocks = relationship(
+    "Stock",
+    back_populates="product",
+    cascade="all, delete-orphan"
+    )
 
 
 class ProductDetail(Base):

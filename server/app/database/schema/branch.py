@@ -1,5 +1,6 @@
 # user.py
 # order.py
+# stock.py
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import  DateTime,VARCHAR
 from datetime import datetime, timezone
@@ -27,4 +28,10 @@ class Branch(Base):
     orders = relationship(
     "Order",
     back_populates="branch"
+    )
+
+    stocks = relationship(
+    "Stock",
+    back_populates="branch",
+    cascade="all, delete-orphan"
     )
