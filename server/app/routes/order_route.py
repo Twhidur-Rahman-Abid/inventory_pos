@@ -10,7 +10,7 @@ from app.database.schema.order import Order,OrderItem, OrderStatus
 from app.database.schema.customer import Customer
 from app.models.order import OrderCreate, OrderStatusUpdate, OrderDetailsResponse
 from app.database.db import get_db
-from app.database.schema import Product
+from app.database.schema import Product, Stock, User
 from app.models.user import UserRole
 from app.routes.auth_route import role_required
 from app.utils.dependencies import get_current_user
@@ -22,29 +22,53 @@ orderRouter = APIRouter(prefix="/orders", tags=["Orders"])
 
 
 
-
 # =========================
-# Create Order
+# Create order
 # =========================
-
-@orderRouter.post("/",status_code=201, dependencies=[Depends(role_required([UserRole.admin, UserRole.warehouse_manager, UserRole.shop_manager, UserRole.shop_staff]))])
+@orderRouter.post(
+    "/",
+    status_code=201,
+)
 async def create_order(
     payload: OrderCreate,
-    db: AsyncSession = Depends(get_db)
+    db: AsyncSession = Depends(get_db),
+    current_user: User = Depends(
+        role_required([
+            UserRole.admin,
+            UserRole.warehouse_manager,
+            UserRole.shop_manager,
+            UserRole.shop_staff
+        ])
+    )
 ):
     try:
 
         total = Decimal("0.00")
 
+        is_branch_user = current_user.role in [
+            UserRole.shop_manager,
+            UserRole.shop_staff
+        ]
+
+        branch_id = (
+            current_user.branch_id
+            if is_branch_user
+            else payload.branch_id
+        )
+
         order = Order(
             customer_id=payload.customer_id,
-            branch_id=payload.branch_id,
+            branch_id=branch_id,
             extra_discount=payload.extra_discount,
             delivery=payload.delivery,
             is_online=payload.is_online,
             payment_method=payload.payment_method,
             note=payload.note,
-            status=OrderStatus.PROCESSING if payload.is_online else OrderStatus.COMPLETED,
+            status=(
+                OrderStatus.PROCESSING
+                if payload.is_online
+                else OrderStatus.COMPLETED
+            ),
             total=0
         )
 
@@ -54,39 +78,144 @@ async def create_order(
 
         for item in payload.items:
 
-            product_query = await db.execute(
-                select(Product).where(Product.id == item.product_id)
+            product = await db.scalar(
+                select(Product)
+                .where(Product.id == item.product_id)
+                .with_for_update()
             )
 
-            product = product_query.scalar_one_or_none()
-
             if not product:
-                return JSONResponse(status_code=404, content={'message':f"Product {item.product_id} not found"})
+                return JSONResponse(
+                    status_code=404,
+                    content={
+                        "message": f"Product {item.product_id} not found"
+                    }
+                )
 
-            if product.quantity < item.qty:
-                return JSONResponse(status_code=404, content={'message':f"Not enough stock", 'detail':f"Not enough stock for {product.name}"})
-               
+            # =========================
+            # Quantity Calculation
+            # =========================
 
-            subtotal = Decimal(product.price) * item.qty
+            ordered_qty = item.qty
+
+            delivered_qty = (
+                ordered_qty * 2
+                if product.is_buy_one_get_one
+                else ordered_qty
+            )
+
+            # =========================
+            # Branch Stock Validation
+            # =========================
+
+            if is_branch_user:
+
+                stock = await db.scalar(
+                    select(Stock)
+                    .where(
+                        Stock.product_id == product.id,
+                        Stock.branch_id == branch_id
+                    )
+                    .with_for_update()
+                )
+
+                if not stock:
+                    return JSONResponse(
+                        status_code=404,
+                        content={
+                            "message": f"No stock found for {product.name}"
+                        }
+                    )
+
+                if stock.qty < delivered_qty:
+                    return JSONResponse(
+                        status_code=400,
+                        content={
+                            "message": "Not enough stock",
+                            "detail": (
+                                f"{product.name} available stock: "
+                                f"{stock.qty}"
+                            )
+                        }
+                    )
+
+            # =========================
+            # Warehouse Stock Validation
+            # =========================
+
+            else:
+
+                if product.quantity < delivered_qty:
+                    return JSONResponse(
+                        status_code=400,
+                        content={
+                            "message": "Not enough stock",
+                            "detail": (
+                                f"{product.name} available stock: "
+                                f"{product.quantity}"
+                            )
+                        }
+                    )
+
+            # =========================
+            # Price Calculation
+            # =========================
+
+            unit_price = Decimal(str(product.price))
+
+            if product.discount_percentage:
+
+                unit_price -= (
+                    unit_price
+                    * Decimal(str(product.discount_percentage))
+                    / Decimal("100")
+                )
+
+            subtotal = (
+                unit_price
+                * Decimal(ordered_qty)
+            )
 
             total += subtotal
 
-            product.quantity -= item.qty
+            # =========================
+            # Stock Deduction
+            # =========================
 
-            order_item = OrderItem(
-                order_id=order.id,
-                product_id=product.id,
-                qty=item.qty,
-                price=product.price
+            if is_branch_user:
+                stock.qty -= delivered_qty
+            else:
+                product.quantity -= delivered_qty
+
+            # =========================
+            # Order Item
+            # =========================
+
+            db.add(
+                OrderItem(
+                    order_id=order.id,
+                    product_id=product.id,
+
+                    # ordered quantity
+                    qty=ordered_qty,
+
+                    # discounted unit price
+                    price=unit_price
+                )
             )
 
-            db.add(order_item)
+        # =========================
+        # Final Total
+        # =========================
 
         total = (
             total
-            + Decimal(payload.delivery)
-            - Decimal(payload.extra_discount)
+            + Decimal(str(payload.delivery))
+            - Decimal(str(payload.extra_discount))
         )
+
+        if total < 0:
+            total = Decimal("0")
 
         order.total = float(total)
 
@@ -99,11 +228,9 @@ async def create_order(
             "data": order
         }
 
-    except Exception as e:
+    except Exception:
         await db.rollback()
-        raise HTTPException(status_code=500, detail=str(e))
-
-
+        raise
 # =========================
 # Get Order List
 # =========================
@@ -120,7 +247,7 @@ async def get_orders(
     customer_id: Optional[int] = None,
 
     search: Optional[str] = None,
-    current_user: Any = Depends(get_current_user),
+    current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
 
