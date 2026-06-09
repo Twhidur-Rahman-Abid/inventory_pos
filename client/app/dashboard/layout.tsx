@@ -4,7 +4,7 @@ import Navbar from "../_components/dashboard/Navbar";
 import SideLink from "../_components/dashboard/SideLInk";
 import { Logo, LogoIcon } from "../_components";
 import Logout from "../_components/dashboard/Logout";
-import { UserContextType, UserProvider } from "../_context/userContext";
+import { UserContextValue, UserProvider } from "../_context/userContext";
 import { cookies } from "next/headers";
 import { jwtDecode } from "jwt-decode";
 import { ADMIN_ROUTE, BRANCH_ROUTE, WAREHOUSE_ROUTE } from "../_constants";
@@ -27,9 +27,13 @@ export default DashboardLayout;
 async function LayoutComponent({ children }: DashboardLayoutProps) {
   const cookieStore = await cookies();
   const token = cookieStore.get("accessToken")?.value;
-  const decoded = (jwtDecode(token || "") as any) || {};
+  const refresh = cookieStore.get("refreshToken")?.value;
+  if (!refresh) {
+    redirect("/");
+  }
+  const decoded = (jwtDecode(refresh || "") as any) || {};
   const user = decoded?.user;
-  const value: UserContextType = {
+  const value: UserContextValue = {
     token: token || "",
     user,
   };
