@@ -1,16 +1,28 @@
 import React from "react";
 import DashboardStats, { DashboardStatsSkeleton } from "./DashboardStauts";
 import useFetchWAuth from "@/app/_hooks/useAuthFetch";
+import { useSearchParams } from "next/navigation";
+
+type Value = {
+  value: number;
+  percentage: number;
+};
 
 const DashboardSummery = () => {
+  const searchParams = useSearchParams();
+  const filter = searchParams.get("filter") || "Today";
   const { isLoading, data } = useFetchWAuth<{
-    total_sales: number;
-    total_orders: number;
-    online_sales: number;
-    offline_sales: number;
+    total_sales: Value;
+    total_orders: Value;
+    online_sales: Value;
+    offline_sales: Value;
   }>({
-    endpoint: `/dashboard/summary`,
+    endpoint: `/dashboard/summary?filter_type=${filter}`,
+    isChange: [filter],
   });
+
+  const { total_sales, total_orders, online_sales, offline_sales } = data || {};
+
   return (
     <>
       {isLoading ? (
@@ -23,28 +35,24 @@ const DashboardSummery = () => {
       ) : (
         <div className="flex flex-wrap gap-6 justify-between mt-6 w-full">
           <DashboardStats
-            title="Today Sales"
+            title="Total Sales"
             icon={"/vector/total-sales.svg"}
-            total={data.total_sales}
-            percentage={0}
+            value={total_sales}
           />
           <DashboardStats
             title="Total Orders"
-            total={data.total_orders}
+            value={total_orders}
             icon="/vector/sales-shop.svg"
-            percentage={0}
           />
           <DashboardStats
             title="Offline Sales"
             icon={"/vector/offline-sales.svg"}
-            total={data.offline_sales}
-            percentage={0}
+            value={offline_sales}
           />
           <DashboardStats
             title="Online Sales"
             icon={"/vector/online-sales.svg"}
-            total={data.online_sales}
-            percentage={0}
+            value={online_sales}
           />
         </div>
       )}

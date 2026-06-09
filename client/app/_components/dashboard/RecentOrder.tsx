@@ -6,6 +6,7 @@ import { HeaderType } from "@/app/_lib/CommonTypes";
 import useFetchWAuth from "@/app/_hooks/useAuthFetch";
 import { ErrorMessage, NotFoundMessage } from "../ui/Alert";
 import { cn } from "@/app/_lib/utils";
+import PrintInvoice from "@/app/dashboard/sold/PrintInvoice";
 
 const tableHeaders: HeaderType[] = [
   { label: "Id", key: "serial" },
@@ -63,7 +64,7 @@ const RecentOrder = () => {
             </Td>
 
             <Td>
-              <Icon src="/icon/i-eye-view.svg" size={24} />
+              <PrintInvoice id={order.id} />
             </Td>
           </tr>
         ))}

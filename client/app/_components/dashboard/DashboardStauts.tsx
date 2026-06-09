@@ -1,17 +1,19 @@
 import Image from "next/image";
 
 export default function DashboardStats({
-  total = 0,
   icon = "",
   title = "",
-  percentage = 0,
+  value = {
+    value: 0,
+    percentage: 0,
+  },
 }) {
-  const isFall = percentage < 0;
+  const isFall = value.percentage < 0;
   return (
     <div className="py-3 md:py-4 px-4 md:px-5 grow max-w-90 rounded-xl bg-white shadow-2 space-y-6">
       <div className="w-full flex items-center justify-between gap-4">
         <h4 className="text-c-green text-[28px] 2xl:text-[32px] leading-8 font-semibold">
-          {total}
+          {value.value}
         </h4>
         <Image
           src={icon || "/placeholder-img.svg"}
@@ -61,7 +63,7 @@ export default function DashboardStats({
               isFall ? "text-denger" : "text-c-green"
             }`}
           >
-            {percentage || 0}
+            {value.percentage || 0}
           </p>
         </div>
       </div>

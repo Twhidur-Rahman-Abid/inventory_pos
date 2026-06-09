@@ -9,16 +9,6 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-const data = [
-  { name: "10 May", online: 18000, offline: 9000 },
-  { name: "11 May", online: 23000, offline: 11000 },
-  { name: "12 May", online: 24000, offline: 14000 },
-  { name: "13 May", online: 27000, offline: 11000 },
-  { name: "14 May", online: 31000, offline: 15000 },
-  { name: "15 May", online: 20000, offline: 10000 },
-  { name: "16 May", online: 25000, offline: 13000 },
-];
-
 export default function SalesOverviewChart({ data = [] }) {
   return (
     <div className="bg-white rounded-2xl p-5 shadow-sm w-full">

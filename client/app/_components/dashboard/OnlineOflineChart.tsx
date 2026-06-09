@@ -1,6 +1,8 @@
 "use client";
 
+import { MONEY_SYMBOL, MONEY_TITLE } from "@/app/_constants";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
+import MoneySymbol from "../ui/MoneySymbol";
 
 const data = [
   { name: "Online", value: 62 },
@@ -37,7 +39,9 @@ export default function SalesDonutChart({
 
         {/* Center Text */}
         <div className="absolute inset-0 flex flex-col items-center justify-center">
-          <h3 className="text-xl font-bold">৳ {title}</h3>
+          <h3 className="text-xl font-bold">
+            <MoneySymbol /> {title}
+          </h3>
           <p className="text-sm text-gray-500">Total Sales</p>
         </div>
       </div>

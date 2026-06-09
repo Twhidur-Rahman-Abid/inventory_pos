@@ -4,10 +4,14 @@ import SalesOverviewChart, {
 } from "./SalesOverviewChart";
 import SalesDonutChart, { SalesDonutSkeleton } from "./OnlineOflineChart";
 import useFetchWAuth from "@/app/_hooks/useAuthFetch";
+import { useSearchParams } from "next/navigation";
 
 const SalesCharts = () => {
+  const searchParams = useSearchParams();
+  const filter = searchParams.get("filter") || "Today";
   const { isLoading, data } = useFetchWAuth({
-    endpoint: "/dashboard/sales-charts",
+    endpoint: `/dashboard/sales-charts?filter_type=${filter}`,
+    isChange: [filter],
   });
 
   console.log("data:", data);

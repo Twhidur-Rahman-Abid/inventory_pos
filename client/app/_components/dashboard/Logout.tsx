@@ -8,14 +8,24 @@ import { useRouter } from "next/navigation";
 import { createPortal } from "react-dom";
 import Loading from "../ui/Loading";
 import Button from "../ui/Button";
+import { logoutAction } from "@/app/_actions/auth_actions";
+import { toast } from "react-toastify";
 
 const Logout = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isPending, setIsPending] = useState(false);
   const router = useRouter();
 
-  const handleLogout = () => {
-    router.push("/");
+  const handleLogout = async () => {
+    setIsPending(true);
+    const logout = await logoutAction();
+    setIsPending(false);
+    if (logout) {
+      router.push("/");
+      toast.success("User logout!");
+    } else {
+      toast.error("There was an error occur!");
+    }
   };
 
   return (
