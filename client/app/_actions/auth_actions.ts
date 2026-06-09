@@ -3,6 +3,7 @@
 
 import { BASE_URL } from "@/app/_constants";
 import setAccessAndRefreshToken from "../_lib/auth";
+import { cookies } from "next/headers";
 
 export async function authAction(_: any, formData: FormData) {
   const email = formData.get("email") as string;
@@ -55,5 +56,17 @@ export async function authAction(_: any, formData: FormData) {
       message: "Server error",
       formData: Object.fromEntries(formData.entries()),
     };
+  }
+}
+
+export async function logoutAction() {
+  try {
+    const cookieStore = await cookies();
+    cookieStore.delete("refreshToken");
+    cookieStore.delete("accessToken");
+    return true;
+  } catch (e) {
+    console.log(e);
+    return false;
   }
 }
