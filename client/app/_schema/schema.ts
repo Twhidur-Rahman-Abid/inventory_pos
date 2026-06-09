@@ -50,6 +50,23 @@ export const EmployeeSchema = z.object({
   }),
 });
 
+export const ChangePassSchema = z.object({
+  email: z
+    .email("Please enter a valid email address")
+    .min(5, "Email is too short")
+    .max(180, "Email is too long"),
+
+  old_password: z
+    .string({ error: "Old password is required" })
+    .min(6, "Password must be at least 6 characters")
+    .max(20, "Password cannot exceed 20 characters"),
+
+  new_password: z
+    .string({ error: "New password is required" })
+    .min(6, "Password must be at least 6 characters")
+    .max(20, "Password cannot exceed 20 characters"),
+});
+
 const fileOrUrlSchema = z
   .union([
     z.instanceof(File, { message: "Invalid file upload" }),
