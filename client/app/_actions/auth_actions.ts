@@ -59,6 +59,29 @@ export async function authAction(_: any, formData: FormData) {
   }
 }
 
+export async function refreshTokenRotate() {
+  console.log("refesh token call:");
+  const cookieStore = await cookies();
+  const refresh = cookieStore.get("refreshToken")?.value;
+
+  const res = await fetch(`${BASE_URL}/auth/refresh`, {
+    method: "POST",
+    body: JSON.stringify({ refresh_token: refresh }),
+    headers: {
+      "Content-Type": "application/json",
+    },
+  });
+
+  const data = await res.json();
+
+  if (res.ok) {
+    await setAccessAndRefreshToken(data.access_token, data.refresh_token);
+    return { success: true, ...data };
+  } else {
+    return { success: false };
+  }
+}
+
 export async function logoutAction() {
   try {
     const cookieStore = await cookies();
