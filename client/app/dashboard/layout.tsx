@@ -7,6 +7,8 @@ import Logout from "../_components/dashboard/Logout";
 import { UserContextType, UserProvider } from "../_context/userContext";
 import { cookies } from "next/headers";
 import { jwtDecode } from "jwt-decode";
+import { ADMIN_ROUTE, BRANCH_ROUTE, WAREHOUSE_ROUTE } from "../_constants";
+import { redirect } from "next/navigation";
 
 type DashboardLayoutProps = {
   children: ReactNode;
@@ -32,29 +34,25 @@ async function LayoutComponent({ children }: DashboardLayoutProps) {
     user,
   };
 
-  const sideLinks = [
-    {
-      label: "Dashboard",
-      icon: "/icon/i-dashboard.svg",
-    },
-    { label: "Order", icon: "/icon/i-order.svg" },
-    {
-      label: "Products",
-      icon: "/icon/i-product.svg",
-    },
-    { label: "Sold", icon: "/icon/i-sold.svg" },
-    { label: "Online Order", icon: "/icon/i-online-order.svg" },
-    {
-      label: "Stock",
-      icon: "/icon/i-product.svg",
-    },
-    { label: "Category", icon: "/icon/i-category.svg" },
-    { label: "Branch", icon: "/icon/i-branch.svg" },
+  if (!user?.role) {
+    redirect("/");
+  }
 
-    { label: "Employee", icon: "/icon/i-cashire.svg" },
-    { label: "Reports", icon: "/icon/i-report.svg" },
-    { label: "Setting", icon: "/icon/i-setting-2.svg" },
-  ];
+  const getRoute = (role: string) => {
+    switch (role) {
+      case "admin":
+        return ADMIN_ROUTE;
+      case "warehouse_manager":
+        return WAREHOUSE_ROUTE;
+      case "shop_manager":
+      case "shop_staff":
+        return BRANCH_ROUTE;
+      default:
+        return [];
+    }
+  };
+
+  const sideLinks = getRoute(user.role) || [];
 
   return (
     <UserProvider value={value}>
