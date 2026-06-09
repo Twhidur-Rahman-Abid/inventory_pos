@@ -8,6 +8,9 @@ import { toast } from "react-toastify";
 import { useUser } from "../_context/userContext";
 import { BASE_URL } from "../_constants";
 import { FetchStatus } from "../_types/types";
+import { logoutAction } from "../_actions/auth_actions";
+import { useRouter } from "next/navigation";
+import { getFreshToken } from "../_lib/getOptimizeRefreshToken";
 
 interface FetchDataProps {
   endpoint: string;
@@ -50,7 +53,9 @@ const useFetchWAuth = <T = any[]>({
   const [status, setStatus] = useState<FetchStatus>("start");
   const [error, setError] = useState<string | null>(null);
 
-  const { token } = useUser();
+  const { token, setUser } = useUser();
+
+  const router = useRouter();
 
   const fetcher = useCallback(async () => {
     setIsLoading(true);
@@ -92,10 +97,53 @@ const useFetchWAuth = <T = any[]>({
       const resData = await response.json();
 
       if (response.status === 401) {
-        setStatus("error");
-        setError("Unauthorized! Please log in again.");
-        toast.error("Unauthorized! Please log in again.");
-        return;
+        const tokenRes = await getFreshToken();
+
+        if (tokenRes?.success && tokenRes.access_token) {
+          const newToken = tokenRes.access_token;
+
+          setUser((prev) => ({ ...prev, token: newToken }));
+
+          // 🔥 RETRY ORIGINAL REQUEST WITH NEW TOKEN
+          const retryResponse = await fetch(`${BASE_URL}${endpoint}`, {
+            ...fetchOptions,
+            headers: {
+              ...fetchOptions.headers,
+              Authorization: `Bearer ${newToken}`,
+            },
+          });
+
+          const retryData = await retryResponse.json();
+
+          if (retryResponse.ok) {
+            setData(retryData as T);
+            setStatus("success");
+            setError(null);
+            return; // stop here
+          } else if (retryResponse.status === 401) {
+            await logoutAction();
+            router.push("/");
+            // ❌ refresh failed
+            setStatus("error");
+            setError("Unauthorized! Please log in again.");
+            toast.error("Unauthorized! Please log in again.");
+            return;
+          } else {
+            setStatus("error");
+            setError(retryData?.message || "Retry failed");
+            toast.error(retryData?.message || "Retry failed");
+
+            return;
+          }
+        } else {
+          await logoutAction();
+          router.push("/");
+          // ❌ refresh failed
+          setStatus("error");
+          setError("Unauthorized! Please log in again.");
+          toast.error("Unauthorized! Please log in again.");
+          return;
+        }
       }
 
       if (response.ok) {
@@ -116,19 +164,11 @@ const useFetchWAuth = <T = any[]>({
       setStatus("error");
       setError("Server error!");
 
-      console.error(`Fetch error [${endpoint}]:`, error?.message);
+      console.log(`Fetch error [${endpoint}]:`, error?.message);
     } finally {
       setIsLoading(false);
     }
-  }, [
-    endpoint,
-    method,
-    token,
-    cache,
-    enableCache,
-    revalidate,
-    JSON.stringify(tags),
-  ]);
+  }, [endpoint, method, cache, enableCache, revalidate, JSON.stringify(tags)]);
 
   useEffect(() => {
     if (isFetch) {
