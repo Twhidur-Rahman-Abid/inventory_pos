@@ -10,6 +10,8 @@ import Image from "next/image";
 import Loading from "@/app/_components/ui/Loading";
 import { putJSONData } from "@/app/_actions";
 import { ProductType } from "@/app/_types/types";
+import { useUser } from "@/app/_context/userContext";
+import { ADMINIS_ROLE } from "@/app/_constants";
 
 const ProductShowModal = ({
   onClose,
@@ -72,6 +74,9 @@ const ProductShowModal = ({
       }
     `,
   });
+
+   const { user } = useUser();
+    const isAdminis = ADMINIS_ROLE.includes(user.role);
 
   return (
     <Modal title={"Product Details"} onClose={onClose}>
@@ -139,24 +144,29 @@ const ProductShowModal = ({
       </div>
 
       {/* Add Stock form */}
-      <form onSubmit={handleAddStock} className="flex gap-6 items-center mt-6">
-        <input type="text" hidden defaultValue={sku_code} name="sku_code" />
-        <Input
-          type="number"
-          placeholder="Add new stock"
-          className="w-full"
-          name="quantity"
-          required={true}
-          getInputValue={(value) => setCurrentStock(value)}
-        />
-        <Button
-          disabled={!currentStock || isLoading}
-          type="submit"
-          className="w-fit"
+      {isAdminis && (
+        <form
+          onSubmit={handleAddStock}
+          className="flex gap-6 items-center mt-6"
         >
-          {isLoading ? <Loading /> : "Add Stock"}
-        </Button>
-      </form>
+          <input type="text" hidden defaultValue={sku_code} name="sku_code" />
+          <Input
+            type="number"
+            placeholder="Add new stock"
+            className="w-full"
+            name="quantity"
+            required={true}
+            getInputValue={(value) => setCurrentStock(value)}
+          />
+          <Button
+            disabled={!currentStock || isLoading}
+            type="submit"
+            className="w-fit"
+          >
+            {isLoading ? <Loading /> : "Add Stock"}
+          </Button>
+        </form>
+      )}
     </Modal>
   );
 };
