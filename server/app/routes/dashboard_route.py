@@ -18,69 +18,7 @@ from app.utils.dependencies import role_required
 dashboard_router = APIRouter(prefix="/dashboard", tags=["Dashboard"])
 logger = logging.getLogger(__name__)
 
-
-@dashboard_router.get("/sales-overview")
-async def get_sales_overview(db: AsyncSession = Depends(get_db)):
-    try:
-        now = datetime.now(timezone.utc)
-        today_date = now.date()
-        yesterday_date = today_date - timedelta(days=1)
-        seven_days_ago = today_date - timedelta(days=6)
-
-        # 1. Chart Data (Last 7 Days)
-        chart_query = (
-            select(
-                func.date(Order.created_at).label("date"),
-                func.sum(case((Order.is_online == True, Order.total), else_=0)).label("online"),
-                func.sum(case((Order.is_online == False, Order.total), else_=0)).label("offline")
-            )
-            .filter(func.date(Order.created_at) >= seven_days_ago)
-            .group_by(func.date(Order.created_at))
-            .order_by(func.date(Order.created_at))
-        )
-        
-        chart_result = await db.execute(chart_query)
-        chart_data = chart_result.all()
-
-        # 2. Trend Calculation (Today vs Yesterday)
-        trend_query = (
-            select(
-                func.sum(case((func.date(Order.created_at) == today_date, Order.total), else_=0)).label("today_total"),
-                func.sum(case((func.date(Order.created_at) == yesterday_date, Order.total), else_=0)).label("yesterday_total")
-            )
-        )
-        
-        trend_result = await db.execute(trend_query)
-        trend_data = trend_result.first()
-
-        today_val = float(trend_data.today_total or 0)
-        yesterday_val = float(trend_data.yesterday_total or 0)
-
-        # Growth Formula: ((Today - Yesterday) / Yesterday) * 100
-        growth_percentage = 0
-        if yesterday_val > 0:
-            growth_percentage = ((today_val - yesterday_val) / yesterday_val) * 100
-
-        return {
-            "sales_chart": [
-                {"date": str(row.date), "online": float(row.online), "offline": float(row.offline)}
-                for row in chart_data
-            ],
-            "trends": {
-                "today_sales": today_val,
-                "growth_percentage": round(growth_percentage, 2),
-                "status": "up" if growth_percentage >= 0 else "down"
-            }
-        }
-
-    except Exception as e:
-        logger.error(f"Sales Overview Error: {str(e)}")
-        raise HTTPException(
-            status_code=500, 
-            detail={"message": "Error fetching sales overview data", "error": str(e)}
-        )
-
-
+# sales chart data
 @dashboard_router.get("/sales-charts")
 async def get_sales_charts(
     filter_type: str = Query(
@@ -254,7 +192,8 @@ async def get_sales_charts(
                 "error": str(e)
             }
         )
-            
+
+# summery data  
 @dashboard_router.get("/summary")
 async def get_summary_stats(
     filter_type: str = Query(
@@ -433,6 +372,7 @@ async def get_summary_stats(
             }
         )
 
+# top selling data
 @dashboard_router.get("/top-selling")
 async def get_top_selling(
     current_user: User = Depends(
@@ -497,6 +437,7 @@ async def get_top_selling(
             detail="Internal Server Error"
         )
 
+# low stock product (quantity<5)
 @dashboard_router.get("/low-stock")
 async def get_low_stock(
     current_user: User = Depends(
