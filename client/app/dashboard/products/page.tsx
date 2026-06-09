@@ -22,7 +22,8 @@ import ProductModal from "./ProductModal";
 import { ProductType } from "@/app/_types/types";
 import Image from "next/image";
 import SendModal from "./SendModal";
-import { MONEY_SYMBOL } from "@/app/_constants";
+import { ADMINIS_ROLE, MONEY_SYMBOL, USER_ROLE } from "@/app/_constants";
+import { useUser } from "@/app/_context/userContext";
 
 // Table header
 const headers: HeaderType[] = [
@@ -47,6 +48,10 @@ export default function ProductPage() {
     open: false,
     product: {} as ProductType,
   });
+
+  //
+  const { user } = useUser();
+  const isWarehouse = ADMINIS_ROLE.includes(user.role);
 
   // Product show modal
   const [productShow, setProductShow] = useState<{
@@ -105,29 +110,38 @@ export default function ProductPage() {
 
                 <Td className={"text-center"}>
                   <div className="inline-flex gap-5 min-w-max">
-                    <StatusButton
-                      className="rounded-md"
-                      onClick={() => setSendData({ open: true, product })}
-                    >
-                      Send
-                    </StatusButton>
-                    <Icon
-                      onClick={() =>
-                        setModalOpen({ editable: product, open: true })
-                      }
-                      src="/icon/i-edit-pen.svg"
-                      size={24}
-                    />
+                    {isWarehouse && (
+                      <>
+                        {" "}
+                        <StatusButton
+                          className="rounded-md"
+                          onClick={() => setSendData({ open: true, product })}
+                        >
+                          Send
+                        </StatusButton>
+                        <Icon
+                          onClick={() =>
+                            setModalOpen({ editable: product, open: true })
+                          }
+                          src="/icon/i-edit-pen.svg"
+                          size={24}
+                        />
+                      </>
+                    )}
+
                     <Icon
                       src="/icon/i-eye-view.svg"
                       size={24}
                       onClick={() => setProductShow({ open: true, product })}
                     />
-                    <DeleteItem
-                      endpoint={`/products/${id}`}
-                      fetcher={fetcher}
-                      title={`${name} product`}
-                    />
+
+                    {isWarehouse && (
+                      <DeleteItem
+                        endpoint={`/products/${id}`}
+                        fetcher={fetcher}
+                        title={`${name} product`}
+                      />
+                    )}
                   </div>
                 </Td>
               </tr>
@@ -141,13 +155,15 @@ export default function ProductPage() {
     <>
       <div className="space-y-7">
         <PageTopBar title="Products" quantity={data?.count || 0}>
-          <Button
-            className=" border-none px-3.5"
-            onClick={() => setModalOpen({ open: true })}
-          >
-            ADD Product
-            <Icon src="/icon/i-plus.svg" className="hidden md:inline-block" />
-          </Button>
+          {isWarehouse && (
+            <Button
+              className=" border-none px-3.5"
+              onClick={() => setModalOpen({ open: true })}
+            >
+              ADD Product
+              <Icon src="/icon/i-plus.svg" className="hidden md:inline-block" />
+            </Button>
+          )}
         </PageTopBar>
 
         {/* Search, Import and Exports table, Table content and pagination */}
@@ -157,7 +173,7 @@ export default function ProductPage() {
 
             {/* Import and Export */}
             <div className="flex gap-6 items-center">
-              <ImportTable />
+              {isWarehouse && <ImportTable />}
               <ExportTable
                 headers={headers}
                 tableData={data?.data}
