@@ -73,7 +73,13 @@ async def register(
     })
 
     refresh_token = create_refresh_token({
-        "sub": str(user.id)
+        "sub": str(user.id),
+           "user": {
+            "name": user.name,
+            "email": user.email,
+            "role": user.role.value,
+            "branch": {'id': user.branch.id, 'name': user.branch.name} if user.branch else None
+        }
     })
 
     return {
@@ -125,7 +131,13 @@ async def login(
     })
 
     refresh_token = create_refresh_token({
-        "sub": str(user.id)
+        "sub": str(user.id),
+           "user": {
+            "name": user.name,
+            "email": user.email,
+            "role": user.role.value,
+            "branch": {'id': user.branch.id, 'name': user.branch.name} if user.branch else None
+        }
     })
 
     return {
@@ -160,7 +172,8 @@ async def refresh_token(
     })
 
     new_refresh_token = create_refresh_token({
-        "sub": str(user_id)
+        "sub": str(user_id),
+        "user":user
     })
 
     return {
