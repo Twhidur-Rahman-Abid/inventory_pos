@@ -1,7 +1,13 @@
 "use client";
-import { createContext, useContext } from "react";
+import {
+  createContext,
+  Dispatch,
+  SetStateAction,
+  useContext,
+  useState,
+} from "react";
 
-export type UserContextType = {
+export type UserContextValue = {
   token: string;
   user: {
     id: number | null;
@@ -14,6 +20,9 @@ export type UserContextType = {
     };
   };
 };
+export type UserContextType = UserContextValue & {
+  setUser: Dispatch<SetStateAction<UserContextValue>>;
+};
 
 const userContext = createContext<UserContextType>({} as UserContextType);
 
@@ -21,10 +30,15 @@ export const UserProvider = ({
   value,
   children,
 }: {
-  value: UserContextType;
+  value: UserContextValue;
   children: React.ReactNode;
 }) => {
-  return <userContext.Provider value={value}>{children}</userContext.Provider>;
+  const [user, setUser] = useState<UserContextValue>(value);
+  return (
+    <userContext.Provider value={{ ...user, setUser }}>
+      {children}
+    </userContext.Provider>
+  );
 };
 
 export const useUser = (): UserContextType => {
