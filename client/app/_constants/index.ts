@@ -21,6 +21,8 @@ const ADMIN_ROUTE = [
     label: "Products",
     icon: "/icon/i-product.svg",
   },
+  { label: "Sold", icon: "/icon/i-sold.svg" },
+  { label: "Online Order", icon: "/icon/i-online-order.svg" },
   { label: "Category", icon: "/icon/i-category.svg" },
   { label: "Branch", icon: "/icon/i-branch.svg" },
   { label: "Employee", icon: "/icon/i-cashire.svg" },
