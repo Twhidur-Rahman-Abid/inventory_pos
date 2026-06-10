@@ -22,6 +22,7 @@ const Logout = () => {
     setIsPending(false);
     if (logout) {
       router.push("/");
+      setIsModalOpen(false);
       toast.success("User logout!");
     } else {
       toast.error("There was an error occur!");
