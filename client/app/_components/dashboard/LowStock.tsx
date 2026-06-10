@@ -16,7 +16,7 @@ const LowStock = () => {
   });
 
   return (
-    <div className="mt-5 bg-white shadow-2 rounded-[18px] p-4 md:p-4 w-full">
+    <div className="mt-5 bg-white shadow-2 rounded-[18px] p-4 md:p-4 min-w-[300px] w-full">
       <h3 className="text-lg text-denger font-medium pb-3 border-b border-colorBorder mb-6">
         Low Stock
       </h3>
