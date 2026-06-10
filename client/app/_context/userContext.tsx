@@ -15,8 +15,8 @@ export type UserContextValue = {
     email: string;
     role: string;
     branch: {
-      id: number;
-      name: string;
+      id?: number;
+      name?: string;
     };
   };
 };
