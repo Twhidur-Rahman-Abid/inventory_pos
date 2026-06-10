@@ -3,6 +3,7 @@ import type { NextConfig } from "next";
 const nextConfig: NextConfig = {
   /* config options here */
   cacheComponents: true,
+  reactCompiler: true,
   images: {
     dangerouslyAllowLocalIP: true,
     remotePatterns: [
@@ -13,6 +14,11 @@ const nextConfig: NextConfig = {
       {
         protocol: "http",
         hostname: "**",
+      },
+      {
+        protocol: "https",
+        hostname: "niamah-shop.onrender.com",
+        pathname: "/**",
       },
     ],
   },
