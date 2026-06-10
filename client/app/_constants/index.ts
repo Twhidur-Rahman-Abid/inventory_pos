@@ -1,4 +1,5 @@
-const BASE_URL = "http://127.0.0.1:8000/api/v1";
+// const BASE_URL = "http://127.0.0.1:8000/api/v1";
+const BASE_URL = "https://niamah-shop.onrender.com/api/v1";
 
 // MONEY SYMBOL BDT
 const MONEY_SYMBOL = "৳";
