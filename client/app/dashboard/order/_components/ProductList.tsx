@@ -90,7 +90,7 @@ const ProductList: React.FC = () => {
   // Handle search by SKU or name
   // if SKU matches, add to cart immediately, otherwise just filter the products
   const handleSearch = (val: string) => {
-    const matchSku = productToRender?.find((v) => v.sku_code === val);
+    const matchSku = productToRender?.find((v) => v.sku_code === val.trim());
     if (matchSku) addToCart({ ...matchSku, qty: 1 });
     setSearch(val);
   };
