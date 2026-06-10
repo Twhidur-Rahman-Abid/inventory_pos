@@ -13,7 +13,7 @@ import { useCart } from "@/app/_context/productOrderCartContext";
 type ModalProps = {
   onClose: () => void;
   orderPayload: {
-    branch_id: number;
+    branch_id: number | undefined;
     extra_discount: number;
     delivery: number;
     payment_method?: any;
@@ -83,9 +83,13 @@ export default function PaymentModal({
             <Select
               options={PAYMENT_METHOD}
               className="w-full py-3"
-              getSelectValue={(val) =>
-                setPaymentMethod((val?.id || val?.value) as string)
-              }
+              getSelectValue={(val: any) => {
+                const value =
+                  typeof val === "object" && val !== null
+                    ? (val.id ?? val.value)
+                    : val;
+                setPaymentMethod(value !== undefined ? String(value) : "");
+              }}
             />
           }
         />

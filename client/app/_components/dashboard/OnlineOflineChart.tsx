@@ -1,21 +1,15 @@
 "use client";
 
-import { MONEY_SYMBOL, MONEY_TITLE } from "@/app/_constants";
 import { PieChart, Pie, Cell, ResponsiveContainer } from "recharts";
 import MoneySymbol from "../ui/MoneySymbol";
-
-const data = [
-  { name: "Online", value: 62 },
-  { name: "Offline", value: 38 },
-];
+import { donut_chart } from "./SalesCharts";
 
 const COLORS = ["#16a34a", "#f97316"];
 
 export default function SalesDonutChart({
-  data = [],
-  title = "",
-  donut_chart = {},
-}) {
+  data,
+  total_sales_amount,
+}: donut_chart) {
   return (
     <div className="bg-white rounded-2xl p-5 shadow-sm w-full md:w-fit flex flex-col justify-center items-center">
       <h2 className="text-lg font-semibold mb-4">Online vs Offline Sales</h2>
@@ -40,7 +34,7 @@ export default function SalesDonutChart({
         {/* Center Text */}
         <div className="absolute inset-0 flex flex-col items-center justify-center">
           <h3 className="text-xl font-bold">
-            <MoneySymbol /> {title}
+            <MoneySymbol /> {total_sales_amount}
           </h3>
           <p className="text-sm text-gray-500">Total Sales</p>
         </div>
@@ -48,10 +42,10 @@ export default function SalesDonutChart({
 
       <div className="flex gap-6 mt-4 text-sm">
         <span className="flex items-center gap-2 text-green-600">
-          ● Online ({donut_chart?.data[0]?.value}%)
+          ● Online ({data?.[0]?.value}%)
         </span>
         <span className="flex items-center gap-2 text-orange-500">
-          ● Offline ({donut_chart?.data[1]?.value}%)
+          ● Offline ({data[1]?.value}%)
         </span>
       </div>
     </div>

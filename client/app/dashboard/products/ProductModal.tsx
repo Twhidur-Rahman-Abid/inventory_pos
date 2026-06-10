@@ -84,8 +84,12 @@ const ProductModal = ({
   );
 
   useEffect(() => {
-    if (images?.length > 0) {
-      setImageList(images);
+    if (images && images.length > 0) {
+      setImageList(
+        images.map((img) =>
+          typeof img === "string" ? { image_url: img } : img,
+        ),
+      );
     }
   }, [images]);
 
@@ -302,8 +306,9 @@ const ProductModal = ({
                       if (file) {
                         setImagesFile((prev) => [...prev, file]);
                       }
-                      if (imgField?.id) {
-                        setDeletedImages((prev) => [...prev, imgField.id]);
+                      const imageId = imgField.id;
+                      if (typeof imageId === "number") {
+                        setDeletedImages((prev) => [...prev, imageId]);
                       }
                     }}
                   />
@@ -311,8 +316,9 @@ const ProductModal = ({
                   <button
                     type="button"
                     onClick={() => {
-                      if (imgField?.id) {
-                        setDeletedImages((prev) => [...prev, imgField.id]);
+                      const imageId = imgField.id;
+                      if (typeof imageId === "number") {
+                        setDeletedImages((prev) => [...prev, imageId]);
                       }
                       setImageList(imageList.filter((v, i) => i !== index));
                       setImagesFile(imagesFile.filter((v, i) => i !== index));

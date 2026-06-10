@@ -9,7 +9,11 @@ import {
   ResponsiveContainer,
 } from "recharts";
 
-export default function SalesOverviewChart({ data = [] }) {
+export default function SalesOverviewChart({
+  data = [],
+}: {
+  data: { name: string; online: number; offline: number }[];
+}) {
   return (
     <div className="bg-white rounded-2xl p-5 shadow-sm w-full">
       <div className="flex justify-between mb-4">

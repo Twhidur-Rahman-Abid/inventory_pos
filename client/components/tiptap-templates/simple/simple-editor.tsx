@@ -186,7 +186,7 @@ export function SimpleEditor({
   onChange,
 }: {
   value?: string;
-  onChange?: (value: string) => void;
+  onChange: (value: string) => void;
 }) {
   const isMobile = useIsBreakpoint();
   const { height } = useWindowSize();
