@@ -129,7 +129,7 @@ export async function postData({
     if (revalidate?.length) {
       revalidateTag(revalidate, "");
     }
-    return { status: "success" };
+    return { status: "success", data };
   } catch (error) {
     console.log(error);
     if (submission) {
@@ -212,7 +212,7 @@ export async function postJSONData({
         return { status: "error", message, errors: data?.errors };
       }
     }
-    return { status: "success" };
+    return { status: "success", data };
   } catch (error) {
     console.log(error);
     if (submission) {
@@ -297,7 +297,7 @@ export async function putJSONData({
         return { status: "error", message, errors: data?.errors };
       }
     }
-    return { status: "success" };
+    return { status: "success", data };
   } catch (error) {
     console.log(error);
     if (submission) {
@@ -390,7 +390,7 @@ export async function putData({
         return { status: "error", message, errors: data?.errors };
       }
     }
-    return { status: "success" };
+    return { status: "success", data };
   } catch (error) {
     console.log(error);
     if (submission) {
