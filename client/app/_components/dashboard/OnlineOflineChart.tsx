@@ -24,7 +24,7 @@ export default function SalesDonutChart({
               dataKey="value"
               stroke="none"
             >
-              {data.map((entry, index) => (
+              {data?.map((entry, index) => (
                 <Cell key={index} fill={COLORS[index]} />
               ))}
             </Pie>

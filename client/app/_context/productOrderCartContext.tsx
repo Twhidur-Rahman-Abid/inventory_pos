@@ -29,6 +29,8 @@ type ProductOrderCartContextType = {
   handleProductQuantity: (items: { product_id: number; qty: number }[]) => void;
   selectedCategory: CategoryType;
   setSelectedCategory: Dispatch<SetStateAction<CategoryType>>;
+  isPrintOpen: boolean;
+  setIsPrintOpen: Dispatch<SetStateAction<boolean>>;
   productState: {
     products: ProductType[];
     productsLoading: boolean;
@@ -58,6 +60,7 @@ export const ProductOrderCartProvider = ({
 }: {
   children: ReactNode;
 }) => {
+  const [isPrintOpen, setIsPrintOpen] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<CategoryType>({
     id: "all",
     name: "All",
@@ -212,6 +215,8 @@ export const ProductOrderCartProvider = ({
       selectedCategory,
       setSelectedCategory,
       productState,
+      isPrintOpen,
+      setIsPrintOpen,
     }),
     [
       carts,
@@ -223,6 +228,8 @@ export const ProductOrderCartProvider = ({
       handleProductQuantity,
       selectedCategory,
       productState,
+      isPrintOpen,
+      setIsPrintOpen,
     ],
   );
 
