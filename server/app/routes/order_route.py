@@ -221,7 +221,18 @@ async def create_order(
 
         await db.commit()
 
-        await db.refresh(order)
+        # await db.refresh(order)
+        result = await db.execute(
+            select(Order)
+            .options(
+                selectinload(Order.customer),
+                selectinload(Order.items)
+                .selectinload(OrderItem.product)
+            )
+            .where(Order.id == order.id)
+            )
+
+        order = result.scalar_one_or_none()
 
         return {
             "message": "Order created successfully",
