@@ -546,7 +546,7 @@ async def get_recent_orders( current_user: User = Depends(
             .limit(10)
         )
 
-        if current_user.role not in [UserRole.admin,UserRole.warehouse_manager]:
+        if current_user.role != UserRole.admin:
             query=query.where(Order.branch_id == current_user.branch_id )
 
         result = await db.execute(query)
