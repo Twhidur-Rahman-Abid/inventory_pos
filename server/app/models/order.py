@@ -20,6 +20,8 @@ class OrderCreate(BaseModel):
     note: Optional[str] = None
     payment_method: PaymentMethod = PaymentMethod.CASH
     items: list[OrderItemCreate]
+    customer_name : Optional[str] = None
+    customer_phone : Optional[str] = None
 
 
 class OrderStatusUpdate(BaseModel):
