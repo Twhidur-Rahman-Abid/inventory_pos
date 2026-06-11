@@ -13,13 +13,12 @@ from app.routes.dashboard_route import dashboard_router
 from app.routes.stock_route import stockRouter
 from fastapi.middleware.cors import CORSMiddleware
 
-app = FastAPI(title=get_config().app_name)
+config = get_config()
+
+app = FastAPI(title=config.app_name)
 
 # Configure CORS
-origins = [
-    "http://localhost",
-    "http://localhost:3000",  
-]
+origins = config.origins
 
 app.add_middleware(
     CORSMiddleware,

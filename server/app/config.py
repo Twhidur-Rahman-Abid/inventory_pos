@@ -10,6 +10,7 @@ class Config(BaseSettings):
     admin_secret_key:str = "niamah-admin-shop"
     access_token_expire_minutes:int=30
     refresh_token_expire_days:int=7
+    origins:[str]
 
     model_config = SettingsConfigDict(env_file=".env")
 
