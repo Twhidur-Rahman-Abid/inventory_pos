@@ -45,7 +45,7 @@ export default function SalesDonutChart({
           ● Online ({data?.[0]?.value}%)
         </span>
         <span className="flex items-center gap-2 text-orange-500">
-          ● Offline ({data[1]?.value}%)
+          ● Offline ({data?.[1]?.value}%)
         </span>
       </div>
     </div>
