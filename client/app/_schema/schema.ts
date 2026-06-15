@@ -1,4 +1,4 @@
-import { z } from "zod";
+import { nullish, z } from "zod";
 
 export const branchSchema = z.object({
   name: z
@@ -118,4 +118,14 @@ export const ProductSchema = z.object({
     .min(0, "Price cannot be negative"),
 
   deleted_image_ids: z.array(z.coerce.number()).optional(),
+});
+
+export const CouponSchema = z.object({
+  code: z.string({ error: "Code is required" }),
+  coupon_type: z.string({ error: "Coupon type is required" }),
+  value: z.coerce.number({ error: "Value is required" }),
+  min_order_amount: z.coerce.number().optional(),
+  max_usage: z.coerce.number().optional(),
+  used_count: z.coerce.number().optional(),
+  is_active: z.boolean().default(true),
 });
