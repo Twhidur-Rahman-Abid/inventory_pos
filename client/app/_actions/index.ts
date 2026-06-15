@@ -7,13 +7,31 @@ import { cookies } from "next/headers";
 import { BASE_URL } from "../_constants";
 import { revalidateTag } from "next/cache";
 import { updateTag } from "next/cache";
+import { getFreshToken } from "../_lib/getOptimizeRefreshToken";
+import { logoutAction } from "./auth_actions";
+import { redirect } from "next/navigation";
 
 // get auth token func
 async function getAuthTokens() {
   const cookieStore = await cookies();
 
-  const accessToken = cookieStore.get("accessToken")?.value;
+  let accessToken = cookieStore.get("accessToken")?.value;
   const refreshToken = cookieStore.get("refreshToken")?.value;
+
+  // token rotation
+  if (!accessToken) {
+    const tokenRes = await getFreshToken();
+
+    if (tokenRes?.success && tokenRes.access_token) {
+      accessToken = tokenRes.access_token;
+    } else {
+      await logoutAction();
+      redirect("/");
+    }
+  } else if (!refreshToken) {
+    await logoutAction();
+    redirect("/");
+  }
 
   return {
     accessToken,
@@ -175,6 +193,18 @@ export async function postJSONData({
       }
     }
 
+    // remove empty key
+    const keysToRemove: string[] = [];
+    formData.forEach((value: FormDataEntryValue, key: string) => {
+      if (!value) {
+        keysToRemove.push(key);
+      }
+    });
+
+    keysToRemove.forEach((key) => {
+      formData.delete(key);
+    });
+
     console.log("== from data ==", formData);
     // post data
     const res = await fetch(`${BASE_URL}${endpoint}`, {
@@ -263,6 +293,18 @@ export async function putJSONData({
 
     console.log("== from data ==", body);
 
+    // remove empty key
+    const keysToRemove: string[] = [];
+    formData.forEach((value: FormDataEntryValue, key: string) => {
+      if (!value) {
+        keysToRemove.push(key);
+      }
+    });
+
+    keysToRemove.forEach((key) => {
+      formData.delete(key);
+    });
+
     // put data
     const res = await fetch(`${BASE_URL}${endpoint}`, {
       method: "PUT",
@@ -294,7 +336,12 @@ export async function putJSONData({
           }),
         };
       } else {
-        return { status: "error", message, errors: data?.errors };
+        return {
+          status: "error",
+          message,
+          errors: data?.errors,
+          lastResult: body,
+        };
       }
     }
     return { status: "success", data };
