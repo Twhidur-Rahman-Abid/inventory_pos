@@ -11,6 +11,7 @@ from app.routes.branch_route import branchRouter
 from app.routes.order_route import orderRouter
 from app.routes.dashboard_route import dashboard_router
 from app.routes.stock_route import stockRouter
+from app.routes.coupon_route import couponRouter
 from fastapi.middleware.cors import CORSMiddleware
 
 config = get_config()
@@ -54,6 +55,7 @@ v1RRouter.include_router(router=productRouter)
 v1RRouter.include_router(router=orderRouter)
 v1RRouter.include_router(router=dashboard_router)
 v1RRouter.include_router(router=stockRouter)
+v1RRouter.include_router(router=couponRouter)
 
 app.include_router(v1RRouter)
 
