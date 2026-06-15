@@ -1,5 +1,5 @@
-// const BASE_URL = "http://127.0.0.1:8000/api/v1";
-const BASE_URL = "https://niamah-shop.onrender.com/api/v1";
+const BASE_URL = "http://127.0.0.1:8000/api/v1";
+// const BASE_URL = "https://niamah-shop.onrender.com/api/v1";
 
 // MONEY SYMBOL BDT
 const MONEY_SYMBOL = "৳";
@@ -10,6 +10,17 @@ const PAYMENT_METHOD = [
   { value: "bkash", label: "Bkash", img: "/BKash.svg" },
   { value: "nagad", label: "Nagad", img: "/Nagad.svg" },
   { value: "rocket", label: "Rocket", img: "/rocket.png" },
+];
+
+const COUPON_TYPE_OPTIONS = [
+  {
+    id: "percentage",
+    name: "Percentage",
+  },
+  {
+    id: "fixed",
+    name: "Fixed",
+  },
 ];
 
 // admin route
@@ -27,6 +38,7 @@ const ADMIN_ROUTE = [
   { label: "Category", icon: "/icon/i-category.svg" },
   { label: "Branch", icon: "/icon/i-branch.svg" },
   { label: "Employee", icon: "/icon/i-cashire.svg" },
+  { label: "Coupon", icon: "/icon/i-coupon.svg" },
   { label: "Reports", icon: "/icon/i-report.svg" },
   { label: "Setting", icon: "/icon/i-setting-2.svg" },
 ];
@@ -120,4 +132,5 @@ export {
   BRANCH_ROUTE,
   WAREHOUSE_ROUTE,
   ADMIN_ROUTE,
+  COUPON_TYPE_OPTIONS,
 };
