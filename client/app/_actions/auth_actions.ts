@@ -60,10 +60,13 @@ export async function authAction(_: any, formData: FormData) {
 }
 
 export async function refreshTokenRotate() {
-  console.log("refesh token call:");
   const cookieStore = await cookies();
+  const accessToken = cookieStore.get("accessToken")?.value;
   const refresh = cookieStore.get("refreshToken")?.value;
 
+  if (accessToken && refresh) {
+    return { access_token: accessToken, refresh_token: refresh };
+  }
   const res = await fetch(`${BASE_URL}/auth/refresh`, {
     method: "POST",
     body: JSON.stringify({ refresh_token: refresh }),
