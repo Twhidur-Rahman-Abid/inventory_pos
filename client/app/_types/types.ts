@@ -53,6 +53,20 @@ export type OrderStatus =
   | "cancelled"
   | "refunded";
 
+export type couponType = "percentage" | "fixed";
+
+export type Coupon = {
+  id: number;
+  code: string;
+  coupon_type: couponType;
+  value: number;
+  min_order_amount?: number;
+  max_usage?: number;
+  used_count?: number;
+  is_active: boolean;
+  expires_at?: string;
+};
+
 export type PaymentMethod = "cash" | "bkash" | "nagad" | "rocket";
 
 export type FetchStatus = "start" | "success" | "error";
