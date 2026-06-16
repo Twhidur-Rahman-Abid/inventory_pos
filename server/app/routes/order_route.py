@@ -97,12 +97,11 @@ async def create_order(
             # =========================
 
             ordered_qty = item.qty
-
-            delivered_qty = (
-                ordered_qty * 2
-                if product.is_buy_one_get_one
-                else ordered_qty
-            )
+            delivered_qty = item.qty
+            
+            if product.is_buy_one_get_one:
+                delivered_qty = ordered_qty * 2
+                
 
             # =========================
             # Branch Stock Validation
@@ -182,7 +181,7 @@ async def create_order(
             # Stock Deduction
             # =========================
 
-            if is_branch_user:
+            if is_branch_user and stock:
                 stock.qty -= delivered_qty
             else:
                 product.quantity -= delivered_qty
@@ -197,21 +196,24 @@ async def create_order(
                     product_id=product.id,
 
                     # ordered quantity
-                    qty=ordered_qty,
+                    qty=delivered_qty,
 
                     # discounted unit price
-                    price=unit_price
+                    price=subtotal
                 )
             )
 
         # =========================
-        # Final Total
+        # Final Total width extra discount
         # =========================
 
         total = (
-            total
-            + Decimal(str(payload.delivery))
-            - Decimal(str(payload.extra_discount))
+            (total + Decimal(str(payload.delivery)))
+            - (
+                (total + Decimal(str(payload.delivery)))
+                * Decimal(str(payload.extra_discount))
+                / Decimal("100")
+            )
         )
 
         if total < 0:
