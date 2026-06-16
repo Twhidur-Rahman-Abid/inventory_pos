@@ -8,6 +8,8 @@ import { cn } from "@/app/_lib/utils";
 import PaymentModal from "./PaymentModal";
 import { CartType, useCart } from "@/app/_context/productOrderCartContext";
 import { useUser } from "@/app/_context/userContext";
+import MoneySymbol from "@/app/_components/ui/MoneySymbol";
+import { MONEY_TITLE } from "@/app/_constants";
 
 const tableHeaders = [
   { label: "Item" },
@@ -25,11 +27,11 @@ const RightSide = () => {
   const { carts, clearCart } = useCart();
 
   const subtotal = carts.reduce((acc, item) => acc + item.price * item.qty, 0);
-  const total = subtotal - discount + delivery;
+  const total = subtotal + delivery - ((subtotal + delivery) * discount) / 100;
   const { user } = useUser();
 
   const orderPayload = {
-    branch_id: user.branch.id,
+    branch_id: user.branch?.id,
     extra_discount: discount,
     delivery: delivery,
     items: carts?.map((cart) => ({ product_id: cart.id, qty: cart.qty })),
@@ -121,7 +123,8 @@ const RightSide = () => {
           disabled={carts.length === 0}
           onClick={() => setIsPaymentOpen(true)}
         >
-          Pay {total} ৳
+          Pay {total}
+          <MoneySymbol />
         </Button>
       </div>
 
@@ -243,7 +246,7 @@ function BillingSummary({
                   />
                 )}
 
-                {!isDiscountOpen && <span>{discount} Tk</span>}
+                {!isDiscountOpen && <span>{discount} %</span>}
               </div>
             </td>
           </tr>
@@ -281,7 +284,11 @@ function BillingSummary({
                   />
                 )}
 
-                {!isDeliveryOpen && <span>{delivery} Tk</span>}
+                {!isDeliveryOpen && (
+                  <span>
+                    {delivery} {MONEY_TITLE}
+                  </span>
+                )}
               </div>
             </td>
           </tr>
@@ -293,7 +300,7 @@ function BillingSummary({
             </td>
             <td className="p-0 pb-8 text-center">:</td>
             <td className="text-right text-sm text-body-text p-0 pb-8">
-              {subtotal} Tk
+              {subtotal} {MONEY_TITLE}
             </td>
           </tr>
 
@@ -304,7 +311,7 @@ function BillingSummary({
             </td>
             <td className="text-primary pt-8 pb-0 text-center">:</td>
             <td className="text-right text-xl font-semibold text-secondary pt-8 pb-0">
-              {total} Tk
+              {total} {MONEY_TITLE}
             </td>
           </tr>
         </tbody>
