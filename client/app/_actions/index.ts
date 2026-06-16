@@ -194,16 +194,18 @@ export async function postJSONData({
     }
 
     // remove empty key
-    const keysToRemove: string[] = [];
-    formData.forEach((value: FormDataEntryValue, key: string) => {
-      if (!value) {
-        keysToRemove.push(key);
-      }
-    });
+    if (formData instanceof FormData) {
+      const keysToRemove: string[] = [];
+      formData.forEach((value: FormDataEntryValue, key: string) => {
+        if (!value) {
+          keysToRemove.push(key);
+        }
+      });
 
-    keysToRemove.forEach((key) => {
-      formData.delete(key);
-    });
+      keysToRemove.forEach((key) => {
+        formData.delete(key);
+      });
+    }
 
     console.log("== from data ==", formData);
     // post data
@@ -259,6 +261,8 @@ export async function postJSONData({
     return { status: "error", message: "Server error!" };
   }
 }
+
+// put json data
 export async function putJSONData({
   endpoint = "",
   formData,
@@ -294,16 +298,18 @@ export async function putJSONData({
     console.log("== from data ==", body);
 
     // remove empty key
-    const keysToRemove: string[] = [];
-    formData.forEach((value: FormDataEntryValue, key: string) => {
-      if (!value) {
-        keysToRemove.push(key);
-      }
-    });
+    if (formData instanceof FormData) {
+      const keysToRemove: string[] = [];
+      formData.forEach((value: FormDataEntryValue, key: string) => {
+        if (!value) {
+          keysToRemove.push(key);
+        }
+      });
 
-    keysToRemove.forEach((key) => {
-      formData.delete(key);
-    });
+      keysToRemove.forEach((key) => {
+        formData.delete(key);
+      });
+    }
 
     // put data
     const res = await fetch(`${BASE_URL}${endpoint}`, {
