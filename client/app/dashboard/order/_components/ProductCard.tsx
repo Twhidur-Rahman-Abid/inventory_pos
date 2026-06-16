@@ -6,6 +6,7 @@ import React from "react";
 import { MONEY_SYMBOL } from "@/app/_constants";
 import { ProductType } from "@/app/_types/types";
 import { useCart } from "@/app/_context/productOrderCartContext";
+import MoneySymbol from "@/app/_components/ui/MoneySymbol";
 
 interface ProductCardProps {
   product: ProductType;
@@ -41,6 +42,9 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
     );
   }
 
+  const hasDiscount: boolean =
+    !is_buy_one_get_one && Number(discount_percentage) > 0;
+
   return (
     <div className="border border-stock/10 rounded-xl bg-[#F5F5F5] flex flex-col justify-between relative">
       <div className="absolute top-4 left-4">{DiscountTag}</div>
@@ -59,17 +63,17 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
         <div className="mt-2.5 flex justify-between items-center">
           {/* Price */}
           <div className="flex gap-1 items-center">
-            <p className="text-sm font-medium text-textColor-2">
+            <p className="text-sm lg:text-base font-medium text-textColor-2">
               {finalPrice}
-              {MONEY_SYMBOL}
+              <MoneySymbol />
             </p>
 
-            {!is_buy_one_get_one && discount_percentage && (
+            {hasDiscount && (
               <p className="text-12 text-body-text">
                 (
                 <span className="line-through">
                   {price}
-                  {MONEY_SYMBOL}
+                  <MoneySymbol />
                 </span>
                 )
               </p>
@@ -79,7 +83,7 @@ const ProductCard: React.FC<ProductCardProps> = ({ product }) => {
           {/* Button (UI only) */}
           <button
             onClick={() => {
-              addToCart({ ...product, qty: 1 });
+              addToCart({ ...product, price: finalPrice, qty: 1 });
             }}
             className="p-1.5 flex gap-1 border border-primary rounded-full bg-transparent text-12 leading-3 text-primary cursor-pointer"
           >
