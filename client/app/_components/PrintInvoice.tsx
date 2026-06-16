@@ -3,7 +3,7 @@ import { Button, Logo } from "@/app/_components";
 import { useUser } from "@/app/_context/userContext";
 import { formatDate } from "@/app/_lib/utils";
 import Image from "next/image";
-import React, { useRef } from "react";
+import React, { useRef, ReactNode } from "react";
 import { useReactToPrint } from "react-to-print";
 
 const PrintInvoice = ({
@@ -175,7 +175,7 @@ const PrintInvoice = ({
                                 {item.qty}
                               </td>
                               <td className="py-3 px-4 text-sm font-semibold text-right text-gray-900">
-                                {item?.qty * item?.price}
+                                {item?.price}
                               </td>
                             </tr>
                           ))}
@@ -192,13 +192,13 @@ const PrintInvoice = ({
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">Delivery Charge:</span>
                       <span className="text-gray-900 font-semibold">
-                        {orderData?.delivery || 0}
+                        {orderData?.delivery || 0} {MONEY_TITLE}
                       </span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">Discount:</span>
-                      <span className="text-gray-900 font-semibold line-through">
-                        {orderData?.extra_discount}
+                      <span className="text-gray-900 font-semibold">
+                        {orderData?.extra_discount} %
                       </span>
                     </div>
 

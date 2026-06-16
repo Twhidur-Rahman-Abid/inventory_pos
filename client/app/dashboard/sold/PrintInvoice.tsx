@@ -1,6 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { getData } from "@/app/_actions";
 import { Logo } from "@/app/_components";
+import { MONEY_TITLE } from "@/app/_constants";
 import { useUser } from "@/app/_context/userContext";
 import { formatDate } from "@/app/_lib/utils";
 import Image from "next/image";
@@ -188,7 +189,7 @@ const PrintInvoice = ({ id }: { id: number }) => {
                                 {item.qty}
                               </td>
                               <td className="py-3 px-4 text-sm font-semibold text-right text-gray-900">
-                                {item?.qty * item?.price}
+                                {item?.price}
                               </td>
                             </tr>
                           ))}
@@ -205,13 +206,13 @@ const PrintInvoice = ({ id }: { id: number }) => {
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">Delivery Charge:</span>
                       <span className="text-gray-900 font-semibold">
-                        {orderData?.delivery || 0}
+                        {orderData?.delivery || 0} {MONEY_TITLE}
                       </span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">Discount:</span>
-                      <span className="text-gray-900 font-semibold line-through">
-                        {orderData?.extra_discount}
+                      <span className="text-gray-900 font-semibold ">
+                        {orderData?.extra_discount} %
                       </span>
                     </div>
 
