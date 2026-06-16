@@ -9,6 +9,7 @@ import { postJSONData } from "@/app/_actions";
 import { toast } from "react-toastify";
 import Loading from "@/app/_components/ui/Loading";
 import { useCart } from "@/app/_context/productOrderCartContext";
+import PrintInvoice from "@/app/_components/PrintInvoice";
 
 type ModalProps = {
   onClose: () => void;
@@ -39,6 +40,8 @@ export default function PaymentModal({
   const [note, setNote] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { clearCart, handleProductQuantity } = useCart();
+  const [isPrintOpen, setIsPrintOpen] = useState(false);
+  const [orderedData, setOrderedData] = useState();
 
   const orderAction = async () => {
     setIsLoading(true);
@@ -56,7 +59,9 @@ export default function PaymentModal({
     if (res?.status === "success") {
       handleProductQuantity(orderPayload?.items || []);
       toast.success("Order confirmed!");
-      onClose();
+      // onClose();
+      setOrderedData(res?.data?.data);
+      setIsPrintOpen(true);
       onRightSideClose();
       clearCart();
     } else {
@@ -65,36 +70,44 @@ export default function PaymentModal({
   };
 
   return (
-    <Modal title="Payment" onClose={onClose}>
-      <div className="py-4 space-y-8 text-secondary text-sm font-medium">
-        {/* Pay */}
-        <InfoRow
-          Left={<p className="w-full">Pay</p>}
-          Right={
-            <p className="w-full text-xl font-semibold">
-              {orderPayload?.total} TK
-            </p>
-          }
-        />
+    <Modal title={isPrintOpen ? "Print Invoice" : "Payment"} onClose={onClose}>
+      {isPrintOpen ? (
+        <div className="flex gap-6 items-center justify-between mt-4">
+          <Button onClick={onClose} isCancel>
+            Close
+          </Button>
+          <PrintInvoice orderData={orderedData} onClose={onClose} />
+        </div>
+      ) : (
+        <div className="py-4 space-y-8 text-secondary text-sm font-medium">
+          {/* Pay */}
+          <InfoRow
+            Left={<p className="w-full">Pay</p>}
+            Right={
+              <p className="w-full text-xl font-semibold">
+                {orderPayload?.total} TK
+              </p>
+            }
+          />
 
-        <InfoRow
-          Left={<p className="w-full">Type</p>}
-          Right={
-            <Select
-              options={PAYMENT_METHOD}
-              className="w-full py-3"
-              getSelectValue={(val: any) => {
-                const value =
-                  typeof val === "object" && val !== null
-                    ? (val.id ?? val.value)
-                    : val;
-                setPaymentMethod(value !== undefined ? String(value) : "");
-              }}
-            />
-          }
-        />
-        {/* Payment Type */}
-        {/* {paymentStatus !== "due" && (
+          <InfoRow
+            Left={<p className="w-full">Type</p>}
+            Right={
+              <Select
+                options={PAYMENT_METHOD}
+                className="w-full py-3"
+                getSelectValue={(val: any) => {
+                  const value =
+                    typeof val === "object" && val !== null
+                      ? (val.id ?? val.value)
+                      : val;
+                  setPaymentMethod(value !== undefined ? String(value) : "");
+                }}
+              />
+            }
+          />
+          {/* Payment Type */}
+          {/* {paymentStatus !== "due" && (
           <InfoRow
             Left={<p className="w-full">Type</p>}
             Right={
@@ -107,8 +120,8 @@ export default function PaymentModal({
           />
         )} */}
 
-        {/* Payment Status */}
-        {/* <InfoRow
+          {/* Payment Status */}
+          {/* <InfoRow
           Left={<p className="w-full">Payment Status</p>}
           Right={
             <div className="w-full flex gap-2 justify-between">
@@ -133,8 +146,8 @@ export default function PaymentModal({
           }
         /> */}
 
-        {/* Advance */}
-        {/* {paymentStatus === "advance" && (
+          {/* Advance */}
+          {/* {paymentStatus === "advance" && (
           <>
             <InfoRow
               Left={<p className="w-full">Advance Pay</p>}
@@ -167,8 +180,8 @@ export default function PaymentModal({
           </>
         )} */}
 
-        {/* Due */}
-        {/* {paymentStatus === "due" && (
+          {/* Due */}
+          {/* {paymentStatus === "due" && (
           <div className="grid grid-cols-2 gap-6">
             <div className="p-3 rounded-md bg-[#FBEDDB] text-center">
               <p className="font-semibold text-[#F2A444]">Due</p>
@@ -187,24 +200,25 @@ export default function PaymentModal({
           </div>
         )} */}
 
-        {/* Note */}
-        <InfoRow
-          Left={<p className="w-full">Note</p>}
-          Right={
-            <Input
-              type="text"
-              placeholder="Note"
-              defaultValue={note}
-              getInputValue={(val) => setNote(val)}
-            />
-          }
-        />
+          {/* Note */}
+          <InfoRow
+            Left={<p className="w-full">Note</p>}
+            Right={
+              <Input
+                type="text"
+                placeholder="Note"
+                defaultValue={note}
+                getInputValue={(val) => setNote(val)}
+              />
+            }
+          />
 
-        {/* Button */}
-        <Button onClick={orderAction} disabled={isLoading}>
-          {isLoading ? <Loading /> : "Order"}
-        </Button>
-      </div>
+          {/* Button */}
+          <Button onClick={orderAction} disabled={isLoading}>
+            {isLoading ? <Loading /> : "Order"}
+          </Button>
+        </div>
+      )}
     </Modal>
   );
 }
