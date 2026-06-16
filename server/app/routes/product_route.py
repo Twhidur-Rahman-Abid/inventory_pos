@@ -60,9 +60,9 @@ async def create_product(
         db.add(new_product)
         await db.flush() 
 
-      
-        new_detail = ProductDetail(product_id=new_product.id, description=description)
-        db.add(new_detail)
+        if description:       
+            new_detail = ProductDetail(product_id=new_product.id, description=description)
+            db.add(new_detail)
 
         if images:
             for idx, img in enumerate(images):
