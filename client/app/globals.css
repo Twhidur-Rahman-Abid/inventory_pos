@@ -32,6 +32,9 @@
   --shadow-7: 0px 0px 12px 0px rgba(204, 204, 204, 0.2);
 
   --breakpoint-3xl: 120rem;
+
+  --font-roboto: var(--font-roboto);
+  --font-bangla: var(--font-tiro-bangla);
 }
 
 .no-spinner::-webkit-inner-spin-button,
