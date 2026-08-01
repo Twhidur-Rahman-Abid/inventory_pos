@@ -1,8 +1,12 @@
 # stock.py
+# brands.py
+from typing import Optional
+
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import String, ForeignKey, Boolean, Numeric, Text,DateTime
 from ..db import Base
 from datetime import datetime,timezone
+
 
 class Product(Base):
     __tablename__ = "products"
@@ -15,13 +19,15 @@ class Product(Base):
         ForeignKey("categories.id", ondelete="CASCADE"), 
         nullable=False
     )
-
   
     price: Mapped[float] = mapped_column(Numeric(10, 2),nullable=False)
     discount_percentage: Mapped[float] = mapped_column(Numeric(5, 2), default=0)
     is_buy_one_get_one: Mapped[bool] = mapped_column(Boolean, default=False)
     thumbnail: Mapped[str] = mapped_column(String, nullable=True)
     quantity: Mapped[int] = mapped_column(nullable=False, default=0)
+    brand_id:Mapped[Optional[int]] = mapped_column(ForeignKey('brands.id'), nullable=True)
+    brand:Mapped["Brands | None"]=relationship("Brands", back_populates="products")
+
     category = relationship("Category", back_populates="products")
     details = relationship("ProductDetail", uselist=False, cascade="all, delete-orphan",
         passive_deletes=True)
