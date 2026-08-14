@@ -12,7 +12,6 @@ from app.utils.utils import delete_image_from_url, get_skip, has_next, save_imag
 from app.models.brands import BrandResponse,  BrandsResponses
 from app.database.schema.user import UserRole
 
-
 brandRouter = APIRouter(prefix="/brands", tags=["Brands"])
 @brandRouter.post("/", response_model=BrandResponse, status_code=201, dependencies=[Depends( role_required([
             UserRole.admin,
@@ -35,11 +34,11 @@ async def create_brand(
 
         if image:
             img_path = await save_image(
-                file=image,
-                folder="brands",
-                filename=name,
-                quality=80,
-            )
+                            file=image,
+                            folder="brands",
+                            filename=name,
+                            quality=80,
+                        )
             brand_data["img"] = img_path
 
         new_category = Brands(**brand_data)

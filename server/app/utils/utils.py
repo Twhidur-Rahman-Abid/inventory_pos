@@ -4,6 +4,8 @@ from fastapi import UploadFile
 from PIL import Image
 from pathlib import Path
 import os
+from fastapi import HTTPException
+from starlette.concurrency import run_in_threadpool
 
 from app.config import get_config
 
@@ -12,7 +14,8 @@ BASE_UPLOAD_DIR = Path("uploads")
 
 config = get_config()
 
-async def save_image(
+# Upload image to the folder
+def upload_image(
     file: UploadFile,
     folder: str,
     filename: str,
@@ -20,6 +23,7 @@ async def save_image(
     width: int | None = None,
     height: int | None = None,
 ) -> str:
+    
 
     # create folder
     upload_dir = BASE_UPLOAD_DIR / folder
@@ -39,7 +43,7 @@ async def save_image(
     image = Image.open(file.file)
 
     # convert image mode
-    if image.mode in ("RGBA", "P"):
+    if image.mode in ("RGBA","LA", "P"):
         image = image.convert("RGB")  # type: ignore
 
     # resize optional
@@ -54,7 +58,34 @@ async def save_image(
         optimize=True
     )
 
-    return config.site_link + '/' + str(file_path).replace("\\", "/")
+    #return config.site_link + '/' + str(file_path).replace("\\", "/")
+    return  '/' + str(file_path).replace("\\", "/")
+
+
+# Handle image upload via run_in_threadpool
+async def save_image(
+    file: UploadFile,
+    folder: str,
+    filename: str,
+    quality: int = 80,
+    width: int | None = None,
+    height: int | None = None,
+) -> str:
+    content = await file.read()
+    if len(content) > config.file_size:
+        raise HTTPException(
+            status_code=400,
+            detail={"message": f"File size is too large. Maximum file size is {config.file_size // (1024 * 1024)} MB."}
+        )  
+    
+    try:    
+        img_path = await run_in_threadpool(upload_image, file=file, folder=folder, filename=filename, quality=quality, width=width, height=height)
+        return img_path
+    except:
+         raise HTTPException(
+                        status_code=400,
+                        detail={"message": "Invalid image format. Please upload a valid image (JPEG, PNG, GIF, Webp)"}
+                    )
 
 
 def delete_image_from_url(image_url: str | None) -> bool: 
