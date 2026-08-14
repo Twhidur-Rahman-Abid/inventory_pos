@@ -11,6 +11,7 @@ class Config(BaseSettings):
     access_token_expire_minutes:int=30
     refresh_token_expire_days:int=7
     origins: list[str]
+    file_size:int =  2 * 1024 *1024
 
     model_config = SettingsConfigDict(env_file=".env")
 
