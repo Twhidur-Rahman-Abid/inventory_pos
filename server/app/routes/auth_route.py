@@ -1,3 +1,5 @@
+from collections import UserDict
+
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
@@ -7,6 +9,7 @@ from app.database.db import get_db
 from app.database.schema.user import User, UserRole
 
 from app.models.user import RegisterSchema, LoginSchema, ResetPasswordSchema, RefreshTokenSchema
+from fastapi.security import OAuth2PasswordRequestForm
 
 
 from app.utils.auth import (
@@ -93,16 +96,16 @@ async def register(
 # LOGIN
 @authRouter.post("/login")
 async def login(
-    data: LoginSchema,
+    data: OAuth2PasswordRequestForm = Depends(),
     db: AsyncSession = Depends(get_db)
 ):
 
     result = await db.execute(
-         select(User).options(selectinload(User.branch)).where(User.email == data.email)
+         select(User).options(selectinload(User.branch)).where(User.email == data.username)
     )
 
     user = result.scalar_one_or_none()
-
+    print("user:",user)
     if not user:
         raise HTTPException(
             status_code=400,
@@ -138,6 +141,12 @@ async def login(
             "role": user.role.value,
             "branch": {'id': user.branch.id, 'name': user.branch.name} if user.branch else None
         }
+    })
+
+    print("print return:",{
+        "access_token": access_token,
+        "refresh_token": refresh_token,
+        "token_type": "bearer"
     })
 
     return {

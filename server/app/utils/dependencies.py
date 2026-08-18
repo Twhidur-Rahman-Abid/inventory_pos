@@ -1,5 +1,7 @@
+from typing import Annotated
+
 from fastapi import Depends, HTTPException
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
+from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 
@@ -7,15 +9,13 @@ from app.database.db import get_db
 from app.database.schema.user import User, UserRole
 from app.utils.auth import decode_token
 
-security = HTTPBearer()
+OAuth2_bearer = OAuth2PasswordBearer(tokenUrl='api/v1/auth/login')
 
-
+security = Annotated[str, Depends(OAuth2_bearer)]
 async def get_current_user(
-    credentials: HTTPAuthorizationCredentials = Depends(security),
+    token: security,
     db: AsyncSession = Depends(get_db)
 ):
-
-    token = credentials.credentials
 
     try:
         payload = decode_token(token)
