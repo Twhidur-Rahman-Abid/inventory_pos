@@ -91,6 +91,10 @@ export const ProductSchema = z.object({
     error: "Category is required",
   }),
 
+  brand_id: z.coerce.number({
+    error: "Brands is required",
+  }),
+
   discount_percentage: z.coerce
     .number({
       error: "Discount must be a number",
