@@ -192,7 +192,7 @@ const PrintInvoice = ({
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">Delivery Charge:</span>
                       <span className="text-gray-900 font-semibold">
-                        {orderData?.delivery || 0} {MONEY_TITLE}
+                        {orderData?.delivery || 0} BDT
                       </span>
                     </div>
                     <div className="flex justify-between text-sm">
