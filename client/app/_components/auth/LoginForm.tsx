@@ -23,7 +23,7 @@ const LoginForm = () => {
     } else if (message) {
       toast.error(message);
     }
-  }, [success, message, router]);
+  }, [success, message, router, errors]);
 
   return (
     <form action={action} className="my-6 space-y-3 md:space-y-4.5">
@@ -33,8 +33,8 @@ const LoginForm = () => {
 
       <Input
         type="text"
-        name="email"
-        placeholder="User ID"
+        name="username"
+        placeholder="username or email"
         error={errors?.email}
         LeftIcon={<LeftIcon iconImgPath="/i-user.svg" />}
       />
