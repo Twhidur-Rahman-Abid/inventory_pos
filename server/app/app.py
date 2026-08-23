@@ -3,6 +3,9 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from app.config import get_config
+from app.utils.limiter import limiter
+from slowapi import  _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
 from app.routes.user_route import userRouter
 from app.routes.category_route import categoryRouter
 from app.routes.auth_route import authRouter
@@ -17,7 +20,12 @@ from fastapi.middleware.cors import CORSMiddleware
 
 config = get_config()
 
+
+
 app = FastAPI(title=config.app_name)
+
+app.state.limiter = limiter
+app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 # Configure CORS
 origins = config.origins
