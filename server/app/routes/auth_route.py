@@ -1,9 +1,8 @@
-from collections import UserDict
-
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Request  
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select
 from sqlalchemy.orm import selectinload
+from app.utils.limiter import limiter
 
 from app.database.db import get_db
 from app.database.schema.user import User, UserRole
@@ -95,7 +94,9 @@ async def register(
 
 # LOGIN
 @authRouter.post("/login")
+@limiter.limit("5/minute; 5/5minute") 
 async def login(
+    request: Request,
     data: OAuth2PasswordRequestForm = Depends(),
     db: AsyncSession = Depends(get_db)
 ):
