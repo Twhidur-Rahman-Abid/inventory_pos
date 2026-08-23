@@ -12,7 +12,7 @@ from app.utils.utils import delete_image_from_url, get_skip, has_next, save_imag
 from app.models.brands import BrandResponse,  BrandsResponses
 from app.database.schema.user import UserRole
 
-brandRouter = APIRouter(prefix="/brands", tags=["Brands"])
+brandRouter = APIRouter(prefix="/brands", tags=["BrandsChange"])
 @brandRouter.post("/", response_model=BrandResponse, status_code=201, dependencies=[Depends( role_required([
             UserRole.admin,
             UserRole.warehouse_manager
