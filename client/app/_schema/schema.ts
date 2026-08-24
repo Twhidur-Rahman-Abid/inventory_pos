@@ -11,6 +11,10 @@ export const branchSchema = z.object({
   image: z.instanceof(File, { message: "Invalid image file" }).optional(),
 });
 
+export const sliderSchema = z.object({
+  image: z.instanceof(File, { message: "Invalid image file" }).optional(),
+});
+
 export const categorySchema = z.object({
   name: z
     .string()
