@@ -38,6 +38,7 @@ export type ProductType = {
   images?: string[];
   thumbnail?: string;
   category_id?: number;
+  brand_id?: number;
   is_buy_one_get_one?: boolean;
   discount_percentage?: number;
   details?: { description: string };
@@ -65,6 +66,12 @@ export type Coupon = {
   used_count?: number;
   is_active: boolean;
   expires_at?: string;
+};
+
+export type HeroSlider = {
+  id: number;
+  img: string;
+  is_active: boolean;
 };
 
 export type PaymentMethod = "cash" | "bkash" | "nagad" | "rocket";
