@@ -45,6 +45,14 @@ const ProductModal = ({
     endpoint: "/categories",
   });
 
+  // Fetch Brands
+  const { data: brands, isLoading: isBrandsLoading } = useFetchWAuth<{
+    count: number;
+    data: CategoryType[];
+  }>({
+    endpoint: "/brands",
+  });
+
   // Fetch editable product based on editable id
   const { data: product, isLoading: productLoading } =
     useFetchWAuth<ProductType>({
@@ -216,19 +224,35 @@ const ProductModal = ({
                 error={fields.category_id.errors}
                 defaultValue={product?.category_id}
                 label="Category"
+                placeholder="-- Select Category --"
                 options={categories?.data}
               />
             )}
           </div>
 
           {/* Price */}
-          <FormInput
-            name={fields.price.name}
-            defaultValue={fields.price?.initialValue as string | undefined}
-            error={fields.price.errors}
-            type="number"
-            label="Price"
-          />
+          <div className="flex gap-8 items-end">
+            <FormInput
+              name={fields.price.name}
+              defaultValue={fields.price?.initialValue as string | undefined}
+              error={fields.price.errors}
+              type="number"
+              label="Price"
+            />
+
+            {isBrandsLoading ? (
+              <InputSkeleton label="Category" />
+            ) : (
+              <FormSelect
+                name={fields.brand_id.name}
+                error={fields.brand_id.errors}
+                defaultValue={product?.brand_id}
+                label="Brands"
+                placeholder="-- Select Brands --"
+                options={brands?.data}
+              />
+            )}
+          </div>
 
           {/* Quantity */}
           <FormInput
@@ -294,7 +318,7 @@ const ProductModal = ({
             <div className="space-y-6">
               {imageList?.map((imgField, index: number) => (
                 <div
-                  key={index}
+                  key={imgField.image_url}
                   className="relative border-b border-dashed border-stock/30 "
                 >
                   <FormFile
