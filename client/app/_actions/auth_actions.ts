@@ -6,11 +6,12 @@ import setAccessAndRefreshToken from "../_lib/auth";
 import { cookies } from "next/headers";
 
 export async function authAction(_: any, formData: FormData) {
-  const email = formData.get("email") as string;
+  const username = formData.get("username") as string;
   const password = formData.get("password") as string;
+  console.log("login:", { username, password });
   let errors = {};
-  if (!email) {
-    errors = { ...errors, email: "Email field required" };
+  if (!username) {
+    errors = { ...errors, username: "username field required" };
   }
 
   if (!password) {
@@ -25,13 +26,19 @@ export async function authAction(_: any, formData: FormData) {
     };
   }
 
+  console.log("datatype:", typeof formData);
+
   try {
+    const formBody = new URLSearchParams();
+    formBody.append("username", username);
+    formBody.append("password", password);
+
     const res = await fetch(`${BASE_URL}/auth/login/`, {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
+        "Content-Type": "application/x-www-form-urlencoded",
       },
-      body: JSON.stringify({ email, password }),
+      body: formBody.toString(),
     });
     const data = await res.json();
     if (res.ok) {
