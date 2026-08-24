@@ -66,7 +66,7 @@ def upload_image(
 async def save_image(
     file: UploadFile,
     folder: str,
-    filename: str,
+    filename: str | None = None,
     quality: int = 80,
     width: int | None = None,
     height: int | None = None,
@@ -79,6 +79,9 @@ async def save_image(
         )  
     
     try:    
+        if not filename:
+            filename = file.filename
+
         img_path = await run_in_threadpool(upload_image, file=file, folder=folder, filename=filename, quality=quality, width=width, height=height)
         return img_path
     except:
