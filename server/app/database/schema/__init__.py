@@ -8,5 +8,6 @@ from .product import Product,ProductDetail,ProductImage
 from .stock import Stock, StockTransfer
 from .coupon import Coupon,CouponType
 from .brands import Brands
+from .web import HeroSlider
 
-__all__ = ["User","Branch","Category","Customer","CustomerCredit","CustomerDue","Stock","StockTransfer","ProductImage","ProductDetail","Product","Order","OrderItem","Coupon",'Brands']
+__all__ = ["User","Branch","Category","Customer","CustomerCredit","CustomerDue","Stock","StockTransfer","ProductImage","ProductDetail","Product","Order","OrderItem","Coupon",'Brands','HeroSlider']
