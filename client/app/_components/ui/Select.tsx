@@ -4,7 +4,6 @@ import { cn } from "@/app/_lib/utils";
 import { useEffect, useRef, useState, useMemo } from "react";
 import Arrow from "./Arrow";
 import Image from "next/image";
-import { _optional } from "zod/v4/core";
 
 // Option type
 type OptionType = {
@@ -24,6 +23,7 @@ interface SelectProps {
   getSelectValue?: (value: string | number | undefined) => void;
   errorMessage?: string;
   name?: string;
+  placeholder?: string;
 }
 
 const Select: React.FC<SelectProps> = ({
@@ -34,13 +34,15 @@ const Select: React.FC<SelectProps> = ({
   getSelectValue = () => {},
   errorMessage,
   name = "custom-select",
+  placeholder = "-- Select --",
 }) => {
   // Get hidden option
-  const hiddenOption = options.find((opt) => opt.label === "hidden");
 
-  const defaultOption: OptionType = defaultValue || hiddenOption || options[0];
+  const defaultOption: OptionType | null = defaultValue || null;
 
-  const [selectedValue, setSelectedValue] = useState<OptionType>(defaultOption);
+  const [selectedValue, setSelectedValue] = useState<OptionType | null>(
+    defaultOption,
+  );
 
   const [isOpen, setIsOpen] = useState<boolean>(false);
 
@@ -114,7 +116,7 @@ const Select: React.FC<SelectProps> = ({
   };
 
   useEffect(() => {
-    getSelectValue(selectedValue.value || selectedValue.id);
+    getSelectValue(selectedValue?.value || selectedValue?.id);
   }, [selectedValue, getSelectValue]);
 
   return (
@@ -158,7 +160,7 @@ const Select: React.FC<SelectProps> = ({
               className="size-6 object-contain"
             />
           )}
-          {selectedValue?.label}
+          {selectedValue?.label || placeholder}
         </div>
         <Arrow move="down" />
       </div>
@@ -180,7 +182,7 @@ const Select: React.FC<SelectProps> = ({
                 key={i}
                 className={cn(
                   "px-3 py-2 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100 cursor-pointer flex items-center gap-2.5",
-                  option.label === selectedValue.label &&
+                  option.label === selectedValue?.label &&
                     "text-primary bg-gray-100",
                 )}
                 onClick={() => handleSelectChange(option)}
@@ -226,7 +228,7 @@ export function FormSelect({
   getSelectValue,
   name,
   required = true,
-  placeholder = "Select Option",
+  placeholder = "-- Select --",
   ...props
 }: FormSelectProps) {
   // Memoized initial option to avoid unnecessary re-calculations
