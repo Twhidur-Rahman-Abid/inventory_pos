@@ -18,16 +18,26 @@ from app.routes.coupon_route import couponRouter
 from app.routes.brand_router import brandRouter
 from app.routes.web_route import webRouter
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.base import BaseHTTPMiddleware
+from starlette.requests import Request
 
 config = get_config()
 
 
 
-app = FastAPI(title=config.app_name,redirect_slashes=False)
+app = FastAPI(title=config.app_name)
 
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
+
+@app.middleware("http")
+async def fix_trailing_slash(request: Request, call_next):
+    path = request.url.path
+    if path.startswith("/api/") and not path.endswith("/"):
+        request.scope["path"] = path + "/"
+    response = await call_next(request)
+    return response
 
 # Configure CORS
 origins = config.origins
@@ -57,7 +67,7 @@ async def validation_error_handler(request,exc):
 async def internal_server_error_handler(request, exc):
     return JSONResponse({'message': 'Internal server error occurred!', 'detail': str(exc)}, status_code=500)
 
-v1RRouter = APIRouter(prefix="/api/v1", redirect_slashes=False)
+v1RRouter = APIRouter(prefix="/api/v1")
 v1RRouter.include_router(router=branchRouter)
 v1RRouter.include_router(router=userRouter)
 v1RRouter.include_router(router=authRouter)
