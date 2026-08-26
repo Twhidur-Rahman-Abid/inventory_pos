@@ -4,6 +4,7 @@ from sqlalchemy.orm import selectinload, load_only
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.database.db import get_db
 from fastapi.responses import JSONResponse
+from app.models.product import ProductListResponse
 
 from app.database.schema import (
     Category,
@@ -199,7 +200,6 @@ async def cancel_stock(
 
 @stockRouter.get(
     "/transfers",
-  
 )
 async def get_transfers(
     page: int = 1,
@@ -254,7 +254,7 @@ async def get_transfers(
 
 
 
-@stockRouter.get("")
+@stockRouter.get("/", response_model=ProductListResponse)
 async def get_stocks(
     page: int = 1,
     limit: int = 10,
@@ -331,7 +331,6 @@ async def get_stocks(
         data = result.scalars().all()
 
         return {
-            "mode": "warehouse",
             "data": data,
             "count": total,
             "has_next": total > skip + limit
@@ -438,7 +437,6 @@ async def get_stocks(
         ]
 
     return {
-        "mode": "branch",
         "data": stocks_data,
         "count": total,
         "has_next": total > skip + limit

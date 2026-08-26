@@ -12,7 +12,7 @@ from app.database.schema.product import Product, ProductDetail, ProductImage
 from app.database.schema.user import User, UserRole
 from app.utils.utils import delete_image_from_url, get_skip, has_next, save_image
 from app.utils.dependencies import role_required
-from app.models.product import ProductResponse, ProductListResponse, StockUpdate
+from app.models.product import ProductDResponse, ProductDetailsList,  ProductListResponse, StockUpdate
 from app.database.schema import Category
 
 logger = logging.getLogger(__name__)
@@ -87,7 +87,7 @@ async def create_product(
 
 
 # --- Get Product List ---
-@productRouter.get("/")
+@productRouter.get("/", response_model=ProductListResponse)
 async def get_product_list(
     page: int = 1,
     limit: int = 10,
@@ -256,7 +256,7 @@ async def get_product_list_with_category(
     }
 
 # --- Get product list with details product ---
-@productRouter.get("/with-details", response_model=ProductListResponse)
+@productRouter.get("/with-details", response_model=ProductDetailsList)
 async def get_products(
     page: int = 1,
     limit: int = 10,
@@ -312,7 +312,7 @@ async def get_products(
         return JSONResponse(status_code=500, content={"message": "Could not fetch products"})
 
 # --- Get product details by id
-@productRouter.get("/{id}", response_model=ProductResponse)
+@productRouter.get("/{id}", response_model=ProductDResponse)
 async def get_product(
     id: int ,
     db: AsyncSession = Depends(get_db)
@@ -334,7 +334,7 @@ async def get_product(
         return JSONResponse(status_code=500, content={"message": "Could not fetch products"})
 
 # --- Edit Product ---
-@productRouter.put("/{product_id}",response_model=ProductResponse)
+@productRouter.put("/{product_id}",response_model=ProductDResponse)
 async def update_product(
     product_id: int,
     sku_code: Optional[str] = Form(None),
