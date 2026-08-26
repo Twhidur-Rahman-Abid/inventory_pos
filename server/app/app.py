@@ -51,7 +51,7 @@ app.add_middleware(
 )
 
 
-app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
+app.mount("/uploads", StaticFiles(directory="server/uploads"), name="uploads")
 # handle validation error 
 @app.exception_handler(RequestValidationError)
 async def validation_error_handler(request,exc):
