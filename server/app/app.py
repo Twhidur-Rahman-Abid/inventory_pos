@@ -24,15 +24,11 @@ config = get_config()
 
 
 
-app = FastAPI(title=config.app_name)
+app = FastAPI(title=config.app_name,redirect_slashes=False)
 
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
-
-for route in app.routes:
-    if isinstance(route, APIRoute):
-        route.redirect_slashes = False
 
 # Configure CORS
 origins = config.origins
