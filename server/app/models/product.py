@@ -27,6 +27,7 @@ class ProductDetailBase(BaseModel):
     model_config = ConfigDict(from_attributes=True)
 
 class ProductBase(BaseModel):
+    id:int
     sku_code: str
     name: str
     category_id: int
@@ -46,18 +47,27 @@ class ProductBase(BaseModel):
      
     
 
-class ProductResponse(ProductBase):
+class ProductDResponse(ProductBase):
     id: int
     details: Optional[ProductDetailBase] = None
-    images: List[ProductImageBase] = []
+    images: Optional[List[ProductImageBase]] = []
+    category: Optional[Category] = None
+    model_config = ConfigDict(from_attributes=True)
+
+class ProductLResponse(ProductBase):
     category: Optional[Category] = None
     model_config = ConfigDict(from_attributes=True)
 
 class ProductListResponse(BaseModel):
-    data: List[ProductResponse]
+    data: List[ProductLResponse]
     count: int
     has_next: bool
 
+
+class ProductDetailsList(BaseModel):
+    data: List[ProductDResponse]
+    count: int
+    has_next: bool
 
 class StockUpdate(BaseModel):
     quantity: int
