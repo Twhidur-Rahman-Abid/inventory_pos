@@ -1,5 +1,4 @@
-from fastapi import FastAPI
-from fastapi.routing import APIRoute
+from fastapi import FastAPI, APIRouter
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -58,7 +57,7 @@ async def validation_error_handler(request,exc):
 async def internal_server_error_handler(request, exc):
     return JSONResponse({'message': 'Internal server error occurred!', 'detail': str(exc)}, status_code=500)
 
-v1RRouter = APIRouter(prefix="/api/v1")
+v1RRouter = APIRouter(prefix="/api/v1", redirect_slashes=False)
 v1RRouter.include_router(router=branchRouter)
 v1RRouter.include_router(router=userRouter)
 v1RRouter.include_router(router=authRouter)
