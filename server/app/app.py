@@ -1,3 +1,5 @@
+from pathlib import Path
+
 from fastapi import FastAPI, APIRouter
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
@@ -51,7 +53,11 @@ app.add_middleware(
 )
 
 
-app.mount("/uploads", StaticFiles(directory="server/uploads"), name="uploads")
+UPLOAD_DIR = Path("uploads")
+UPLOAD_DIR.mkdir(parents=True, exist_ok=True)
+
+
+app.mount("/uploads", StaticFiles(directory="uploads"), name="uploads")
 # handle validation error 
 @app.exception_handler(RequestValidationError)
 async def validation_error_handler(request,exc):
