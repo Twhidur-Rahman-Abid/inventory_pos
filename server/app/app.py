@@ -31,13 +31,13 @@ app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 
-@app.middleware("http")
-async def fix_trailing_slash(request: Request, call_next):
-    path = request.url.path
-    if path.startswith("/api/") and not path.endswith("/"):
-        request.scope["path"] = path + "/"
-    response = await call_next(request)
-    return response
+# @app.middleware("http")
+# async def fix_trailing_slash(request: Request, call_next):
+#     path = request.url.path
+#     if path.startswith("/api/") and not path.endswith("/"):
+#         request.scope["path"] = path + "/"
+#     response = await call_next(request)
+#     return response
 
 # Configure CORS
 origins = config.origins
