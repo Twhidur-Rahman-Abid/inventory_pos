@@ -23,3 +23,20 @@ class TopSelling(BaseModel):
             return value
     
     model_config = ConfigDict(from_attributes=True)
+
+class LowStock(BaseModel):
+    id:int
+    name: str
+    price: int
+    thumbnail: Optional[str] = None
+    quantity: int
+
+    @field_validator("thumbnail", mode="before")
+    @classmethod
+    def format_img_url(cls, value: Optional[str]) -> Optional[str]:
+            if value and not value.startswith("http"):
+                relative_path = value.lstrip("/")
+                return f"{config.site_link}/{relative_path}"
+            return value
+    
+    model_config = ConfigDict(from_attributes=True)
