@@ -15,7 +15,7 @@ export default function DashboardProductCard({
         <div className="p-0.5 border border-[#E9F5FF] rounded-sm">
           <Image
             src={src}
-            alt={src}
+            alt={name}
             width={40}
             height={50}
             className="object-cover "
