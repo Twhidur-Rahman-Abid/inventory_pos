@@ -26,12 +26,10 @@ const HeroSliders = () => {
   // switch active
   const switchActive = async (is_active: boolean, id: number) => {
     const toastId = toast.loading(`Slider status updating...`);
-    const formData = new FormData();
-    formData.append("is_active", String(is_active));
 
-    const res = await putData({
-      endpoint: `/webs/hero-sliders/${id}/`,
-      formData,
+    const res = await putJSONData({
+      endpoint: `/webs/hero-sliders/${id}/active-switch`,
+      formData: { is_active },
     });
 
     if (res?.status === "success") {
