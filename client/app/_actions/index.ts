@@ -290,13 +290,6 @@ export async function putJSONData({
       }
     }
 
-    const body =
-      formData instanceof FormData
-        ? JSON.stringify(Object.fromEntries(formData))
-        : JSON.stringify(formData);
-
-    console.log("== from data ==", body);
-
     // remove empty key
     if (formData instanceof FormData) {
       const keysToRemove: string[] = [];
@@ -310,6 +303,13 @@ export async function putJSONData({
         formData.delete(key);
       });
     }
+
+    const body =
+      formData instanceof FormData
+        ? JSON.stringify(Object.fromEntries(formData))
+        : JSON.stringify(formData);
+
+    console.log("== from data ==", body);
 
     // put data
     const res = await fetch(`${BASE_URL}${endpoint}`, {
