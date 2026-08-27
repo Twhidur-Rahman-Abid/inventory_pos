@@ -304,7 +304,7 @@ async def get_user_by_id(user_id: int, db: AsyncSession = Depends(get_db)):
 
 
 # --- Edit Admin User ---
-@userRouter.put("/{user_id}", response_model=UserResponse,dependencies=[Depends(admin_required)])
+@userRouter.put("/admin/{user_id}", response_model=UserResponse,dependencies=[Depends(admin_required)])
 async def update_admin_user(
     user_id: int, 
     payload: AdminUser, 
