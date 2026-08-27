@@ -7,6 +7,7 @@ from app.utils.dependencies import admin_required, role_required
 from app.database.db import get_db
 from app.database.schema import HeroSlider
 from fastapi.responses import JSONResponse
+from pydantic import BaseModel
 
 from app.utils.utils import delete_image_from_url, get_skip, has_next, save_image
 
@@ -69,6 +70,49 @@ async def get_all_sliders(
         return JSONResponse(
             status_code=500,
             content={"message": "Internal server error occurred!"}
+        )
+
+class HeroSliderSwitch(BaseModel):
+    is_active: bool
+
+
+# --- Active status switch ---
+@webRouter.put(
+    "/hero-sliders/{slider_id}/active-switch",
+    response_model=HeroSliderResponse,
+    dependencies=[
+        Depends(role_required([UserRole.admin, UserRole.warehouse_manager]))
+    ],
+)
+async def toggle_hero_slider_status(
+    slider_id: int,
+    payload: HeroSliderSwitch,
+    db: AsyncSession = Depends(get_db),
+):
+    try:
+        result = await db.execute(
+            select(HeroSlider).where(HeroSlider.id == slider_id)
+        )
+        hero_slider = result.scalar_one_or_none()
+
+        if not hero_slider:
+            return JSONResponse(
+                status_code=404, content={"message": "Hero slider not found"}
+            )
+
+        # Update active status
+        hero_slider.is_active = payload.is_active
+
+        await db.commit()
+        await db.refresh(hero_slider)
+        return hero_slider
+
+    except Exception as e:
+        await db.rollback()
+        print(f"Error updating HeroSlider status: {str(e)}")
+        return JSONResponse(
+            status_code=500,
+            content={"message": "Internal server error occurred!"},
         )
 
 # --- Update HeroSlider ---
