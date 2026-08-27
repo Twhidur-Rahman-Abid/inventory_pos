@@ -52,11 +52,17 @@ const EmployeeModal = ({
 
   const { lastResult } = state || {};
 
+  const editableValue = editable
+    ? { ...editable, branch_id: editable?.branch?.id }
+    : null;
+
+  console.log("editable:", editable);
+
   // Conform state
   const [form, fields] = useForm({
     id: state,
     lastResult,
-    defaultValue: lastResult?.initialValue || editable || undefined,
+    defaultValue: lastResult?.initialValue || editableValue || undefined,
     onValidate({ formData }) {
       return parseWithZod(formData, {
         schema: editable?.id
@@ -68,6 +74,8 @@ const EmployeeModal = ({
     shouldValidate: "onBlur",
     shouldRevalidate: "onInput",
   });
+
+  console.log("fields.branch_id.initialValue", fields.branch_id.initialValue);
 
   // Show Toast message
   useEffect(() => {
