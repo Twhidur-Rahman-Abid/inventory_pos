@@ -43,7 +43,7 @@ class UserUpdate(BaseModel):
     mobile: Optional[str] = Field(None, min_length=11, max_length=15)
     branch_id: Optional[int] = None
     role: Optional[UserRole] = None
-    is_active: Optional[bool]
+    is_active: Optional[bool] = None
 
 class BranchMinimalResponse(BaseModel):
     id: int
