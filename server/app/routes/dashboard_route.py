@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta, timezone
+from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException, status,Query
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -11,6 +12,7 @@ from app.database.db import get_db
 from app.database.schema import Order, OrderItem, Product, Stock, User
 from app.models.user import UserRole
 from app.utils.dependencies import role_required
+from app.models.dashboard import TopSelling
 
 
 
@@ -373,7 +375,7 @@ async def get_summary_stats(
         )
 
 # top selling data
-@dashboard_router.get("/top-selling")
+@dashboard_router.get("/top-selling", response_model=List[TopSelling])
 async def get_top_selling(
     current_user: User = Depends(
         role_required([
@@ -418,17 +420,9 @@ async def get_top_selling(
         )
 
         result = await db.execute(query)
-        products = result.all()
+        products = result.mappings().all()
 
-        return [
-            {
-                "name": p.name,
-                "price": float(p.price),
-                "sold": p.total_sold or 0,
-                "image": p.thumbnail
-            }
-            for p in products
-        ]
+        return products
 
     except Exception as e:
         logger.error(f"Error fetching top selling products: {e}")
