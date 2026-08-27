@@ -236,7 +236,7 @@ export function FormSelect({
   const initialOption = useMemo(
     () =>
       options.find(
-        (opt) => opt.value === defaultValue || opt.id === defaultValue,
+        (opt) => opt.value == defaultValue || opt.id == defaultValue,
       ) || null,
     [defaultValue, options],
   );
