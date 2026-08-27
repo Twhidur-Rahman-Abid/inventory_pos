@@ -12,7 +12,7 @@ from app.database.db import get_db
 from app.database.schema import Order, OrderItem, Product, Stock, User
 from app.models.user import UserRole
 from app.utils.dependencies import role_required
-from app.models.dashboard import TopSelling
+from app.models.dashboard import LowStock, TopSelling
 
 
 
@@ -432,7 +432,7 @@ async def get_top_selling(
         )
 
 # low stock product (quantity<5)
-@dashboard_router.get("/low-stock")
+@dashboard_router.get("/low-stock", response_model=List[LowStock])
 async def get_low_stock(
     current_user: User = Depends(
         role_required([
@@ -465,18 +465,9 @@ async def get_low_stock(
             )
 
             result = await db.execute(query)
-            products = result.all()
+            products = result.mappings().all()
 
-            return [
-                {
-                    "id": p.id,
-                    "name": p.name,
-                    "quantity": p.quantity,
-                    "price": float(p.price),
-                    "image": p.thumbnail
-                }
-                for p in products
-            ]
+            return products
 
         # =========================
         # BRANCH USERS → Stock table
