@@ -13,7 +13,7 @@ from app.database.schema import (
     Stock
 )
 from app.database.schema.stock import TransferStatus
-from app.models.stock import SendStockSchema
+from app.models.stock import SendStockSchema, StockTransferResponse
 from app.models.user import UserRole
 from app.utils.dependencies import get_current_user, role_required
 from app.database.schema.user import User
@@ -200,6 +200,7 @@ async def cancel_stock(
 
 @stockRouter.get(
     "/transfers",
+    response_model=StockTransferResponse,
 )
 async def get_transfers(
     page: int = 1,
