@@ -390,35 +390,6 @@ async def update_user(
     db: AsyncSession = Depends(get_db)
 ):
     try:
-        # check if email or mobile already exists for other users
-        result = await db.execute(
-        select(User).where(User.email == payload.email)
-        )
-        existing = result.scalar_one_or_none()
-
-        if existing:
-            return JSONResponse(
-                status_code=400,
-                content={
-                    "message": "Email already exists"
-                }
-            )
-
-
-        result = await db.execute(
-            select(User).where(User.mobile == payload.mobile)
-        )
-        existing = result.scalar_one_or_none()
-
-        if existing:
-            return JSONResponse(
-                status_code=400,
-                content={
-                    "message": "Phone number already exists"
-                }
-            )
-
-
         query = select(User).options(selectinload(User.branch)).where(User.id == user_id)
         result = await db.execute(query)
         user = result.scalar_one_or_none()
@@ -429,7 +400,36 @@ async def update_user(
                 content={"message": "User not found"}
             )
 
+        if payload.email and user.email != payload.email:
+            # check if email or mobile already exists for other users
+            result = await db.execute(
+                select(User).where(User.email == payload.email)
+            )
+            existing = result.scalar_one_or_none()
+            
+            if existing:
+                return JSONResponse(
+                    status_code=400,
+                    content={
 
+                        "message": "Email already exists"
+                    }
+                )
+
+
+        if payload.mobile and user.mobile != payload.mobile:
+            result = await db.execute(
+                        select(User).where(User.mobile == payload.mobile)
+                    )
+            existing = result.scalar_one_or_none()
+            
+            if existing:
+                return JSONResponse(
+                    status_code=400,
+                    content={
+                            "message": "Phone number already exists"
+                        }
+                    )
         update_data = payload.model_dump(exclude_unset=True)
 
        
