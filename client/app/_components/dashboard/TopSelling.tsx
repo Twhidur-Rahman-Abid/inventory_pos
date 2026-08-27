@@ -6,8 +6,8 @@ import DashboardProductCard, {
 type Product = {
   name: string;
   price: number;
-  sold: number;
-  image?: string;
+  total_sold: number;
+  thumbnail?: string;
 };
 
 const TopSelling = () => {
@@ -27,9 +27,9 @@ const TopSelling = () => {
           <DashboardProductCard
             key={v.name}
             name={v.name}
-            src={v.image}
+            src={v.thumbnail}
             price={v.price}
-            total={v.sold}
+            total={v.total_sold}
           />
         ))
       )}
