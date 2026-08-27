@@ -45,8 +45,7 @@ const CouponPage = () => {
   // search and pagination
 
   const search = searchParams.get("search");
-  let endpoint = `/coupon`;
-  if (search) endpoint += `?search=${search}`;
+  const endpoint = `/coupon`;
 
   // Fetch user
   const {
@@ -59,7 +58,6 @@ const CouponPage = () => {
     data: Coupon[];
   }>({
     endpoint: endpoint,
-    isChange: [search],
   });
 
   // switch active
@@ -94,60 +92,66 @@ const CouponPage = () => {
     content = (
       <>
         <Table headers={tableHeaders}>
-          {data?.map((coupon: Coupon, index: number) => {
-            const {
-              id,
-              code,
-              coupon_type,
-              value,
-              min_order_amount,
-              max_usage,
-              used_count,
-              is_active,
-            } = coupon;
-            return (
-              <tr key={id}>
-                <Td>{index + 1}</Td>
-                <Td>{code}</Td>
-                <Td className="capitalize">{coupon_type}</Td>
-                <Td>
-                  {coupon_type === "percentage"
-                    ? `${value}%`
-                    : `${MONEY_SYMBOL}${value}`}
-                </Td>
-                <Td className="capitalize">{min_order_amount}</Td>
-                <Td>{max_usage}</Td>
-                <Td>{used_count}</Td>
-                <Td>
-                  <ToggleSwitch
-                    checked={is_active}
-                    onChange={() => switchActive(!is_active, code, id)}
-                  />
-                </Td>
-
-                <Td>
-                  <div className="inline-flex gap-5 min-w-max items-center justify-center w-full">
-                    <Icon
-                      onClick={() =>
-                        setModalData({
-                          open: true,
-                          editable: coupon,
-                        })
-                      }
-                      src="/icon/i-edit-pen.svg"
-                      size={24}
+          {data
+            ?.filter(
+              (coupon) =>
+                !search ||
+                coupon.code.toLowerCase().includes(search.toLowerCase()),
+            )
+            ?.map((coupon: Coupon, index: number) => {
+              const {
+                id,
+                code,
+                coupon_type,
+                value,
+                min_order_amount,
+                max_usage,
+                used_count,
+                is_active,
+              } = coupon;
+              return (
+                <tr key={id}>
+                  <Td>{index + 1}</Td>
+                  <Td>{code}</Td>
+                  <Td className="capitalize">{coupon_type}</Td>
+                  <Td>
+                    {coupon_type === "percentage"
+                      ? `${value}%`
+                      : `${MONEY_SYMBOL}${value}`}
+                  </Td>
+                  <Td className="capitalize">{min_order_amount}</Td>
+                  <Td>{max_usage}</Td>
+                  <Td>{used_count}</Td>
+                  <Td>
+                    <ToggleSwitch
+                      checked={is_active}
+                      onChange={() => switchActive(!is_active, code, id)}
                     />
+                  </Td>
 
-                    <DeleteItem
-                      endpoint={`/coupon/${id}`}
-                      fetcher={fetcher}
-                      title={`${code} coupon`}
-                    />
-                  </div>
-                </Td>
-              </tr>
-            );
-          })}
+                  <Td>
+                    <div className="inline-flex gap-5 min-w-max items-center justify-center w-full">
+                      <Icon
+                        onClick={() =>
+                          setModalData({
+                            open: true,
+                            editable: coupon,
+                          })
+                        }
+                        src="/icon/i-edit-pen.svg"
+                        size={24}
+                      />
+
+                      <DeleteItem
+                        endpoint={`/coupon/${id}`}
+                        fetcher={fetcher}
+                        title={`${code} coupon`}
+                      />
+                    </div>
+                  </Td>
+                </tr>
+              );
+            })}
         </Table>
       </>
     );
