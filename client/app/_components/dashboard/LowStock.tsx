@@ -7,7 +7,7 @@ type Product = {
   name: string;
   price: number;
   quantity: number;
-  image?: string;
+  thumbnail?: string;
 };
 
 const LowStock = () => {
@@ -27,7 +27,7 @@ const LowStock = () => {
           <DashboardProductCard
             key={v.name}
             name={v.name}
-            src={v.image}
+            src={v.thumbnail}
             price={v.price}
             total={v.quantity}
             totalTitle="Stock"
