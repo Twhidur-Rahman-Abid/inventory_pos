@@ -74,9 +74,7 @@ const PrintInvoice = ({
                       ORDER INVOICE
                     </h1>
 
-                    <p className="text-sm text-gray-600">
-                      Niamah Shop - Branch #{user?.branch?.name}
-                    </p>
+                    <p className="text-sm text-gray-600">Niamah Shop</p>
                   </div>
                 </div>
 
@@ -102,11 +100,9 @@ const PrintInvoice = ({
                       </p>
                     </div>
                     <div>
-                      <span className="text-gray-600 font-medium">
-                        Payment:
-                      </span>
+                      <span className="text-gray-600 font-medium">Branch:</span>
                       <p className="mt-1 text-gray-900 font-semibold capitalize">
-                        {orderData?.payment_method}
+                        {user?.branch?.name}
                       </p>
                     </div>
                     <div className="col-span-2">
@@ -175,7 +171,10 @@ const PrintInvoice = ({
                                 {item.qty}
                               </td>
                               <td className="py-3 px-4 text-sm font-semibold text-right text-gray-900">
-                                {item?.price}
+                                {item?.discounted_price}{" "}
+                                <span className="line-through">
+                                  ({item?.price})
+                                </span>
                               </td>
                             </tr>
                           ))}
@@ -192,19 +191,36 @@ const PrintInvoice = ({
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">Delivery Charge:</span>
                       <span className="text-gray-900 font-semibold">
-                        {orderData?.delivery || 0} BDT
+                        {orderData?.delivery || 0}TK
                       </span>
                     </div>
                     <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Discount:</span>
+                      <span className="text-gray-600">Extra Discount:</span>
                       <span className="text-gray-900 font-semibold">
                         {orderData?.extra_discount} %
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600">Cash Amount:</span>
+                      <span className="text-gray-900 font-semibold">
+                        {orderData?.cash_amount}TK
+                      </span>
+                    </div>
+                    <div className="flex justify-between text-sm">
+                      <span className="text-gray-600 capitalize">
+                        {" "}
+                        {orderData?.other_payment_method || "Other"} Amount:
+                      </span>
+                      <span className="text-gray-900 font-semibold">
+                        {orderData?.other_payment_amount || 0}TK
                       </span>
                     </div>
 
                     <div className="flex justify-between text-xl font-bold border-t border-gray-300 print:border-gray-800 pt-3">
                       <span className="text-gray-900">Total Amount:</span>
-                      <span className="text-gray-900">{orderData?.total}</span>
+                      <span className="text-gray-900">
+                        {orderData?.total}TK
+                      </span>
                     </div>
                   </div>
 
