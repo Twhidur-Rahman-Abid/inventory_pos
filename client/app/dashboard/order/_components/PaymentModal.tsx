@@ -10,6 +10,7 @@ import { toast } from "react-toastify";
 import Loading from "@/app/_components/ui/Loading";
 import { useCart } from "@/app/_context/productOrderCartContext";
 import PrintInvoice from "@/app/_components/PrintInvoice";
+import Image from "next/image";
 
 type ModalProps = {
   onClose: () => void;
@@ -33,23 +34,44 @@ export default function PaymentModal({
   onRightSideClose = () => {},
 }: ModalProps) {
   const [paymentMethod, setPaymentMethod] = useState<string | null>(null);
-  const [paymentStatus, setPaymentStatus] = useState("full");
+  const [other_payment_amount, setOtherPaymentAmount] = useState(0);
+  const [cash_amount, setCashAmount] = useState(orderPayload.total);
+  // const [paymentStatus, setPaymentStatus] = useState("full");
 
-  const [advancePay, setAdvancePay] = useState("");
-  const [cash, setCash] = useState("");
+  // const [advancePay, setAdvancePay] = useState("");
+  // const [cash, setCash] = useState("");
   const [note, setNote] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { clearCart, handleProductQuantity } = useCart();
   const [isPrintOpen, setIsPrintOpen] = useState(false);
   const [orderedData, setOrderedData] = useState();
-
+  console.log("orderedData:", orderedData);
+  const finalCount = Number(cash_amount) + Number(other_payment_amount);
   const orderAction = async () => {
+    if (finalCount !== Number(orderPayload?.total)) {
+      toast.error("Total payment amount must equal the order total balance.");
+      return;
+    }
+    if (
+      Number(cash_amount) !== Number(orderPayload?.total) &&
+      ((other_payment_amount && !paymentMethod) ||
+        (!other_payment_amount && paymentMethod))
+    ) {
+      toast.error(
+        "Please select both the other payment method and enter the other amount.",
+      );
+      return;
+    }
+    // toast.success("success");
+    // return;
     setIsLoading(true);
     const res = await postJSONData({
       endpoint: "/orders",
       formData: {
         ...orderPayload,
-        payment_method: paymentMethod || "cash",
+        cash_amount,
+        other_payment_amount,
+        other_payment_method: paymentMethod || null,
         note,
       },
     });
@@ -70,7 +92,14 @@ export default function PaymentModal({
   };
 
   return (
-    <Modal title={isPrintOpen ? "Print Invoice" : "Payment"} onClose={onClose}>
+    <Modal
+      title={
+        isPrintOpen
+          ? "Print Invoice"
+          : `Total Payment: ${orderPayload?.total} TK`
+      }
+      onClose={onClose}
+    >
       {isPrintOpen ? (
         <div className="flex gap-6 items-center justify-between mt-4">
           <Button onClick={onClose} isCancel>
@@ -80,32 +109,6 @@ export default function PaymentModal({
         </div>
       ) : (
         <div className="py-4 space-y-8 text-secondary text-sm font-medium">
-          {/* Pay */}
-          <InfoRow
-            Left={<p className="w-full">Pay</p>}
-            Right={
-              <p className="w-full text-xl font-semibold">
-                {orderPayload?.total} TK
-              </p>
-            }
-          />
-
-          <InfoRow
-            Left={<p className="w-full">Type</p>}
-            Right={
-              <Select
-                options={PAYMENT_METHOD}
-                className="w-full py-3"
-                getSelectValue={(val: any) => {
-                  const value =
-                    typeof val === "object" && val !== null
-                      ? (val.id ?? val.value)
-                      : val;
-                  setPaymentMethod(value !== undefined ? String(value) : "");
-                }}
-              />
-            }
-          />
           {/* Payment Type */}
           {/* {paymentStatus !== "due" && (
           <InfoRow
@@ -199,6 +202,55 @@ export default function PaymentModal({
             </div>
           </div>
         )} */}
+          <InfoRow
+            Left={
+              <div className="w-full flex gap-2.5 items-center">
+                <p className="">Cash</p>
+                <Image
+                  src={"/cash.svg"}
+                  className="w-6"
+                  alt="cash"
+                  width={24}
+                  height={24}
+                />
+              </div>
+            }
+            Right={
+              <Input
+                type="number"
+                placeholder="Cash amount e.g 10"
+                defaultValue={cash_amount}
+                getInputValue={(val) => setCashAmount(val)}
+              />
+            }
+          />
+          <InfoRow
+            className="place-items-end"
+            Left={
+              <div className="w-full max-w-full pr-10">
+                <Select
+                  label="Other Method"
+                  options={PAYMENT_METHOD}
+                  className="w-full py-3"
+                  getSelectValue={(val: any) => {
+                    const value =
+                      typeof val === "object" && val !== null
+                        ? (val.id ?? val.value)
+                        : val;
+                    setPaymentMethod(value !== undefined ? String(value) : "");
+                  }}
+                />
+              </div>
+            }
+            Right={
+              <Input
+                type="number"
+                placeholder="Other amount e.g 10"
+                defaultValue={other_payment_amount}
+                getInputValue={(val) => setOtherPaymentAmount(val)}
+              />
+            }
+          />
 
           {/* Note */}
           <InfoRow
@@ -214,8 +266,20 @@ export default function PaymentModal({
           />
 
           {/* Button */}
-          <Button onClick={orderAction} disabled={isLoading}>
-            {isLoading ? <Loading /> : "Order"}
+          <Button
+            onClick={orderAction}
+            disabled={isLoading || finalCount != orderPayload.total}
+            className="uppercase disabled:border disabled:border-red-500"
+          >
+            {isLoading ? (
+              <Loading />
+            ) : (
+              <span>
+                Pay:{" "}
+                <span className="text-yellow-400 font-bold">{finalCount}</span>{" "}
+                and Order
+              </span>
+            )}
           </Button>
         </div>
       )}
