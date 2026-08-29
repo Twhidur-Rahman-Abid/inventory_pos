@@ -25,6 +25,12 @@ orderRouter = APIRouter(prefix="/orders", tags=["Orders"])
 # =========================
 # Create order
 # =========================
+# =========================
+# Create order
+# =========================
+# =========================
+# Create order
+# =========================
 @orderRouter.post(
     "/",
     status_code=201,
@@ -42,7 +48,6 @@ async def create_order(
     )
 ):
     try:
-
         total = Decimal("0.00")
 
         is_branch_user = current_user.role in [
@@ -56,13 +61,16 @@ async def create_order(
             else payload.branch_id
         )
 
+        # Initialize Order with new split payment fields
         order = Order(
             customer_id=payload.customer_id,
             branch_id=branch_id,
             extra_discount=payload.extra_discount,
             delivery=payload.delivery,
             is_online=payload.is_online,
-            payment_method=payload.payment_method,
+            cash_amount=payload.cash_amount,
+            other_payment_method=payload.other_payment_method,
+            other_payment_amount=payload.other_payment_amount,
             note=payload.note,
             status=(
                 OrderStatus.PROCESSING
@@ -73,11 +81,9 @@ async def create_order(
         )
 
         db.add(order)
-
         await db.flush()
 
         for item in payload.items:
-
             product = await db.scalar(
                 select(Product)
                 .where(Product.id == item.product_id)
@@ -95,20 +101,16 @@ async def create_order(
             # =========================
             # Quantity Calculation
             # =========================
-
             ordered_qty = item.qty
             delivered_qty = item.qty
             
             if product.is_buy_one_get_one:
                 delivered_qty = ordered_qty * 2
-                
 
             # =========================
             # Branch Stock Validation
             # =========================
-
             if is_branch_user:
-
                 stock = await db.scalar(
                     select(Stock)
                     .where(
@@ -141,9 +143,7 @@ async def create_order(
             # =========================
             # Warehouse Stock Validation
             # =========================
-
             else:
-
                 if product.quantity < delivered_qty:
                     return JSONResponse(
                         status_code=400,
@@ -157,56 +157,51 @@ async def create_order(
                     )
 
             # =========================
-            # Price Calculation
+            # Price & Discount Calculation
             # =========================
-
             unit_price = Decimal(str(product.price))
+            original_total_price = unit_price * Decimal(ordered_qty)
+            
+            discount_type = None
 
             if product.discount_percentage:
-
+                discount_type = "percentage"
                 unit_price -= (
                     unit_price
                     * Decimal(str(product.discount_percentage))
                     / Decimal("100")
                 )
+            elif product.is_buy_one_get_one:
+                discount_type = "buy 1 get 1"
 
-            subtotal = (
-                unit_price
-                * Decimal(ordered_qty)
-            )
-
+            subtotal = unit_price * Decimal(ordered_qty)
             total += subtotal
 
             # =========================
             # Stock Deduction
             # =========================
-
             if is_branch_user and stock:
                 stock.qty -= delivered_qty
             else:
                 product.quantity -= delivered_qty
 
             # =========================
-            # Order Item
+            # Order Item Creation
             # =========================
-
             db.add(
                 OrderItem(
                     order_id=order.id,
                     product_id=product.id,
-
-                    # ordered quantity
                     qty=delivered_qty,
-
-                    # discounted unit price
-                    price=subtotal
+                    price=float(original_total_price),
+                    discounted_price=float(subtotal),
+                    discount_type=discount_type
                 )
             )
 
         # =========================
-        # Final Total width extra discount
+        # Final Total Calculation
         # =========================
-
         total = (
             (total + Decimal(str(payload.delivery)))
             - (
@@ -219,11 +214,43 @@ async def create_order(
         if total < 0:
             total = Decimal("0")
 
+        # =========================
+        # Backend Payment Validation
+        # =========================
+        cash_paid = Decimal(str(payload.cash_amount))
+        other_paid = Decimal(str(payload.other_payment_amount))
+        total_paid = cash_paid + other_paid
+
+        # Check if total payments match final order amount
+        if total_paid != total.quantize(Decimal("0.01")):
+            return JSONResponse(
+                status_code=400,
+                content={
+                    "message": "Total payment amount must equal the order total balance."
+                }
+            )
+
+        # Check payment method selections
+        if other_paid > 0 and not payload.other_payment_method:
+            return JSONResponse(
+                status_code=400,
+                content={
+                    "message": "Please select a payment method for the additional payment amount."
+                }
+            )
+
+        if payload.other_payment_method and other_paid <= 0:
+            return JSONResponse(
+                status_code=400,
+                content={
+                    "message": "Please enter an amount for the selected payment method."
+                }
+            )
+
         order.total = float(total)
 
         await db.commit()
 
-        # await db.refresh(order)
         result = await db.execute(
             select(Order)
             .options(
@@ -232,7 +259,7 @@ async def create_order(
                 .selectinload(OrderItem.product)
             )
             .where(Order.id == order.id)
-            )
+        )
 
         order = result.scalar_one_or_none()
 
@@ -479,7 +506,9 @@ async def get_order_items(
     }
 
 
-@orderRouter.get("/{order_id}/details", response_model=OrderDetailsResponse)
+@orderRouter.get("/{order_id}/details",
+                 # response_model=OrderDetailsResponse
+                  )
 async def get_order_details(
     order_id: int,
     db: AsyncSession = Depends(get_db)
