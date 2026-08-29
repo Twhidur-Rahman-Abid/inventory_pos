@@ -1,6 +1,6 @@
 from datetime import datetime
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Optional
 
 
@@ -18,7 +18,9 @@ class OrderCreate(BaseModel):
     delivery: float = 0
     is_online: bool = False
     note: Optional[str] = None
-    payment_method: PaymentMethod = PaymentMethod.CASH
+    cash_amount: float = Field(default=0.0, ge=0)
+    other_payment_method: Optional[PaymentMethod] = None
+    other_payment_amount: float = Field(default=0.0, ge=0)
     items: list[OrderItemCreate]
     customer_name : Optional[str] = None
     customer_phone : Optional[str] = None
