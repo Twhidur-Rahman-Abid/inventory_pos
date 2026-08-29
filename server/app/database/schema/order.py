@@ -5,7 +5,6 @@ import enum
 from datetime import datetime, timezone
 
 class PaymentMethod(enum.Enum):
-    CASH = "cash"
     BKASH = "bkash"
     NAGAD = "nagad"
     ROCKET = "rocket"
@@ -37,7 +36,10 @@ class Order(Base):
     Enum(OrderStatus),
     default=OrderStatus.COMPLETED
     )
-    payment_method: Mapped[PaymentMethod] = mapped_column(Enum(PaymentMethod),default=PaymentMethod.CASH)
+    cash_amount: Mapped[float] = mapped_column(Numeric(10, 2), default=0.0, nullable=False)
+    other_payment_method: Mapped[PaymentMethod] = mapped_column(Enum(PaymentMethod), nullable=True)
+    other_payment_amount: Mapped[float] = mapped_column(Numeric(10, 2), default=0.0, nullable=False)
+
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), 
         default=lambda: datetime.now(timezone.utc), 
