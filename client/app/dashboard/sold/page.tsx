@@ -3,10 +3,7 @@
 
 import { HeaderType } from "@/app/_lib/CommonTypes";
 import {
-  Button,
   ExportTable,
-  Icon,
-  ImportTable,
   PageTopBar,
   Pagination,
   Search,
@@ -19,14 +16,9 @@ import useFetchWAuth from "@/app/_hooks/useAuthFetch";
 import { ErrorMessage, NotFoundMessage } from "@/app/_components/ui/Alert";
 
 import { formatDate, getOrderStatusColor, getSerial } from "@/app/_lib/utils";
-import { OrderStatus, PaymentMethod } from "@/app/_types/types";
+import { OrderStatus } from "@/app/_types/types";
 import Image from "next/image";
 import { PAYMENT_METHOD } from "@/app/_constants";
-import { useEffect, useRef, useState } from "react";
-import { useUser } from "@/app/_context/userContext";
-import { useReactToPrint } from "react-to-print";
-import { toast } from "react-toastify";
-import { getData } from "@/app/_actions";
 import PrintInvoice from "./PrintInvoice";
 
 const headers: HeaderType[] = [
@@ -34,11 +26,10 @@ const headers: HeaderType[] = [
   { label: "ID", key: "id" },
   { label: "Date", key: "created_at" },
   { label: "Note", key: "note" },
+  { label: "Cash", key: "cash_amount" },
+  { label: "Other Amount", key: "payment_method", align: "center" },
   { label: "Total", key: "total" },
-  { label: "Status", key: "status" },
-  { label: "Payment Method", key: "payment_method" },
   { label: "View", align: "center" },
-  { label: "Print" },
 ];
 
 type OrderType = {
@@ -47,7 +38,9 @@ type OrderType = {
   created_at: Date;
   total: number;
   status: OrderStatus;
-  payment_method: PaymentMethod;
+  cash_amount: number;
+  other_payment_amount?: number;
+  other_payment_method?: string;
   note?: string;
 };
 
@@ -82,12 +75,12 @@ export default function SoldPage() {
           {data?.data?.map((Order: OrderType, index: number) => {
             const {
               id,
-              name,
+              cash_amount,
+              other_payment_amount,
+              other_payment_method,
               note,
               created_at,
               total,
-              status,
-              payment_method,
             } = Order;
             return (
               <tr key={id}>
@@ -97,33 +90,30 @@ export default function SoldPage() {
                 <Td>
                   <p className="max-w-40 text-wrap">{note}</p>
                 </Td>
+
+                <Td>{cash_amount}</Td>
+                <Td>
+                  <div className="flex gap-2 items-center  justify-center">
+                    {other_payment_method && (
+                      <Image
+                        src={
+                          PAYMENT_METHOD.find(
+                            (v) => v.value === other_payment_method,
+                          )?.img || "/placeholder-img.svg"
+                        }
+                        width={32}
+                        height={32}
+                        className="w-8 object-contain"
+                        alt={other_payment_method || ""}
+                      />
+                    )}
+                    <span className="capitalize text-center ">
+                      {other_payment_amount || "N/A"}
+                    </span>
+                  </div>
+                </Td>
                 <Td>{total}</Td>
-                <Td>
-                  <StatusButton className={getOrderStatusColor(status)}>
-                    {status?.split("_").join(" ")}
-                  </StatusButton>
-                </Td>
-                <Td>
-                  <div className="flex gap-2 items-center">
-                    <Image
-                      src={
-                        PAYMENT_METHOD.find((v) => v.value === payment_method)
-                          ?.img || "/placeholder-img.svg"
-                      }
-                      width={24}
-                      height={24}
-                      className="w-6 object-contain"
-                      alt={payment_method}
-                    />
-                    <span className="capitalize"> {payment_method}</span>
-                  </div>
-                </Td>
                 <Td className={"text-center"}>
-                  <div className="inline-flex gap-5 min-w-max">
-                    <Icon src="/icon/i-eye-view.svg" size={24} />
-                  </div>
-                </Td>
-                <Td>
                   <PrintInvoice id={id} />
                 </Td>
               </tr>
