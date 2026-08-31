@@ -50,6 +50,7 @@ async def create_order(
     try:
         total = Decimal("0.00")
 
+        # Determine user role and assign appropriate branch ID
         is_branch_user = current_user.role in [
             UserRole.shop_manager,
             UserRole.shop_staff
@@ -61,7 +62,7 @@ async def create_order(
             else payload.branch_id
         )
 
-        # Initialize Order with new split payment fields
+        # Initialize base Order object
         order = Order(
             customer_id=payload.customer_id,
             branch_id=branch_id,
@@ -83,6 +84,7 @@ async def create_order(
         db.add(order)
         await db.flush()
 
+        # Process each item in the payload
         for item in payload.items:
             product = await db.scalar(
                 select(Product)
@@ -98,18 +100,14 @@ async def create_order(
                     }
                 )
 
-            # =========================
-            # Quantity Calculation
-            # =========================
+            # Calculate actual quantities (Handle Buy 1 Get 1)
             ordered_qty = item.qty
             delivered_qty = item.qty
             
             if product.is_buy_one_get_one:
                 delivered_qty = ordered_qty * 2
 
-            # =========================
-            # Branch Stock Validation
-            # =========================
+            # Branch stock validation
             if is_branch_user:
                 stock = await db.scalar(
                     select(Stock)
@@ -139,10 +137,7 @@ async def create_order(
                             )
                         }
                     )
-
-            # =========================
-            # Warehouse Stock Validation
-            # =========================
+            # Warehouse stock validation
             else:
                 if product.quantity < delivered_qty:
                     return JSONResponse(
@@ -156,52 +151,50 @@ async def create_order(
                         }
                     )
 
-            # =========================
-            # Price & Discount Calculation
-            # =========================
-            unit_price = Decimal(str(product.price))
-            original_total_price = unit_price * Decimal(ordered_qty)
-            
+            # Calculate unit selling price and original price based on discount rules
+            base_unit_price = Decimal(str(product.price))
+            selling_price = base_unit_price
+            original_price = None
             discount_type = None
 
+            # Case 1: Percentage Discount
             if product.discount_percentage:
-                discount_type = "percentage"
-                unit_price -= (
-                    unit_price
+                discount_type = f"{product.discount_percentage}% off"
+                original_price = float(base_unit_price)
+                selling_price = base_unit_price - (
+                    base_unit_price
                     * Decimal(str(product.discount_percentage))
                     / Decimal("100")
                 )
+            # Case 2: Buy 1 Get 1 (Splits unit price across total delivered items)
             elif product.is_buy_one_get_one:
                 discount_type = "buy 1 get 1"
+                original_price = float(base_unit_price)
+                selling_price = base_unit_price / Decimal("2")
 
-            subtotal = unit_price * Decimal(ordered_qty)
+            # Calculate line item subtotal and accumulate total
+            subtotal = selling_price * Decimal(delivered_qty)
             total += subtotal
 
-            # =========================
-            # Stock Deduction
-            # =========================
+            # Deduct stock based on user context
             if is_branch_user and stock:
                 stock.qty -= delivered_qty
             else:
                 product.quantity -= delivered_qty
 
-            # =========================
-            # Order Item Creation
-            # =========================
+            # Add OrderItem record
             db.add(
                 OrderItem(
                     order_id=order.id,
                     product_id=product.id,
                     qty=delivered_qty,
-                    price=float(original_total_price),
-                    discounted_price=float(subtotal),
+                    selling_price=float(selling_price),
+                    original_price=original_price,
                     discount_type=discount_type
                 )
             )
 
-        # =========================
-        # Final Total Calculation
-        # =========================
+        # Apply delivery charges and overall extra discount percentage
         total = (
             (total + Decimal(str(payload.delivery)))
             - (
@@ -214,14 +207,11 @@ async def create_order(
         if total < 0:
             total = Decimal("0")
 
-        # =========================
-        # Backend Payment Validation
-        # =========================
+        # Validate total payments against calculated total order balance
         cash_paid = Decimal(str(payload.cash_amount))
         other_paid = Decimal(str(payload.other_payment_amount))
         total_paid = cash_paid + other_paid
 
-        # Check if total payments match final order amount
         if total_paid != total.quantize(Decimal("0.01")):
             return JSONResponse(
                 status_code=400,
@@ -230,7 +220,7 @@ async def create_order(
                 }
             )
 
-        # Check payment method selections
+        # Validate complementary payment methods and amounts
         if other_paid > 0 and not payload.other_payment_method:
             return JSONResponse(
                 status_code=400,
@@ -247,10 +237,12 @@ async def create_order(
                 }
             )
 
+        # Set final calculated order total
         order.total = float(total)
 
         await db.commit()
 
+        # Fetch created order with relationships
         result = await db.execute(
             select(Order)
             .options(
@@ -268,9 +260,15 @@ async def create_order(
             "data": order
         }
 
-    except Exception:
+    except Exception as e:
         await db.rollback()
-        raise
+        return JSONResponse(
+            status_code=500,
+            content={
+                "message": "Internal server error occurred",
+                "detail": str(e)
+            }
+        )
 # =========================
 # Get Order List
 # =========================
