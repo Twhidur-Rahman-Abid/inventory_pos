@@ -1,4 +1,4 @@
-import { nullish, z } from "zod";
+import { z } from "zod";
 
 export const branchSchema = z.object({
   name: z
@@ -95,9 +95,7 @@ export const ProductSchema = z.object({
     error: "Category is required",
   }),
 
-  brand_id: z.coerce.number({
-    error: "Brands is required",
-  }),
+  brand_id: z.coerce.number().optional(),
 
   discount_percentage: z.coerce
     .number({
