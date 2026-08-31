@@ -85,8 +85,8 @@ class OrderItem(Base):
     )
 
     qty: Mapped[int] = mapped_column(nullable=False)
-    price: Mapped[float] = mapped_column(Numeric(10, 2),nullable=False)
-    discounted_price: Mapped[float] = mapped_column(Numeric(10, 2),nullable=True)
+    selling_price: Mapped[float] = mapped_column(Numeric(10, 2),nullable=False)
+    original_price: Mapped[float] = mapped_column(Numeric(10, 2),nullable=True)
     discount_type : Mapped[str] = mapped_column(String(60),nullable=True)
 
     order = relationship(
