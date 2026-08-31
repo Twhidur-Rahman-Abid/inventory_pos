@@ -33,6 +33,7 @@ export const UserProvider = ({
   value: UserContextValue;
   children: React.ReactNode;
 }) => {
+  "use no memo";
   const [user, setUser] = useState<UserContextValue>(value);
   return (
     <userContext.Provider value={{ ...user, setUser }}>
@@ -42,6 +43,7 @@ export const UserProvider = ({
 };
 
 export const useUser = (): UserContextType => {
+  "use no memo";
   const context = useContext<UserContextType>(userContext);
   if (!context) {
     throw new Error("useUser must be used within a UserProvider");
