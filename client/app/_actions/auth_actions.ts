@@ -4,6 +4,7 @@
 import { BASE_URL } from "@/app/_constants";
 import setAccessAndRefreshToken from "../_lib/auth";
 import { cookies } from "next/headers";
+import { redirect } from "next/navigation";
 
 export async function authAction(_: any, formData: FormData) {
   const username = formData.get("username") as string;
@@ -32,7 +33,6 @@ export async function authAction(_: any, formData: FormData) {
     const formBody = new URLSearchParams();
     formBody.append("username", username);
     formBody.append("password", password);
-
     const res = await fetch(`${BASE_URL}/auth/login/`, {
       method: "POST",
       headers: {
@@ -87,6 +87,10 @@ export async function refreshTokenRotate() {
   if (res.ok) {
     await setAccessAndRefreshToken(data.access_token, data.refresh_token);
     return { success: true, ...data };
+  } else if (res.status === 401 || res.status === 403) {
+    cookieStore.delete("refreshToken");
+    cookieStore.delete("accessToken");
+    redirect("/");
   } else {
     return { success: false };
   }
