@@ -23,7 +23,7 @@ const LoginForm = () => {
     } else if (message) {
       toast.error(message);
     }
-  }, [success, message, router, errors]);
+  }, [success, message, router, errors, state]);
 
   return (
     <form action={action} className="my-6 space-y-3 md:space-y-4.5">
