@@ -1,17 +1,19 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { Button, Logo } from "@/app/_components";
 import { useUser } from "@/app/_context/userContext";
-import { formatDate } from "@/app/_lib/utils";
+import { cn, formatDate } from "@/app/_lib/utils";
 import Image from "next/image";
-import React, { useRef, ReactNode } from "react";
+import React, { useRef } from "react";
 import { useReactToPrint } from "react-to-print";
 
 const PrintInvoice = ({
   orderData = {} as any,
   onClose = () => {},
+  showOnly = false,
 }: {
   orderData?: any;
   onClose?: () => void;
+  showOnly?: boolean;
 }) => {
   // Invoice Print
   const invoiceRef = useRef<HTMLDivElement>(null);
@@ -45,25 +47,27 @@ const PrintInvoice = ({
 
   return (
     <>
-      <Button className="cursor-pointer" onClick={handleClick}>
-        Print
-        <Image
-          src="/icon/i-print.svg"
-          width={32}
-          height={32}
-          className="size-8 filter invert brightness-0"
-          alt="Print Invoice"
-        />
-      </Button>
+      {!showOnly && (
+        <Button className="cursor-pointer" onClick={handleClick}>
+          Print
+          <Image
+            src="/icon/i-print.svg"
+            width={32}
+            height={32}
+            className="size-8 filter invert brightness-0"
+            alt="Print Invoice"
+          />
+        </Button>
+      )}
       {/* Order Voucher for print */}
       {orderData && (
-        <div className="hidden">
+        <div className={cn("hidden", showOnly && "block")}>
           {/* <OrderVoucher ref={componentRef} order={orderData} /> */}
           <div
             ref={invoiceRef}
-            className="max-w-md mx-auto p-4 print:max-w-none print:mx-0 print:p-0"
+            className="max-w-fit p-4 print:max-w-none print:mx-0 print:p-0"
           >
-            <div className="max-w-md mx-auto p-4 print:max-w-none print:mx-0 print:p-0">
+            <div className="p-4 print:max-w-none print:mx-0 print:p-0">
               <div className="w-full bg-white border border-gray-300 print:border-gray-800">
                 {/* Header */}
                 <div className="py-6 px-6 border-b border-gray-300 print:border-gray-800 flex items-start justify-between">
@@ -150,11 +154,18 @@ const PrintInvoice = ({
                             <th className="text-left py-3 px-4 font-semibold text-sm text-gray-900">
                               Product
                             </th>
+
+                            <th className="text-center py-3 px-4 font-semibold text-sm text-gray-900">
+                              Offer
+                            </th>
+                            <th className="text-center py-3 px-4 font-semibold text-sm text-gray-900">
+                              Price
+                            </th>
                             <th className="text-center py-3 px-4 font-semibold text-sm text-gray-900">
                               Qty
                             </th>
                             <th className="text-right py-3 px-4 font-semibold text-sm text-gray-900">
-                              Price
+                              Total
                             </th>
                           </tr>
                         </thead>
@@ -167,14 +178,18 @@ const PrintInvoice = ({
                               <td className="py-3 px-4 text-sm font-medium text-gray-900">
                                 {item?.product?.name}
                               </td>
+                              <td className="py-3 px-4 text-sm uppercase text-center font-medium text-gray-900">
+                                {item?.discount_type}
+                              </td>
+                              <td className="py-3 px-4 text-sm font-semibold text-center text-gray-900">
+                                <span>{item?.selling_price}</span>
+                                {item?.original_price && item?.original_price}
+                              </td>
                               <td className="py-3 px-4 text-sm text-center text-gray-900">
                                 {item.qty}
                               </td>
-                              <td className="py-3 px-4 text-sm font-semibold text-right text-gray-900">
-                                {item?.discounted_price}{" "}
-                                <span className="line-through">
-                                  ({item?.price})
-                                </span>
+                              <td className="py-3 px-4 text-sm text-right text-gray-900">
+                                {item.qty * item?.selling_price}
                               </td>
                             </tr>
                           ))}
@@ -191,19 +206,19 @@ const PrintInvoice = ({
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">Delivery Charge:</span>
                       <span className="text-gray-900 font-semibold">
-                        {orderData?.delivery || 0}TK
+                        {orderData?.delivery || 0}
                       </span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">Extra Discount:</span>
                       <span className="text-gray-900 font-semibold">
-                        {orderData?.extra_discount} %
+                        {orderData?.extra_discount}%
                       </span>
                     </div>
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">Cash Amount:</span>
                       <span className="text-gray-900 font-semibold">
-                        {orderData?.cash_amount}TK
+                        {orderData?.cash_amount}
                       </span>
                     </div>
                     <div className="flex justify-between text-sm">
@@ -212,15 +227,13 @@ const PrintInvoice = ({
                         {orderData?.other_payment_method || "Other"} Amount:
                       </span>
                       <span className="text-gray-900 font-semibold">
-                        {orderData?.other_payment_amount || 0}TK
+                        {orderData?.other_payment_amount || 0}
                       </span>
                     </div>
 
                     <div className="flex justify-between text-xl font-bold border-t border-gray-300 print:border-gray-800 pt-3">
                       <span className="text-gray-900">Total Amount:</span>
-                      <span className="text-gray-900">
-                        {orderData?.total}TK
-                      </span>
+                      <span className="text-gray-900">{orderData?.total}</span>
                     </div>
                   </div>
 
