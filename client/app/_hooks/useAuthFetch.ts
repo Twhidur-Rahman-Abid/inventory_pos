@@ -3,7 +3,8 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
+
 import { toast } from "react-toastify";
 import { useUser } from "../_context/userContext";
 import { BASE_URL } from "../_constants";
@@ -17,15 +18,6 @@ interface FetchDataProps {
   method?: "GET" | "POST" | "PATCH" | "PUT" | "DELETE";
   isFetch?: boolean;
   isChange?: any | any[];
-
-  // browser cache
-  cache?: RequestCache;
-
-  // nextjs server cache
-  revalidate?: number | false;
-  tags?: string[];
-
-  enableCache?: boolean;
 }
 
 interface FetchResponse<T> {
@@ -41,70 +33,86 @@ const useFetchWAuth = <T = any[]>({
   method = "GET",
   isFetch = true,
   isChange,
-
-  cache = "default",
-  revalidate = false,
-  tags = [],
-
-  enableCache = false,
 }: FetchDataProps): FetchResponse<T> => {
+  "use no memo";
   const [data, setData] = useState<T>([] as unknown as T);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [status, setStatus] = useState<FetchStatus>("start");
   const [error, setError] = useState<string | null>(null);
 
   const { token, setUser } = useUser();
-
   const router = useRouter();
+
+  // --------------------------------
+  // Keep latest token in ref
+  // --------------------------------
+
+  const tokenRef = useRef(token);
+
+  useEffect(() => {
+    tokenRef.current = token;
+  }, [token]);
+
+  // --------------------------------
+  // Fetcher
+  // --------------------------------
 
   const fetcher = useCallback(async () => {
     setIsLoading(true);
 
     try {
-      const fetchOptions: RequestInit & {
-        next?: {
-          revalidate?: number | false;
-          tags?: string[];
-        };
-      } = {
-        method,
+      const currentToken = tokenRef.current;
 
+      const fetchOptions: RequestInit = {
+        method,
         headers: {
-          ...(token && {
-            Authorization: `Bearer ${token}`,
+          ...(currentToken && {
+            Authorization: `Bearer ${currentToken}`,
           }),
           "Content-Type": "application/json",
         },
       };
 
-      // optional browser cache
-      if (enableCache) {
-        fetchOptions.cache = cache;
-      } else {
-        fetchOptions.cache = "no-store";
-      }
-
-      // nextjs server cache
-      if (revalidate || tags.length > 0) {
-        fetchOptions.next = {
-          revalidate,
-          tags,
-        };
-      }
+      // --------------------------------
+      // Initial request
+      // --------------------------------
 
       const response = await fetch(`${BASE_URL}${endpoint}`, fetchOptions);
 
       const resData = await response.json();
 
+      // --------------------------------
+      // Access token expired
+      // --------------------------------
+
       if (response.status === 401) {
+        console.log("401");
+
         const tokenRes = await getFreshToken();
 
-        if (tokenRes?.success && tokenRes.access_token) {
+        console.log("initial token:", currentToken);
+        console.log("refresh response:", tokenRes);
+
+        // --------------------------------
+        // Refresh success
+        // --------------------------------
+
+        if (tokenRes?.access_token) {
           const newToken = tokenRes.access_token;
 
-          setUser((prev) => ({ ...prev, token: newToken }));
+          // Update ref immediately
+          tokenRef.current = newToken;
 
-          // 🔥 RETRY ORIGINAL REQUEST WITH NEW TOKEN
+          // Update React context
+          setUser((prev) => ({
+            ...prev,
+            token: newToken,
+          }));
+
+          // --------------------------------
+          // Retry original request
+          // --------------------------------
+
           const retryResponse = await fetch(`${BASE_URL}${endpoint}`, {
             ...fetchOptions,
             headers: {
@@ -115,51 +123,104 @@ const useFetchWAuth = <T = any[]>({
 
           const retryData = await retryResponse.json();
 
+          console.log("retryData:", retryData);
+          console.log("retryStatus:", retryResponse.status);
+
+          // --------------------------------
+          // Retry success
+          // --------------------------------
+
           if (retryResponse.ok) {
             setData(retryData as T);
             setStatus("success");
             setError(null);
-            return; // stop here
-          } else if (retryResponse.status === 401) {
-            await logoutAction();
-            router.push("/");
-            // ❌ refresh failed
-            setStatus("error");
-            setError("Unauthorized! Please log in again.");
-            toast.error("Unauthorized! Please log in again.");
-            return;
-          } else {
-            setStatus("error");
-            setError(retryData?.message || "Retry failed");
-            toast.error(retryData?.message || "Retry failed");
 
             return;
           }
-        } else {
-          await logoutAction();
-          router.push("/");
-          // ❌ refresh failed
+
+          // --------------------------------
+          // Retry also unauthorized
+          // --------------------------------
+
+          if (retryResponse.status === 401) {
+            console.log("logout from retry");
+
+            await logoutAction();
+
+            router.push("/");
+
+            setStatus("error");
+            setError("Unauthorized! Please log in again.");
+
+            toast.error("Unauthorized! Please log in again.");
+
+            return;
+          }
+
+          // --------------------------------
+          // Retry other error
+          // --------------------------------
+
           setStatus("error");
-          setError("Unauthorized! Please log in again.");
-          toast.error("Unauthorized! Please log in again.");
+
+          const message =
+            retryData?.message ||
+            retryData?.detail ||
+            retryData?.error ||
+            "Retry failed";
+
+          setError(message);
+          toast.error(message);
+
           return;
         }
+
+        // --------------------------------
+        // Refresh failed
+        // --------------------------------
+
+        console.log("Refresh token failed");
+
+        await logoutAction();
+
+        router.push("/");
+
+        setStatus("error");
+        setError("Unauthorized! Please log in again.");
+
+        toast.error("Unauthorized! Please log in again.");
+
+        return;
       }
+
+      // --------------------------------
+      // Normal success
+      // --------------------------------
 
       if (response.ok) {
         setData(resData as T);
         setStatus("success");
-      } else {
-        setStatus("error");
+        setError(null);
 
-        const message = resData?.message || resData?.detail || resData?.error;
-
-        setError(message);
-
-        toast.error(message || "An error occurred while fetching data.");
-
-        setData([] as unknown as T);
+        return;
       }
+
+      // --------------------------------
+      // Normal API error
+      // --------------------------------
+
+      setStatus("error");
+
+      const message =
+        resData?.message ||
+        resData?.detail ||
+        resData?.error ||
+        "An error occurred while fetching data.";
+
+      setError(message);
+      toast.error(message);
+
+      setData([] as unknown as T);
     } catch (error: any) {
       setStatus("error");
       setError("Server error!");
@@ -168,7 +229,11 @@ const useFetchWAuth = <T = any[]>({
     } finally {
       setIsLoading(false);
     }
-  }, [endpoint, method, cache, enableCache, revalidate, JSON.stringify(tags)]);
+  }, [endpoint, method]);
+
+  // --------------------------------
+  // Auto fetch
+  // --------------------------------
 
   useEffect(() => {
     if (isFetch) {
