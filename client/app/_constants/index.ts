@@ -1,12 +1,10 @@
-const BASE_URL = "http://127.0.0.1:8000/api/v1";
-// const BASE_URL = "https://niamah-shop.onrender.com/api/v1";
+const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
 
 // MONEY SYMBOL BDT
 const MONEY_SYMBOL = "৳";
 const MONEY_TITLE = "TK";
 
 const PAYMENT_METHOD = [
-  { value: "cash", label: "Cash", img: "/cash.svg" },
   { value: "bkash", label: "Bkash", img: "/BKash.svg" },
   { value: "nagad", label: "Nagad", img: "/Nagad.svg" },
   { value: "rocket", label: "Rocket", img: "/rocket.png" },
@@ -38,6 +36,7 @@ const ADMIN_ROUTE = [
   { label: "Category", icon: "/icon/i-category.svg" },
   { label: "Branch", icon: "/icon/i-branch.svg" },
   { label: "Employee", icon: "/icon/i-cashire.svg" },
+  { label: "Brands", icon: "/icon/i-tag.svg" },
   { label: "Coupon", icon: "/icon/i-coupon.svg" },
   { label: "Reports", icon: "/icon/i-report.svg" },
   { label: "Setting", icon: "/icon/i-setting-2.svg" },
@@ -55,6 +54,8 @@ const WAREHOUSE_ROUTE = [
   },
   { label: "Sold", icon: "/icon/i-sold.svg" },
   { label: "Online Order", icon: "/icon/i-online-order.svg" },
+  { label: "Category", icon: "/icon/i-category.svg" },
+  { label: "Brands", icon: "/icon/i-tag.svg" },
   { label: "Reports", icon: "/icon/i-report.svg" },
   { label: "Setting", icon: "/icon/i-setting-2.svg" },
 ];
