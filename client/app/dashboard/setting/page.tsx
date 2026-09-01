@@ -1,14 +1,17 @@
-import React from "react";
+"use client";
+import { useUser } from "@/app/_context/userContext";
 import ChangePassword from "./ChangePassword";
 import HeroSliders from "./HeroSliders";
 
-const page = () => {
+const SettingPage = () => {
+  const { user } = useUser();
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       <ChangePassword />
-      <HeroSliders />
+      {user?.role === "admin" ||
+        (user?.role === "warehouse_manager" && <HeroSliders />)}
     </div>
   );
 };
 
-export default page;
+export default SettingPage;
