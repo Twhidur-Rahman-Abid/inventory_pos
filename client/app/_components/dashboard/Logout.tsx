@@ -1,8 +1,5 @@
 "use client";
-import React, { useState } from "react";
-
-import Image from "next/image";
-
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 import { createPortal } from "react-dom";
@@ -21,9 +18,9 @@ const Logout = () => {
     const logout = await logoutAction();
     setIsPending(false);
     if (logout) {
-      router.push("/");
       setIsModalOpen(false);
       toast.success("User logout!");
+      router.push("/");
     } else {
       toast.error("There was an error occur!");
     }
