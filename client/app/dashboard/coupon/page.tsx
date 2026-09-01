@@ -87,7 +87,7 @@ const CouponPage = () => {
   else if (!isLoading && status === "error")
     content = <ErrorMessage message={error || "Failed to load data."} />;
   else if (!isLoading && status === "success" && data?.length === 0)
-    content = <NotFoundMessage message="Employee not found." />;
+    content = <NotFoundMessage message="Coupon not found." />;
   else
     content = (
       <>
