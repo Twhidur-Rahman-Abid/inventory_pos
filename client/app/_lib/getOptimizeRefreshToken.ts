@@ -1,18 +1,3 @@
-// import { refreshTokenRotate } from "../_actions/auth_actions";
-
-// /* eslint-disable @typescript-eslint/no-explicit-any */
-// let refreshPromise: Promise<any> | null = null;
-
-// export const getFreshToken = async () => {
-//   if (!refreshPromise) {
-//     refreshPromise = refreshTokenRotate().finally(() => {
-//       refreshPromise = null;
-//     });
-//   }
-
-//   return refreshPromise;
-// };
-
 import { refreshTokenRotate } from "../_actions/auth_actions";
 
 type RefreshTokenResult = Awaited<ReturnType<typeof refreshTokenRotate>>;
@@ -21,7 +6,7 @@ let refreshPromise: Promise<RefreshTokenResult> | null = null;
 let cachedResult: RefreshTokenResult | null = null;
 let cacheExpiresAt = 0;
 
-const CACHE_TIME = 60 * 1000; // 1 minute
+const CACHE_TIME = 3 * 1000; // 1 minute
 
 export const getFreshToken = async (): Promise<RefreshTokenResult> => {
   const now = Date.now();
@@ -47,7 +32,6 @@ export const getFreshToken = async (): Promise<RefreshTokenResult> => {
       cachedResult = result;
       cacheExpiresAt = Date.now() + CACHE_TIME;
     }
-
     return result;
   } finally {
     // Only clear the promise, NOT the cached result
