@@ -38,6 +38,11 @@ const RightSide = () => {
     total,
   };
 
+  const onOrderSuccessRightSideClear = () => {
+    setDiscount(0);
+    setDelivery(0);
+  };
+
   return (
     <>
       {/* Mobile toggle */}
@@ -134,6 +139,7 @@ const RightSide = () => {
           onClose={() => setIsPaymentOpen(false)}
           orderPayload={orderPayload}
           onRightSideClose={() => setIsOpen(false)}
+          onOrderSuccessRightSideClear={onOrderSuccessRightSideClear}
         />
       )}
     </>

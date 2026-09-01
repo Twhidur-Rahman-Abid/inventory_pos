@@ -26,12 +26,14 @@ type ModalProps = {
     }[];
   };
   onRightSideClose: () => void;
+  onOrderSuccessRightSideClear: () => void;
 };
 
 export default function PaymentModal({
   onClose = () => {},
   orderPayload,
   onRightSideClose = () => {},
+  onOrderSuccessRightSideClear = () => {},
 }: ModalProps) {
   const [paymentMethod, setPaymentMethod] = useState<string | null>(null);
   const [other_payment_amount, setOtherPaymentAmount] = useState(0);
@@ -84,6 +86,7 @@ export default function PaymentModal({
       // onClose();
       setOrderedData(res?.data?.data);
       setIsPrintOpen(true);
+      onOrderSuccessRightSideClear();
       onRightSideClose();
       clearCart();
     } else {
