@@ -23,6 +23,7 @@ import { CategoryType, ProductType } from "@/app/_types/types";
 import { InputSkeleton } from "@/app/_components/ui/Skeleton";
 
 import { SimpleEditor } from "@/components/tiptap-templates/simple/simple-editor";
+import { truncateByDomain } from "recharts/types/util/ChartUtils";
 
 // ---------------- Main Modal ----------------
 const ProductModal = ({
@@ -68,14 +69,19 @@ const ProductModal = ({
     ? { ...editableProduct, description: defaultProduct?.details?.description }
     : null;
 
+  let offerOpenInitial = false;
+  if (
+    editableProduct?.is_buy_one_get_one ||
+    !!editableProduct?.discount_percentage
+  ) {
+    offerOpenInitial = true;
+  }
+  console.log("offerOpenInitial", offerOpenInitial);
   // Offer state
-  const [offerOpen, setOfferOpen] = useState(
-    !!editableProduct?.is_buy_one_get_one ||
-      !!editableProduct?.discount_percentage,
-  );
-
+  const [offerOpen, setOfferOpen] = useState<boolean | null>(null);
+  console.log("offerOpen", offerOpen);
   const [isOneBuyOne, setIsOneBuyOne] = useState(
-    editableProduct?.is_buy_one_get_one || false,
+    editableProduct?.is_buy_one_get_one as boolean,
   );
 
   // Images State
@@ -160,7 +166,10 @@ const ProductModal = ({
   }, [state]);
 
   return (
-    <Modal onClose={onClose} title="Add Product">
+    <Modal
+      onClose={onClose}
+      title={editable?.id ? "Edit Product" : "Add Product"}
+    >
       <p className="text-secondary text-md font-medium pb-4 mt-4 border-b border-c-gray ">
         Product Details
       </p>
@@ -198,13 +207,13 @@ const ProductModal = ({
           {/* SKU Code and Category */}
           <div className="flex gap-8 items-end">
             <div className="relative w-full">
-              <button
+              {/* <button
                 type="button"
                 onClick={handleSku}
-                className="absolute right-0"
+                className=" absolute right-0 px-2 py-1 rounded-sm bg-amber-100 text-amber-600 uppercase text-xs font-bold cursor-pointer"
               >
                 Generate
-              </button>
+              </button> */}
 
               <FormInput
                 name={fields.sku_code.name}
@@ -241,7 +250,7 @@ const ProductModal = ({
             />
 
             {isBrandsLoading ? (
-              <InputSkeleton label="Category" />
+              <InputSkeleton label="Brands" />
             ) : (
               <FormSelect
                 name={fields.brand_id.name}
@@ -267,11 +276,12 @@ const ProductModal = ({
           <div className="flex justify-between border-b border-c-gray pb-4">
             <p className="text-secondary text-md font-medium ">Offer Details</p>
             <ToggleSwitch
-              checked={offerOpen}
+              key={editable?.id}
+              checked={offerOpen ?? offerOpenInitial}
               onChange={() => setOfferOpen(!offerOpen)}
             />
           </div>
-          {offerOpen && (
+          {(offerOpen ?? offerOpenInitial) && (
             <div className="flex gap-8 items-start">
               <FormInput
                 name={fields.discount_percentage.name}
