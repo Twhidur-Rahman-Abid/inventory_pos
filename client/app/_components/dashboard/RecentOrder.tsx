@@ -1,7 +1,4 @@
-import React from "react";
 import Table, { TableSkeleton, Td } from "../ui/Table";
-import Image from "next/image";
-import Icon from "../ui/Icon";
 import { HeaderType } from "@/app/_lib/CommonTypes";
 import useFetchWAuth from "@/app/_hooks/useAuthFetch";
 import { ErrorMessage, NotFoundMessage } from "../ui/Alert";
@@ -10,7 +7,6 @@ import PrintInvoice from "@/app/dashboard/sold/PrintInvoice";
 
 const tableHeaders: HeaderType[] = [
   { label: "Id", key: "serial" },
-  { label: "Customer", key: "username" },
   { label: "Type", key: "username" },
   { label: "Date", key: "Actions" },
   { label: "Amount", key: "Actions" },
@@ -20,7 +16,6 @@ const tableHeaders: HeaderType[] = [
 
 type OrderType = {
   id: number;
-  customer: string;
   type: "Online" | "Offline";
   amount: number;
   date: string;
@@ -44,7 +39,6 @@ const RecentOrder = () => {
         {data?.map((order) => (
           <tr className="border-b border-gray-300" key={order.id}>
             <Td>{order.id}</Td>
-            <Td>{order.customer}</Td>
             <Td>
               <button
                 className={cn(
