@@ -8,8 +8,9 @@ const SettingPage = () => {
   return (
     <div className="space-y-8">
       <ChangePassword />
-      {user?.role === "admin" ||
-        (user?.role === "warehouse_manager" && <HeroSliders />)}
+      {(user?.role === "admin" || user?.role === "warehouse_manager") && (
+        <HeroSliders />
+      )}
     </div>
   );
 };
