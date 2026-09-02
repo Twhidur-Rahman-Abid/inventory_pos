@@ -1,6 +1,8 @@
 from pathlib import Path
 
-from fastapi import FastAPI, APIRouter
+from fastapi import FastAPI, APIRouter, Depends, status, Response
+from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.sql import text
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
@@ -33,13 +35,6 @@ app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
 
 
-# @app.middleware("http")
-# async def fix_trailing_slash(request: Request, call_next):
-#     path = request.url.path
-#     if path.startswith("/api/") and not path.endswith("/"):
-#         request.scope["path"] = path + "/"
-#     response = await call_next(request)
-#     return response
 
 # Configure CORS
 origins = config.origins
@@ -73,6 +68,15 @@ async def validation_error_handler(request,exc):
 async def internal_server_error_handler(request, exc):
     return JSONResponse({'message': 'Internal server error occurred!', 'detail': str(exc)}, status_code=500)
 
+@app.get("/health")
+async def health_check(response: Response, db: AsyncSession = Depends(get_db)):
+    try:
+        await db.execute(text("SELECT 1"))
+        return {"status": "healthy", "database": "connected"}
+    except Exception as e:
+        response.status_code = status.HTTP_500_INTERNAL_SERVER_ERROR
+        return {"status": "unhealthy", "database": str(e)}
+    
 v1RRouter = APIRouter(prefix="/api/v1")
 v1RRouter.include_router(router=branchRouter)
 v1RRouter.include_router(router=userRouter)
