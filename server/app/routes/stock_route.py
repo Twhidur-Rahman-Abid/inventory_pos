@@ -17,6 +17,8 @@ from app.models.stock import SendStockSchema, StockTransferResponse
 from app.models.user import UserRole
 from app.utils.dependencies import get_current_user, role_required
 from app.database.schema.user import User
+from app.utils.sse_manager import notify_branch
+from sqlalchemy.exc import SQLAlchemyError
 
 stockRouter = APIRouter(
     prefix="/stocks",
@@ -29,10 +31,8 @@ async def send_stock(
     payload: SendStockSchema,
     db: AsyncSession = Depends(get_db),
 ):
- 
-
-        # lock warehouse product row
-
+    try:
+        # 1. Lock warehouse product row for safe concurrent updates
         product = await db.scalar(
             select(Product)
             .where(Product.id == payload.product_id)
@@ -51,6 +51,7 @@ async def send_stock(
                 content={"message": "Insufficient warehouse stock"}
             )
 
+        # 2. Update stock and create stock transfer entry
         product.quantity -= payload.quantity
 
         transfer = StockTransfer(
@@ -61,13 +62,43 @@ async def send_stock(
         )
 
         db.add(transfer)
+        
+        # 3. Commit transaction to database
         await db.commit()
         await db.refresh(transfer)
 
+        # 4. Push SSE Notification to the specific target branch
+        try:
+            await notify_branch(
+                branch_id=payload.branch_id,
+                message={
+                    "type": "stock_transfer",
+                    "text": f"New stock received for product: {product.name}"
+                }
+            )
+        except Exception as sse_err:
+            # Non-blocking log: Stock transfer success holeo SSE fail korle DB rollback hobe na
+            print(f"Failed to send SSE notification to branch {payload.branch_id}: {sse_err}")
+
         return {
-            "message": "Stock sent successfully"
+            "message": "Stock sent successfully",
+            "transfer_id": transfer.id
         }
 
+    except SQLAlchemyError as db_err:
+        await db.rollback()
+        print(f"Database error in send_stock: {db_err}")
+        return JSONResponse(
+            status_code=500,
+            content={"message","Database transaction failed while transferring stock"}
+        )
+    except Exception as err:
+        await db.rollback()
+        print(f"Unexpected error in send_stock: {err}")
+        return JSONResponse(
+            status_code=500,
+            content={"message","An unexpected error occurred while processing stock transfer"}
+        )
 
 
 
