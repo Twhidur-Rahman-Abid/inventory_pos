@@ -86,7 +86,7 @@ const useFetchWAuth = <T = any[]>({
       // --------------------------------
 
       if (response.status === 401) {
-        console.log("401");
+        console.error("401");
 
         const tokenRes = await getFreshToken();
 
@@ -179,7 +179,7 @@ const useFetchWAuth = <T = any[]>({
         // Refresh failed
         // --------------------------------
 
-        console.log("Refresh token failed");
+        console.error("Refresh token failed");
 
         await logoutAction();
 
@@ -216,6 +216,7 @@ const useFetchWAuth = <T = any[]>({
         resData?.detail ||
         resData?.error ||
         "An error occurred while fetching data.";
+      console.error("client fetch error:", message);
 
       setError(message);
       toast.error(message);
@@ -225,7 +226,7 @@ const useFetchWAuth = <T = any[]>({
       setStatus("error");
       setError("Server error!");
 
-      console.log(`Fetch error [${endpoint}]:`, error?.message);
+      console.error(`Fetch error [${endpoint}]:`, error?.message);
     } finally {
       setIsLoading(false);
     }

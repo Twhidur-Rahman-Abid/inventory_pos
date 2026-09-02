@@ -6,7 +6,6 @@ import schemaMap from "../_schema";
 import { cookies } from "next/headers";
 import { BASE_URL } from "../_constants";
 import { revalidateTag } from "next/cache";
-import { updateTag } from "next/cache";
 import { getFreshToken } from "../_lib/getOptimizeRefreshToken";
 import { logoutAction } from "./auth_actions";
 import { redirect } from "next/navigation";
@@ -42,7 +41,7 @@ async function getAuthTokens() {
 // get data from server
 export async function getData(endpoint: string) {
   try {
-    const { accessToken, refreshToken } = await getAuthTokens();
+    const { accessToken } = await getAuthTokens();
     const res = await fetch(`${BASE_URL}${endpoint}`, {
       method: "GET",
       headers: {
@@ -51,6 +50,7 @@ export async function getData(endpoint: string) {
     });
     const data = await res.json();
     if (!res.ok) {
+      console.error("Get error:", data);
       return {
         data: null,
         status: "error",
@@ -83,7 +83,7 @@ export async function postData({
   let schema = null;
   let submission: any = null;
   try {
-    const { accessToken, refreshToken } = await getAuthTokens();
+    const { accessToken } = await getAuthTokens();
     console.log("=== Endpoint ===", endpoint);
 
     // Check schema
@@ -125,6 +125,7 @@ export async function postData({
 
     // return error status
     if (!res.ok) {
+      console.error("post error:", data);
       const message =
         data?.message ||
         data?.detail ||
@@ -149,7 +150,7 @@ export async function postData({
     }
     return { status: "success", data };
   } catch (error) {
-    console.log(error);
+    console.error("post error:", error);
     if (submission) {
       return {
         status: "error",
@@ -178,7 +179,7 @@ export async function postJSONData({
   let schema = null;
   let submission: any = null;
   try {
-    const { accessToken, refreshToken } = await getAuthTokens();
+    const { accessToken } = await getAuthTokens();
     console.log("===start===", endpoint);
 
     // check schema validation
@@ -225,6 +226,7 @@ export async function postJSONData({
 
     // return error response
     if (!res.ok) {
+      console.error("post json error:", data);
       const message =
         data?.message ||
         data?.detail ||
@@ -246,7 +248,7 @@ export async function postJSONData({
     }
     return { status: "success", data };
   } catch (error) {
-    console.log(error);
+    console.error("post json error:", error);
     if (submission) {
       return {
         status: "error",
@@ -275,7 +277,7 @@ export async function putJSONData({
   let schema = null;
   let submission: any = null;
   try {
-    const { accessToken, refreshToken } = await getAuthTokens();
+    const { accessToken } = await getAuthTokens();
     console.log("===start===", endpoint);
 
     // Check schema validation
@@ -326,6 +328,7 @@ export async function putJSONData({
 
     // return error status
     if (!res.ok) {
+      console.error("put json error:", data);
       const message =
         data?.message ||
         data?.detail ||
@@ -352,7 +355,7 @@ export async function putJSONData({
     }
     return { status: "success", data };
   } catch (error) {
-    console.log(error);
+    console.error("put json error", error);
     if (submission) {
       return {
         status: "error",
@@ -381,7 +384,7 @@ export async function putData({
   let schema = null;
   let submission: any = null;
   try {
-    const { accessToken, refreshToken } = await getAuthTokens();
+    const { accessToken } = await getAuthTokens();
     console.log("===start===", endpoint);
 
     // Check schema
@@ -424,6 +427,7 @@ export async function putData({
 
     // return error status
     if (!res.ok) {
+      console.error("put error:", data);
       const message =
         data?.message ||
         data?.detail ||
@@ -445,7 +449,7 @@ export async function putData({
     }
     return { status: "success", data };
   } catch (error) {
-    console.log(error);
+    console.error("put error:", error);
     if (submission) {
       return {
         status: "error",
@@ -464,7 +468,7 @@ export async function putData({
 // delete data
 export async function deleteData(endpoint: string) {
   try {
-    const { accessToken, refreshToken } = await getAuthTokens();
+    const { accessToken } = await getAuthTokens();
 
     const res = await fetch(`${BASE_URL}${endpoint}`, {
       method: "DELETE",
@@ -479,6 +483,7 @@ export async function deleteData(endpoint: string) {
       };
     } else {
       const data = await res.json();
+      console.error("delete error", data);
       return {
         success: false,
         message:
@@ -489,7 +494,7 @@ export async function deleteData(endpoint: string) {
       };
     }
   } catch (error) {
-    console.log(error);
+    console.error("delete error:", error);
     return {
       success: false,
       message: "Server error!",

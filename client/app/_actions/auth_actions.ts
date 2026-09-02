@@ -49,6 +49,7 @@ export async function authAction(_: any, formData: FormData) {
         data,
       };
     } else {
+      console.error("auth error:", data);
       return {
         success: false,
         message: data?.message || data?.detail || data?.error || "Login failed",
@@ -57,7 +58,7 @@ export async function authAction(_: any, formData: FormData) {
       };
     }
   } catch (error) {
-    console.log(error);
+    console.error("auth error:", error);
     return {
       success: false,
       message: "Server error",
@@ -88,6 +89,8 @@ export async function refreshTokenRotate() {
     await setAccessAndRefreshToken(data.access_token, data.refresh_token);
     return { success: true, ...data };
   } else if (res.status === 401 || res.status === 403) {
+    console.error("refresh status:", res.status);
+    console.error("refresh error:", data);
     cookieStore.delete("refreshToken");
     cookieStore.delete("accessToken");
     redirect("/");
