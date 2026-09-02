@@ -54,6 +54,7 @@ shellingham==1.5.4
 six==1.17.0
 slowapi==0.1.10
 sqlalchemy==2.0.49
+sse-starlette==3.4.8
 starlette==1.0.0
 typer==0.25.1
 types-pyasn1==0.6.0.20260408
