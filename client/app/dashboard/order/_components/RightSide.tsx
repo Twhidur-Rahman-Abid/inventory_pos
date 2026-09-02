@@ -23,6 +23,8 @@ const RightSide = () => {
   const [isPaymentOpen, setIsPaymentOpen] = useState(false);
   const [discount, setDiscount] = useState(0);
   const [delivery, setDelivery] = useState(0);
+  const [customer_name, setCustomerName] = useState("");
+  const [customer_phone, setCustomerPhone] = useState("");
 
   const { carts, clearCart } = useCart();
 
@@ -34,11 +36,15 @@ const RightSide = () => {
     branch_id: user.branch?.id,
     extra_discount: discount,
     delivery: delivery,
+    customer_name,
+    customer_phone,
     items: carts?.map((cart) => ({ product_id: cart.id, qty: cart.qty })),
     total,
   };
 
   const onOrderSuccessRightSideClear = () => {
+    setCustomerName("");
+    setCustomerPhone("");
     setDiscount(0);
     setDelivery(0);
   };
@@ -112,8 +118,16 @@ const RightSide = () => {
         </div>
         {/* Customer */}
         <div className="flex gap-4">
-          <Input placeholder="Customer Name" />
-          <Input placeholder="Phone" />
+          <Input
+            placeholder="Customer Name"
+            value={customer_name}
+            onChange={(e) => setCustomerName(e.target.value)}
+          />
+          <Input
+            placeholder="01XXXXXXXX"
+            value={customer_phone}
+            onChange={(e) => setCustomerPhone(e.target.value)}
+          />
         </div>
         {/* Summary */}
         <BillingSummary
