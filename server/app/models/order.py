@@ -1,7 +1,8 @@
 from datetime import datetime
+from decimal import Decimal
 
-from pydantic import BaseModel, Field
-from typing import Optional
+from pydantic import BaseModel, Field, ConfigDict
+from typing import List, Optional
 
 
 from app.database.schema.order import PaymentMethod, OrderStatus
@@ -31,7 +32,6 @@ class OrderStatusUpdate(BaseModel):
 
 
 class ProductResponse(BaseModel):
-
     id: int
     sku_code: str
     name: str
@@ -39,41 +39,58 @@ class ProductResponse(BaseModel):
 
 
 class OrderItemResponse(BaseModel):
-
     id: int
+    discount_type: str | None = None
+    original_price: float | None = None
     qty: int
-    price: float
-    order_id: int
-    product_id: int
+    selling_price: float
     product: ProductResponse
+
+class Branch(BaseModel):
+    id: int
+    name: str
 
 
 class CustomerResponse(BaseModel):
     id: int
-    name: str
+    name: str | None = None
     phone: str
 
 
-class OrderResponse(BaseModel):
+class OrderResponseBase(BaseModel):
     id: int
-    customer_id: Optional[int] = None
-    branch_id: int
-
     total: float
     delivery: float
     extra_discount: float
-
     note: str
     status: str
-    payment_method: str
     is_online: bool
-
+    cash_amount:float
+    other_payment_method: Optional[PaymentMethod] = None
+    other_payment_amount: float | None = None
     created_at: datetime
     updated_at: datetime
-
+    branch: Branch
     customer: Optional[CustomerResponse] = None
     items: list[OrderItemResponse]
 
 
-class OrderDetailsResponse(BaseModel):
-    data: OrderResponse
+class OrderResponse(BaseModel):
+    message:str
+    data: OrderResponseBase
+
+class BasicOrderResponse(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    id: int
+    created_at: datetime
+    note: Optional[str] = ""
+    other_payment_method: Optional[str] = None
+    other_payment_amount: Decimal
+    cash_amount: Decimal
+    total: Decimal
+    status: str | None = None
+
+class BasicOrderPaginatedResponse(BaseModel):
+    count: int
+    data: List[BasicOrderResponse]
