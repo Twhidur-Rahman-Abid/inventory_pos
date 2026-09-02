@@ -7,6 +7,7 @@ from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 from app.config import get_config
+from app.database.db import get_db
 from app.utils.limiter import limiter
 from slowapi import  _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
@@ -22,14 +23,12 @@ from app.routes.coupon_route import couponRouter
 from app.routes.brand_router import brandRouter
 from app.routes.web_route import webRouter
 from fastapi.middleware.cors import CORSMiddleware
-from starlette.middleware.base import BaseHTTPMiddleware
-from starlette.requests import Request
 
 config = get_config()
 
 
 
-app = FastAPI(title=config.app_name)
+app = FastAPI(title=config.app_name, docs_url=config.docs_url)
 
 app.state.limiter = limiter
 app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
