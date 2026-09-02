@@ -82,7 +82,7 @@ async def create_order(
             UserRole.shop_staff,
         ]
         branch_id = (
-            current_user.branch_id if is_branch_user else payload.branch_id
+            current_user.branch_id if is_branch_user else 1
         )
 
         # 3. Create initial Order Shell
