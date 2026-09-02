@@ -37,7 +37,6 @@ type OrderType = {
   name: string;
   created_at: Date;
   total: number;
-  status: OrderStatus;
   cash_amount: number;
   other_payment_amount?: number;
   other_payment_method?: string;
@@ -49,7 +48,7 @@ export default function SoldPage() {
   const searchParams = useSearchParams();
   const page = Number(searchParams.get("page") || 1);
   const search = searchParams.get("search");
-  let endpoint = `/orders?page=${page}`;
+  let endpoint = `/orders/basic?page=${page}`;
   if (search) endpoint += `&search=${search}`;
 
   // fetch order data
