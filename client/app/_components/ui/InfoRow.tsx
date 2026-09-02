@@ -4,7 +4,7 @@ import { ReactNode } from "react";
 const InfoRow = ({
   Left,
   Right,
-  className,
+  className = "",
 }: {
   Left: ReactNode | string;
   Right: ReactNode | string;
