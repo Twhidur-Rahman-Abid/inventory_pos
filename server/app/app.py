@@ -22,6 +22,7 @@ from app.routes.stock_route import stockRouter
 from app.routes.coupon_route import couponRouter
 from app.routes.brand_router import brandRouter
 from app.routes.web_route import webRouter
+from app.routes.notification_route import notificationRouter
 from fastapi.middleware.cors import CORSMiddleware
 
 config = get_config()
@@ -88,6 +89,7 @@ v1RRouter.include_router(router=dashboard_router)
 v1RRouter.include_router(router=stockRouter)
 v1RRouter.include_router(router=couponRouter)
 v1RRouter.include_router(router=webRouter)
+v1RRouter.include_router(router=notificationRouter)
 
 app.include_router(v1RRouter)
 
