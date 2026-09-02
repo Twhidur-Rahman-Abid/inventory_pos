@@ -12,6 +12,7 @@ class Config(BaseSettings):
     refresh_token_expire_days:int=7
     origins: list[str]
     file_size:int =  2 * 1024 *1024
+    docs_url:str = "/docs"
 
     model_config = SettingsConfigDict(env_file=".env")
 
