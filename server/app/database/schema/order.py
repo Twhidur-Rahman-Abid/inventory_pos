@@ -62,6 +62,8 @@ class Order(Base):
         back_populates="orders",
     )
 
+    branch = relationship("Branch")
+
     items = relationship(
         "OrderItem",
         back_populates="order",
