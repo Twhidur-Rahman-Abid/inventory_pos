@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
-import { useState } from "react";
+import { ChangeEvent, useState } from "react";
 
 import { Button, Modal, Input, Select, InfoRow } from "@/app/_components";
 import { PAYMENT_METHOD } from "@/app/_constants";
@@ -49,6 +49,13 @@ export default function PaymentModal({
   const [orderedData, setOrderedData] = useState();
   console.log("orderedData:", orderedData);
   const finalCount = Number(cash_amount) + Number(other_payment_amount);
+
+  const handleOtherPaymentAmount = (e: ChangeEvent<HTMLInputElement>) => {
+    const val = Number(e.target.value);
+    setOtherPaymentAmount(val);
+    setCashAmount(orderPayload.total - val);
+  };
+
   const orderAction = async () => {
     if (finalCount !== Number(orderPayload?.total)) {
       toast.error("Total payment amount must equal the order total balance.");
@@ -222,8 +229,8 @@ export default function PaymentModal({
               <Input
                 type="number"
                 placeholder="Cash amount e.g 10"
-                defaultValue={cash_amount}
-                getInputValue={(val) => setCashAmount(val)}
+                value={cash_amount}
+                onChange={(e) => setCashAmount(e.target.value)}
               />
             }
           />
@@ -249,8 +256,8 @@ export default function PaymentModal({
               <Input
                 type="number"
                 placeholder="Other amount e.g 10"
-                defaultValue={other_payment_amount}
-                getInputValue={(val) => setOtherPaymentAmount(val)}
+                value={other_payment_amount}
+                onChange={handleOtherPaymentAmount}
               />
             }
           />
