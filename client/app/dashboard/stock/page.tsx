@@ -4,6 +4,7 @@ import { HeaderType } from "@/app/_lib/CommonTypes";
 import {
   Button,
   ExportTable,
+  Icon,
   PageTopBar,
   Pagination,
   Search,
@@ -55,7 +56,10 @@ export default function StockPage() {
 }
 
 function StockTransfer() {
+  const [refetch, setRefetch] = useState(1);
   const [actionLoading, setActionLoading] = useState(false);
+
+  const handleRefetch = () => setRefetch((prev) => (prev === 1 ? 2 : 1));
 
   // accept stock
   const stockAction = async (id: number, type: "accept" | "cancel") => {
@@ -86,7 +90,7 @@ function StockTransfer() {
     data: StockTransferType[];
   }>({
     endpoint: "/stocks/transfers",
-    isChange: [page],
+    isChange: [page, refetch],
   });
 
   let content;
@@ -164,7 +168,11 @@ function StockTransfer() {
 
         <div className="card-wrapper space-y-6">
           <div className="flex gap-6 items-center justify-between flex-wrap">
-            <div></div>
+            <div>
+              <Button className="px-4" onClick={handleRefetch}>
+                <Icon src="/icon/reload.svg" size={24} /> Reload
+              </Button>
+            </div>
             <div className="flex gap-6 items-center">
               <ExportTable
                 headers={headers}
