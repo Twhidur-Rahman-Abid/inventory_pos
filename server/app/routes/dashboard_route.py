@@ -4,6 +4,7 @@ from typing import List
 from fastapi import APIRouter, Depends, HTTPException, status,Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, desc,case
+from sqlalchemy.orm import load_only
 
 import logging
 from fastapi.responses import JSONResponse
@@ -514,37 +515,47 @@ async def get_low_stock(
 
 # --- 3. Recent Orders (Limit 10) ---
 @dashboard_router.get("/recent-orders")
-async def get_recent_orders( current_user: User = Depends(
+async def get_recent_orders(
+    current_user: User = Depends(
         role_required([
             UserRole.admin,
             UserRole.warehouse_manager,
             UserRole.shop_manager,
             UserRole.shop_staff
         ])
-    ),db: AsyncSession = Depends(get_db)):
+    ),
+    db: AsyncSession = Depends(get_db)
+):
     try:
-
-
         query = (
             select(Order)
+            .options(
+                load_only(
+                    Order.id,
+                    Order.is_online,
+                    Order.total,
+                    Order.created_at,
+                    Order.status,
+                    Order.branch_id
+                )
+            )
             .order_by(Order.created_at.desc())
             .limit(10)
         )
 
         if current_user.role != UserRole.admin:
-            query=query.where(Order.branch_id == current_user.branch_id )
+            query = query.where(Order.branch_id == current_user.branch_id)
 
         result = await db.execute(query)
         orders = result.scalars().all()
-        
+
         return [
             {
                 "id": o.id,
-                "customer": o.customer.name if o.customer else "Guest",
                 "type": "Online" if o.is_online else "Offline",
                 "amount": float(o.total),
                 "date": o.created_at.strftime("%d-%b-%Y"),
-                "status": o.status.value
+                "status": o.status.value if hasattr(o.status, "value") else str(o.status)
             } for o in orders
         ]
     except Exception as e:
