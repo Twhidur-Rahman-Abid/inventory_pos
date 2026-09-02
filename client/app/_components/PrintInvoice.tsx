@@ -15,6 +15,7 @@ const PrintInvoice = ({
   onClose?: () => void;
   showOnly?: boolean;
 }) => {
+  console.log("orderData:", orderData);
   // Invoice Print
   const invoiceRef = useRef<HTMLDivElement>(null);
 
@@ -88,7 +89,7 @@ const PrintInvoice = ({
                     <div>
                       <span className="text-gray-600 font-medium">Name:</span>
                       <p className="font-mono text-xs mt-1 break-all text-gray-900">
-                        {orderData?.customer_name}
+                        {orderData?.customer?.name}
                       </p>
                     </div>
                     <div>
@@ -100,13 +101,13 @@ const PrintInvoice = ({
                     <div>
                       <span className="text-gray-600 font-medium">Phone:</span>
                       <p className="font-mono text-xs mt-1 break-all text-gray-900">
-                        {orderData?.customer_phone}
+                        {orderData?.customer?.phone}
                       </p>
                     </div>
                     <div>
                       <span className="text-gray-600 font-medium">Branch:</span>
                       <p className="mt-1 text-gray-900 font-semibold capitalize">
-                        {user?.branch?.name}
+                        {orderData?.branch?.name}
                       </p>
                     </div>
                     <div className="col-span-2">
@@ -119,28 +120,6 @@ const PrintInvoice = ({
 
                   {/* Separator */}
                   <div className="border-t border-gray-300 print:border-gray-800"></div>
-
-                  {/* Customer Info */}
-                  {false && (
-                    <>
-                      <div className="space-y-3">
-                        <h3 className="font-bold text-base text-gray-900 border-b border-gray-300 print:border-gray-800 pb-2">
-                          Customer Details
-                        </h3>
-                        <div className="space-y-2">
-                          <p className="text-base font-semibold text-gray-900">
-                            {orderData?.customer_name}
-                          </p>
-                          <p className="text-sm text-gray-600">
-                            {orderData?.customer_phone}
-                          </p>
-                        </div>
-                      </div>
-
-                      {/* Separator */}
-                      <div className="border-t border-gray-300 print:border-gray-800"></div>
-                    </>
-                  )}
 
                   {/* Items Table */}
                   <div className="space-y-3">
