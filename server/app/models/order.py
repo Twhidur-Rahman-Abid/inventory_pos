@@ -14,7 +14,6 @@ class OrderItemCreate(BaseModel):
 
 class OrderCreate(BaseModel):
     customer_id: Optional[int] = None
-    branch_id: int
     extra_discount: float = 0
     delivery: float = 0
     is_online: bool = False
