@@ -1,18 +1,18 @@
 from typing import List, Optional
 
-from fastapi import APIRouter, Form, UploadFile, File, Depends, Path
+from fastapi import APIRouter, Form, UploadFile, File, Depends, Path, Query
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select, func
+from sqlalchemy import select, func, desc
 from app.utils.dependencies import admin_required, role_required
 from app.database.db import get_db
-from app.database.schema import HeroSlider
+from app.database.schema import Category, HeroSlider, Order, OrderItem, Product
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
 
 from app.utils.utils import delete_image_from_url, get_skip, has_next, save_image
 
 from app.database.schema.user import UserRole
-from app.models.web import HeroSliderResponse
+from app.models.web import BestCategory, BestProduct, HeroSliderResponse
 
 
 webRouter = APIRouter(prefix="/webs", tags=["Webs"])
@@ -196,3 +196,82 @@ async def delete_brand(
             status_code=500,
             content={"message": "Internal server error occurred!"}
         )
+
+
+# ---------------- Top category ----------------
+@webRouter.get("/top-categories", response_model=List[BestCategory])
+async def get_top_categories(
+    limit: int = Query(5, ge=1, le=50, description="Number of categories to fetch"),
+    offset: int = Query(0, ge=0, description="Offset for pagination"),
+    db: AsyncSession = Depends(get_db)
+):
+    try:
+  
+        query = (
+            select(
+                Category.id,
+                Category.name,
+                Category.img,
+                func.sum(OrderItem.qty).label("total_sold")
+            )
+            .join(Product, Product.category_id == Category.id)
+            .join(OrderItem, OrderItem.product_id == Product.id)
+            .group_by(Category.id, Category.name, Category.img) # All selected columns grouped to satisfy SQL strict mode
+            .order_by(desc("total_sold"))
+            .offset(offset)
+            .limit(limit)
+        )
+
+        result = await db.execute(query)
+        categories = result.mappings().all()
+
+        return categories
+
+    except Exception as e:
+        print(f"Error fetching top selling categories: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={"message": "Failed to fetch top categories"}
+        )
+
+
+# ---------------- Top category ----------------
+@webRouter.get("/best-products", response_model=List[BestProduct])
+async def get_best_products(
+    db: AsyncSession = Depends(get_db)
+):
+    try:
+        query = (
+            select(
+                Product.id,
+                Product.sku_code,
+                Product.name,
+                Product.price,
+                Product.thumbnail,
+                Product.discount_percentage,
+                Product.quantity,
+                Product.is_buy_one_get_one,
+                func.sum(OrderItem.qty).label("total_sold")
+            )
+            .join(OrderItem, OrderItem.product_id == Product.id)
+            .join(Order, Order.id == OrderItem.order_id)
+        )
+
+        query = (
+            query.group_by(Product.id)
+            .order_by(desc("total_sold"))
+            .limit(4)
+        )
+
+        result = await db.execute(query)
+        products = result.mappings().all()
+
+        return products
+
+    except Exception as e:
+        print(f"Error fetching top selling products: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={"message","Internal Server Error"}
+        )
+
