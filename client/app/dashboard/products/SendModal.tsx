@@ -91,11 +91,10 @@ const SendModal = ({
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
 
-    if (quantity === 0 || !selectedProduct?.name) {
+    if (!selectedProduct?.name) {
       toast.error("Select product to send");
       return;
     }
-    setIsLoading(true);
 
     if (!branch_id) {
       toast.error("Select branch");
@@ -106,6 +105,8 @@ const SendModal = ({
       toast.error("Add quantity!");
       return;
     }
+
+    setIsLoading(true);
 
     const res = await postJSONData({
       endpoint: `/stocks/send`,
