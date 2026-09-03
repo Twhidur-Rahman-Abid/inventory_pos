@@ -230,7 +230,9 @@ export default function PaymentModal({
                 type="number"
                 placeholder="Cash amount e.g 10"
                 value={cash_amount}
-                onChange={(e) => setCashAmount(e.target.value)}
+                onChange={(e: ChangeEvent<HTMLInputElement>) =>
+                  setCashAmount(Number(e.target.value))
+                }
               />
             }
           />
