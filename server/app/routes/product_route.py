@@ -3,7 +3,7 @@ from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, desc, asc, or_
 from sqlalchemy.orm import selectinload, load_only
-from typing import Optional, List
+from typing import Literal, Optional, List
 import logging
 
 
@@ -13,7 +13,7 @@ from app.database.schema.user import User, UserRole
 from app.utils.utils import delete_image_from_url, get_skip, has_next, save_image
 from app.utils.dependencies import role_required
 from app.models.product import ProductDResponse, ProductDetailsList,  ProductListResponse, StockUpdate
-from app.database.schema import Category
+from app.database.schema import Category, Order, OrderItem
 
 logger = logging.getLogger(__name__)
 productRouter = APIRouter(prefix="/products", tags=["Products"])
@@ -93,86 +93,119 @@ async def get_product_list(
     limit: int = 10,
     pagination: bool = True,
     search: Optional[str] = None,
+    product_type: Literal["all", "discount", "buy_one_get_one", "percentage"] = Query(
+        "all",
+        description="Filter products by deal/discount type"
+    ),
     sort: str = Query(
         "latest",
         enum=["a-z", "z-a", "l-h", "h-l", "latest"]
     ),
     db: AsyncSession = Depends(get_db)
 ):
-    skip = (page - 1) * limit
+    try:
+        skip = (page - 1) * limit
 
-    # product + category
-    query = (
-        select(Product)
-        .options(
-            load_only(
-                Product.id,
-                Product.sku_code,
-                Product.name,
-                Product.price,
-                Product.thumbnail,
-                Product.discount_percentage,
-                Product.is_buy_one_get_one,
-                Product.quantity,
-                Product.category_id,
-                Product.created_at,
-            ),
-            selectinload(Product.category).load_only(
-                Category.id,
-                Category.name,
+        # Base query definition
+        query = (
+            select(Product)
+            .options(
+                load_only(
+                    Product.id,
+                    Product.sku_code,
+                    Product.name,
+                    Product.price,
+                    Product.thumbnail,
+                    Product.discount_percentage,
+                    Product.is_buy_one_get_one,
+                    Product.quantity,
+                    Product.category_id,
+                    Product.created_at,
+                ),
+                selectinload(Product.category).load_only(
+                    Category.id,
+                    Category.name,
+                )
             )
         )
-    )
 
-    # count query
-    count_query = select(func.count()).select_from(Product)
+        # Base count query
+        count_query = select(func.count()).select_from(Product)
 
-    # SEARCH
-    if search:
-        search_filter = or_(
-            Product.name.ilike(f"%{search}%"),
-            Product.sku_code.ilike(f"%{search}%")
+        # 1. SEARCH FILTER
+        if search:
+            search_filter = or_(
+                Product.name.ilike(f"%{search}%"),
+                Product.sku_code.ilike(f"%{search}%")
+            )
+            query = query.where(search_filter)
+            count_query = count_query.where(search_filter)
+
+        # 2. PRODUCT TYPE FILTER
+        if product_type == "discount":
+            discount_filter = or_(
+                Product.discount_percentage > 0,
+                Product.is_buy_one_get_one == True
+            )
+            query = query.where(discount_filter)
+            count_query = count_query.where(discount_filter)
+
+        elif product_type == "buy_one_get_one":
+            query = query.where(Product.is_buy_one_get_one == True)
+            count_query = count_query.where(Product.is_buy_one_get_one == True)
+
+        elif product_type == "percentage":
+            query = query.where(Product.discount_percentage > 0)
+            count_query = count_query.where(Product.discount_percentage > 0)
+
+        # 3. SORTING
+        if sort == "a-z":
+            query = query.order_by(asc(Product.name))
+        elif sort == "z-a":
+            query = query.order_by(desc(Product.name))
+        elif sort == "l-h":
+            query = query.order_by(asc(Product.price))
+        elif sort == "h-l":
+            query = query.order_by(desc(Product.price))
+        else:
+            query = query.order_by(desc(Product.created_at))
+
+        # Execute total count
+        total_count = (await db.execute(count_query)).scalar() or 0
+
+        # 4. PAGINATION HANDLING
+        if not pagination:
+            result = await db.execute(query)
+            products = result.scalars().all()
+
+            return {
+                "data": products,
+                "count": total_count,
+                "has_next": False
+            }
+
+        result = await db.execute(
+            query.offset(skip).limit(limit)
         )
-        query = query.where(search_filter)
-        count_query = count_query.where(search_filter)
 
-    # sort
-    if sort == "a-z":
-        query = query.order_by(asc(Product.name))
-    elif sort == "z-a":
-        query = query.order_by(desc(Product.name))
-    elif sort == "l-h":
-        query = query.order_by(asc(Product.price))
-    elif sort == "h-l":
-        query = query.order_by(desc(Product.price))
-    else:
-        query = query.order_by(desc(Product.created_at))
-
- 
-    total_count = (await db.execute(count_query)).scalar() or 0
-
-   
-    if not pagination:
-        result = await db.execute(query)
         products = result.scalars().all()
 
         return {
             "data": products,
             "count": total_count,
-            "has_next": False
+            "has_next": total_count > (skip + limit)
         }
 
-    result = await db.execute(
-        query.offset(skip).limit(limit)
-    )
+    except Exception as e:
+        logger.error(f"Error fetching product list: {str(e)}")
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={
+                "message": "Failed to retrieve product list",
+                "error": str(e)
+            }
+        )
 
-    products = result.scalars().all()
-
-    return {
-        "data": products,
-        "count": total_count,
-        "has_next": total_count > (skip + limit)
-    }
 
 #  --- Get Product list with category id and name ---
 @productRouter.get("/with-category")
