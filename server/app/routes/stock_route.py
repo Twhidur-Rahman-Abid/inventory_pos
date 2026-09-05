@@ -231,7 +231,7 @@ async def cancel_stock(
 
 @stockRouter.get(
     "/transfers",
-   # response_model=StockTransferResponse,
+   response_model=StockTransferResponse,
 )
 async def get_transfers(
     page: int = 1,
