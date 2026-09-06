@@ -6,9 +6,10 @@ export default function DashboardStats({
   value = {
     value: 0,
     percentage: 0,
+    type: "growth",
   },
 }) {
-  const isFall = value.percentage < 0;
+  const isFall = value.type === "fall";
   return (
     <div className="py-3 md:py-4 px-4 md:px-5 grow max-w-90 rounded-xl bg-white shadow-2 space-y-6">
       <div className="w-full flex items-center justify-between gap-4">

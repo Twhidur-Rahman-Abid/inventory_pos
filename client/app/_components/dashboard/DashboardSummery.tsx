@@ -6,6 +6,7 @@ import { useSearchParams } from "next/navigation";
 type Value = {
   value: number;
   percentage: number;
+  type: "growth" | "fall";
 };
 
 const DashboardSummery = () => {
