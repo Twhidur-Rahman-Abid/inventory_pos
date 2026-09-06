@@ -11,11 +11,12 @@ import {
 } from "@/app/_components";
 import Table, { TableSkeleton, Td } from "@/app/_components/ui/Table";
 import BranchModal from "./BranchModal";
-import useFetchWAuth from "@/app/_hooks/useAuthFetch";
 import { ErrorMessage, NotFoundMessage } from "@/app/_components/ui/Alert";
 import Image from "next/image";
 import DeleteItem from "@/app/_components/ui/DeleteItem";
 import { useSearchParams } from "next/navigation";
+import { fetchBranch } from "@/app/_actions/fetch_data";
+import { useActionFetch } from "@/app/_hooks/useActionFetch";
 type BranchType = {
   id: number;
   name: string;
@@ -38,9 +39,7 @@ const BranchPage = () => {
   }>(null);
 
   // fetch branch
-  const { data, isLoading, status, error, fetcher } = useFetchWAuth({
-    endpoint: "/branches",
-  });
+  const { data, isLoading, error, fetcher } = useActionFetch(fetchBranch);
 
   // search branch
   const searchParams = useSearchParams();
@@ -55,15 +54,15 @@ const BranchPage = () => {
   // decide what to render based on fetched data
   let content;
   if (isLoading) content = <TableSkeleton />;
-  else if (!isLoading && status === "error")
+  else if (!isLoading && error)
     content = <ErrorMessage message={error || "Failed to load data."} />;
-  else if (!isLoading && status === "success" && data?.length === 0)
+  else if (!isLoading && !error && data?.count === 0)
     content = <NotFoundMessage message="Branch not found." />;
   else
     content = (
       <>
         <Table headers={tableHeaders}>
-          {data
+          {data?.data
             ?.filter(searchFilter)
             ?.map((branch: BranchType, index: number) => {
               const { id, name, location, img } = branch;
@@ -102,6 +101,7 @@ const BranchPage = () => {
                         endpoint={`/branches/${id}`}
                         fetcher={fetcher}
                         title={`${name} Branch`}
+                        revalidate="branch"
                       />
                     </div>
                   </Td>
@@ -113,7 +113,7 @@ const BranchPage = () => {
     );
   return (
     <>
-      <PageTopBar title="Branch" quantity={data?.length}>
+      <PageTopBar title="Branch" quantity={data?.count || 0}>
         <Button
           className=" border-none px-3.5"
           onClick={() => setIsModalOpen({ open: true })}
@@ -129,7 +129,7 @@ const BranchPage = () => {
           <div className="flex gap-6 items-center">
             <ExportTable
               headers={tableHeaders}
-              tableData={data}
+              tableData={data?.data}
               filename={`Branch`}
             />
           </div>

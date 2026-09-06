@@ -11,12 +11,13 @@ import {
   ExportTable,
 } from "@/app/_components";
 import Table, { TableSkeleton, Td } from "@/app/_components/ui/Table";
-import useFetchWAuth from "@/app/_hooks/useAuthFetch";
 import { ErrorMessage, NotFoundMessage } from "@/app/_components/ui/Alert";
 import Image from "next/image";
 import { CategoryType } from "@/app/_types/types";
 import CategoryModal from "./CategoryModal";
 import { useSearchParams } from "next/navigation";
+import { useActionFetch } from "@/app/_hooks/useActionFetch";
+import { fetchCategory } from "@/app/_actions/fetch_data";
 
 const tableHeaders: HeaderType[] = [
   { label: "ID.", key: "Id" },
@@ -32,12 +33,7 @@ const CategoryPage = () => {
   >(null);
 
   // Fetch category
-  const { data, isLoading, status, error, fetcher } = useFetchWAuth<{
-    count: number;
-    data: CategoryType[];
-  }>({
-    endpoint: "/categories",
-  });
+  const { data, isLoading, error, fetcher } = useActionFetch(fetchCategory);
 
   const searchParams = useSearchParams();
   const search = searchParams.get("search");
@@ -48,9 +44,9 @@ const CategoryPage = () => {
   // decide what to render based fetch response
   let content;
   if (isLoading) content = <TableSkeleton />;
-  else if (!isLoading && status === "error")
+  else if (!isLoading && error)
     content = <ErrorMessage message={error || "Failed to load data."} />;
-  else if (!isLoading && status === "success" && data?.count === 0)
+  else if (!isLoading && !error && data?.count === 0)
     content = <NotFoundMessage message="Category not found." />;
   else
     content = (
@@ -84,6 +80,7 @@ const CategoryPage = () => {
                         endpoint={`/categories/${id}`}
                         fetcher={fetcher}
                         title={`${name} Category`}
+                        revalidate="category"
                       />
                     </div>
                   </Td>

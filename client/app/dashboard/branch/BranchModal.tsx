@@ -35,12 +35,12 @@ const BranchModal = ({
         ? await putData({
             endpoint: `/branches/${editable?.id}`,
             formData,
-            schemaName: "branch",
+            revalidate: "branch",
           })
         : await postData({
             endpoint: "/branches/",
             formData,
-            schemaName: "branch",
+            revalidate: "branch",
           });
     },
     editable?.id ? editable : undefined,

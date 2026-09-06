@@ -36,12 +36,12 @@ const CategoryModal = ({
         ? await putData({
             endpoint: `/categories/${editable?.id}`,
             formData,
-            schemaName: "category",
+            revalidate: "category",
           })
         : await postData({
             endpoint: "/categories/",
             formData,
-            schemaName: "category",
+            revalidate: "category",
           });
     },
     editable?.id ? editable : undefined,
