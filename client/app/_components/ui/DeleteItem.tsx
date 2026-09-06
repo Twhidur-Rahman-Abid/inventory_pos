@@ -11,10 +11,12 @@ const DeleteItem = ({
   endpoint,
   fetcher,
   title = "Item",
+  revalidate,
 }: {
   endpoint: string;
   fetcher?: () => void;
   title?: string;
+  revalidate?: string;
 }) => {
   const [loading, setLoading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
@@ -26,7 +28,7 @@ const DeleteItem = ({
       return;
     }
     setLoading(true);
-    const res = await deleteData(endpoint);
+    const res = await deleteData(endpoint, revalidate);
     setLoading(false);
     if (res?.success) {
       onClose();
