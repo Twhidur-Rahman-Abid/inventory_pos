@@ -65,11 +65,24 @@ export const fetchBranch = async () => {
   "use cache";
   cacheLife("weeks");
   cacheTag("branch");
-  const res = await fetchData<{ count: number; data: BranchType[] }>({
+  const res = await fetchData<BranchType[]>({
     endpoint: "/branches",
   });
   if (!res) {
     updateTag("branch");
+  }
+  return res;
+};
+
+export const fetchBrand = async () => {
+  "use cache";
+  cacheLife("weeks");
+  cacheTag("branch");
+  const res = await fetchData<{ count: number; data: CategoryType[] }>({
+    endpoint: "/brands",
+  });
+  if (!res) {
+    updateTag("brands");
   }
   return res;
 };
