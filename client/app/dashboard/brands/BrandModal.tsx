@@ -36,10 +36,12 @@ const BrandModal = ({
         ? await putData({
             endpoint: `/brands/${editable?.id}`,
             formData,
+            revalidate: "brands",
           })
         : await postData({
             endpoint: "/brands/",
             formData,
+            revalidate: "brands",
           });
     },
     editable?.id ? editable : undefined,
