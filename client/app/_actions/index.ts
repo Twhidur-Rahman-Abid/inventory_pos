@@ -5,7 +5,7 @@ import { parseWithZod } from "@conform-to/zod/v4";
 import schemaMap from "../_schema";
 import { cookies } from "next/headers";
 import { BASE_URL } from "../_constants";
-import { revalidateTag } from "next/cache";
+import { updateTag } from "next/cache";
 import { getFreshToken } from "../_lib/getOptimizeRefreshToken";
 import { logoutAction } from "./auth_actions";
 import { redirect } from "next/navigation";
@@ -145,8 +145,8 @@ export async function postData({
         return { status: "error", message, errors: data?.errors };
       }
     }
-    if (revalidate?.length) {
-      revalidateTag(revalidate, "");
+    if (revalidate) {
+      updateTag(revalidate);
     }
     return { status: "success", data };
   } catch (error) {
@@ -171,10 +171,12 @@ export async function postJSONData({
   endpoint = "",
   formData,
   schemaName,
+  revalidate,
 }: {
   endpoint: string;
   formData: FormData | any;
   schemaName?: keyof typeof schemaMap;
+  revalidate?: string;
 }) {
   let schema = null;
   let submission: any = null;
@@ -246,6 +248,9 @@ export async function postJSONData({
         return { status: "error", message, errors: data?.errors };
       }
     }
+    if (revalidate) {
+      updateTag(revalidate);
+    }
     return { status: "success", data };
   } catch (error) {
     console.error("post json error:", error);
@@ -269,10 +274,12 @@ export async function putJSONData({
   endpoint = "",
   formData,
   schemaName,
+  revalidate,
 }: {
   endpoint: string;
   formData: FormData | any;
   schemaName?: keyof typeof schemaMap;
+  revalidate?: string;
 }) {
   let schema = null;
   let submission: any = null;
@@ -353,6 +360,9 @@ export async function putJSONData({
         };
       }
     }
+    if (revalidate) {
+      updateTag(revalidate);
+    }
     return { status: "success", data };
   } catch (error) {
     console.error("put json error", error);
@@ -376,10 +386,12 @@ export async function putData({
   endpoint = "",
   formData,
   schemaName,
+  revalidate,
 }: {
   endpoint: string;
   formData: FormData;
   schemaName?: keyof typeof schemaMap;
+  revalidate?: string;
 }) {
   let schema = null;
   let submission: any = null;
@@ -447,6 +459,9 @@ export async function putData({
         return { status: "error", message, errors: data?.errors };
       }
     }
+    if (revalidate) {
+      updateTag(revalidate);
+    }
     return { status: "success", data };
   } catch (error) {
     console.error("put error:", error);
@@ -466,7 +481,7 @@ export async function putData({
 }
 
 // delete data
-export async function deleteData(endpoint: string) {
+export async function deleteData(endpoint: string, revalidate?: string) {
   try {
     const { accessToken } = await getAuthTokens();
 
@@ -478,6 +493,9 @@ export async function deleteData(endpoint: string) {
     });
 
     if (res.ok) {
+      if (revalidate) {
+        updateTag(revalidate);
+      }
       return {
         success: true,
       };
