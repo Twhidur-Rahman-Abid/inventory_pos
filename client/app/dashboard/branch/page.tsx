@@ -56,13 +56,13 @@ const BranchPage = () => {
   if (isLoading) content = <TableSkeleton />;
   else if (!isLoading && error)
     content = <ErrorMessage message={error || "Failed to load data."} />;
-  else if (!isLoading && !error && data?.count === 0)
+  else if (!isLoading && !error && data?.length === 0)
     content = <NotFoundMessage message="Branch not found." />;
   else
     content = (
       <>
         <Table headers={tableHeaders}>
-          {data?.data
+          {data
             ?.filter(searchFilter)
             ?.map((branch: BranchType, index: number) => {
               const { id, name, location, img } = branch;
@@ -113,7 +113,7 @@ const BranchPage = () => {
     );
   return (
     <>
-      <PageTopBar title="Branch" quantity={data?.count || 0}>
+      <PageTopBar title="Branch" quantity={data?.length || 0}>
         <Button
           className=" border-none px-3.5"
           onClick={() => setIsModalOpen({ open: true })}
@@ -129,7 +129,7 @@ const BranchPage = () => {
           <div className="flex gap-6 items-center">
             <ExportTable
               headers={tableHeaders}
-              tableData={data?.data}
+              tableData={data || []}
               filename={`Branch`}
             />
           </div>
