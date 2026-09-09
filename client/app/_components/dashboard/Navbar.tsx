@@ -22,7 +22,7 @@ const Navbar = ({ myData }: NavbarProps) => {
               Welcome {name} - {role?.split("_").join(" ")} 👋
             </h5>
             <p className="text-sm text-c-black">
-              <span className="text-body-text ">Here your</span> Fresh Food
+              <span className="text-body-text ">Here your</span> Niamah Shop
               Dashboard{" "}
             </p>
           </div>
