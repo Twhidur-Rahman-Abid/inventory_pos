@@ -1,7 +1,7 @@
 "use server";
 import { cacheLife, cacheTag, updateTag } from "next/cache";
 import { BASE_URL } from "../_constants";
-import { BranchType, CategoryType } from "../_types/types";
+import { BranchType, CategoryType, HeroSlider } from "../_types/types";
 
 // Fetch Response Interfaces
 export interface ApiResponse<T> {
@@ -83,6 +83,19 @@ export const fetchBrand = async () => {
   });
   if (!res) {
     updateTag("brands");
+  }
+  return res;
+};
+
+export const fetchHeroSlider = async () => {
+  "use cache";
+  cacheLife("weeks");
+  cacheTag("branch");
+  const res = await fetchData<HeroSlider[]>({
+    endpoint: "/webs/hero-sliders",
+  });
+  if (!res) {
+    updateTag("heroSliders");
   }
   return res;
 };
