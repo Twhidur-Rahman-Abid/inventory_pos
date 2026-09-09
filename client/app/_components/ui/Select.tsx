@@ -233,13 +233,14 @@ export function FormSelect({
 }: FormSelectProps) {
   // Memoized initial option to avoid unnecessary re-calculations
 
-  const initialOption = useMemo(
-    () =>
+  const initialOption = useMemo(() => {
+    if (!defaultValue) return null;
+    return (
       options.find(
         (opt) => opt.value == defaultValue || opt.id == defaultValue,
-      ) || null,
-    [defaultValue, options],
-  );
+      ) || null
+    );
+  }, [defaultValue, options]);
 
   const [selectedValue, setSelectedValue] = useState<OptionType | null>(
     initialOption,
