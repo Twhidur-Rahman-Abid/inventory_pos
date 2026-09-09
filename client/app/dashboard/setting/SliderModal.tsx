@@ -36,10 +36,12 @@ const SliderModal = ({
         ? await putData({
             endpoint: `/webs/hero-sliders/${editable?.id}`,
             formData,
+            revalidate: "heroSliders",
           })
         : await postData({
             endpoint: "/webs/hero-sliders",
             formData,
+            revalidate: "heroSliders",
           });
     },
     editable?.id ? editable : undefined,

@@ -8,7 +8,9 @@ import Image from "next/image";
 import React, { useState } from "react";
 import SliderModal from "./SliderModal";
 import { toast } from "react-toastify";
-import { putData, putJSONData } from "@/app/_actions";
+import { putJSONData } from "@/app/_actions";
+import { useActionFetch } from "@/app/_hooks/useActionFetch";
+import { fetchHeroSlider } from "@/app/_actions/fetch_data";
 
 const HeroSliders = () => {
   const [modalData, setModalData] = useState<{
@@ -17,11 +19,7 @@ const HeroSliders = () => {
   }>({ open: false });
 
   // fetch slider
-  const { data, isLoading, status, error, fetcher } = useFetchWAuth<
-    HeroSlider[]
-  >({
-    endpoint: "/webs/hero-sliders",
-  });
+  const { data, isLoading, error, fetcher } = useActionFetch(fetchHeroSlider);
 
   // switch active
   const switchActive = async (is_active: boolean, id: number) => {
@@ -44,18 +42,18 @@ const HeroSliders = () => {
 
   let sliderContent = null;
   if (isLoading) sliderContent = <Loading />;
-  if (!isLoading && status === "error")
+  if (!isLoading && error)
     sliderContent = (
       <ErrorMessage message={error || "There was an error occur!"} />
     );
-  if (!isLoading && status === "success" && data?.length === 0)
+  if (!isLoading && !error && data?.length === 0)
     sliderContent = (
       <NotFoundMessage message="Hero slider not found! Create new one" />
     );
-  if (!isLoading && status === "success" && data?.length > 0)
+  if (!isLoading && !error && data?.length > 0)
     sliderContent = (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 lg:gap-8">
-        {data.map((slider) => {
+        {data?.map((slider) => {
           const { id, img, is_active } = slider;
           return (
             <div key={id}>
@@ -92,6 +90,7 @@ const HeroSliders = () => {
                       endpoint={`/webs/hero-sliders/${id}`}
                       fetcher={fetcher}
                       title={`Slider`}
+                      revalidate="heroSliders"
                     />
                   </div>
                 </div>
