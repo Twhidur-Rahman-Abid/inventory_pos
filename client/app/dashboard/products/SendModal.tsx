@@ -1,7 +1,6 @@
 "use client";
 /* eslint-disable react-hooks/set-state-in-effect */
-import { useEffect, useState } from "react";
-import useFetchWAuth from "../../_hooks/useAuthFetch";
+import { useState } from "react";
 import { toast } from "react-toastify";
 import Modal from "../../_components/ui/Modal";
 
@@ -10,8 +9,10 @@ import Image from "next/image";
 import Select from "../../_components/ui/Select";
 import Icon from "../../_components/ui/Icon";
 import Button from "../../_components/ui/Button";
-import { BranchType, ProductType } from "../../_types/types";
+import { ProductType } from "../../_types/types";
 import { postJSONData } from "@/app/_actions";
+import { useActionFetch } from "@/app/_hooks/useActionFetch";
+import { fetchBranch } from "@/app/_actions/fetch_data";
 
 const SendModal = ({
   onClose = () => {},
@@ -21,12 +22,6 @@ const SendModal = ({
   // State
   const [isLoading, setIsLoading] = useState(false);
   const [branch_id, setBranchId] = useState<number>();
-  const [branchOption, setBranchOption] = useState<
-    {
-      value: string | number;
-      label: string;
-    }[]
-  >([{ value: "hidden", label: "Select Branch..." }]);
 
   const [quantity, setQuantity] = useState(0);
 
@@ -66,27 +61,8 @@ const SendModal = ({
     setQuantity((prev) => Number(prev) - 1);
   };
 
-  const { data: branchData } = useFetchWAuth<BranchType[]>({
-    endpoint: "/branches",
-  });
-
-  // fetch branch
-  useEffect(() => {
-    let ignore = false;
-    if (branchData?.length > 0) {
-      if (!ignore) {
-        const newBranch = branchData.map((b) => ({
-          label: b.name,
-          value: b.id,
-        }));
-        setBranchOption((prev) => [...prev, ...newBranch]);
-      }
-    }
-
-    return () => {
-      ignore = true;
-    };
-  }, [branchData]);
+  const { data } = useActionFetch(fetchBranch);
+  const branchData = data ?? [];
 
   const onSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
@@ -178,7 +154,7 @@ const SendModal = ({
             <Select
               name={"branch_id"}
               className="py-3.5"
-              options={branchOption}
+              options={branchData}
               getSelectValue={(value: string | number | undefined) => {
                 if (value === undefined) return setBranchId(undefined);
                 setBranchId(Number(value));
