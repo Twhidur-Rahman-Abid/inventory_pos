@@ -17,7 +17,11 @@ class CustomerAddress(Base):
     )
     
     address_line: Mapped[str] = mapped_column(VARCHAR(255), nullable=False)
-    city: Mapped[Optional[str]] = mapped_column(VARCHAR(100), nullable=True)
+    division: Mapped[Optional[str]] = mapped_column(VARCHAR(30), nullable=True)
+    city: Mapped[Optional[str]] = mapped_column(VARCHAR(30), nullable=True)
+    upzila: Mapped[Optional[str]] = mapped_column(VARCHAR(30), nullable=True)
+    phone: Mapped[Optional[str]] = mapped_column(VARCHAR(15), nullable=True)
+    name: Mapped[Optional[str]] = mapped_column(VARCHAR(15), nullable=True)
     is_default: Mapped[bool] = mapped_column(Boolean, default=False, nullable=False)
 
     created_at: Mapped[datetime] = mapped_column(
