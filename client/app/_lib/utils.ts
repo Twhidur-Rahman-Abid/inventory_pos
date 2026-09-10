@@ -66,3 +66,9 @@ export const getOrderStatusColor = (status: OrderStatus) => {
 
 export const getSerial = (page: number, index: number) =>
   (page - 1) * 10 + index + 1;
+
+export function generate12CharId() {
+  const array = new Uint8Array(12);
+  crypto.getRandomValues(array);
+  return Array.from(array, (b) => (b % 36).toString(36)).join("");
+}
