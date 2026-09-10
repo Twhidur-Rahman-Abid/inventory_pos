@@ -2,7 +2,7 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 "use client";
 
-import { useActionState, useEffect, useState } from "react";
+import { ChangeEvent, useActionState, useEffect, useState } from "react";
 
 import {
   Button,
@@ -19,11 +19,13 @@ import { useForm } from "@conform-to/react";
 import { parseWithZod } from "@conform-to/zod/v4";
 import { ProductSchema } from "@/app/_schema/schema";
 import { toast } from "react-toastify";
-import { CategoryType, ProductType } from "@/app/_types/types";
+import { ProductType } from "@/app/_types/types";
 import { InputSkeleton } from "@/app/_components/ui/Skeleton";
 
 import { SimpleEditor } from "@/components/tiptap-templates/simple/simple-editor";
-import { truncateByDomain } from "recharts/types/util/ChartUtils";
+import { useActionFetch } from "@/app/_hooks/useActionFetch";
+import { fetchBrand, fetchCategory } from "@/app/_actions/fetch_data";
+import { generate12CharId } from "@/app/_lib/utils";
 
 // ---------------- Main Modal ----------------
 const ProductModal = ({
@@ -35,25 +37,13 @@ const ProductModal = ({
   fetcher?: () => void;
   editable?: null | (Partial<ProductType> & { open?: boolean });
 }) => {
-  // TODO: implement sku generate
-  const [sku, setSku] = useState("");
-
   // Fetch Category
-  const { data: categories, isLoading: isCategoryLoading } = useFetchWAuth<{
-    count: number;
-    data: CategoryType[];
-  }>({
-    endpoint: "/categories",
-  });
+  const { data: categories, isLoading: isCategoryLoading } =
+    useActionFetch(fetchCategory);
 
   // Fetch Brands
-  const { data: brands, isLoading: isBrandsLoading } = useFetchWAuth<{
-    count: number;
-    data: CategoryType[];
-  }>({
-    endpoint: "/brands",
-  });
-
+  const { data: brands, isLoading: isBrandsLoading } =
+    useActionFetch(fetchBrand);
   // Fetch editable product based on editable id
   const { data: product, isLoading: productLoading } =
     useFetchWAuth<ProductType>({
@@ -148,10 +138,30 @@ const ProductModal = ({
     shouldValidate: "onBlur",
     shouldRevalidate: "onInput",
   });
+  const [sku, setSku] = useState<string | undefined>(
+    fields.sku_code?.initialValue as string | undefined,
+  );
 
   // TODO: implement sku generate
-  const handleSku = () => {
-    setSku("edfdsdg");
+  // const handleSku = (e: ChangeEvent<HTMLInputElement>) => {
+  //   const val = e.target?.value;
+  //   if (val && val !== sku) {
+  //     setSku(val);
+  //   }
+  //   const newSku = generate12CharId();
+  //   setSku(newSku);
+  // };
+
+  // ১. ইনপুটের টাইপ বা ভ্যালু ম্যানুয়ালি ইনপুট দেওয়ার জন্য
+  const handleSkuChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSku(e.target.value);
+  };
+
+  // ২. বাটনে ক্লিক করে নতুন SKU জেনারেট করার জন্য
+  const handleGenerateSku = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault();
+    const newSku = generate12CharId();
+    setSku(newSku);
   };
 
   // Toast after form action
@@ -207,19 +217,19 @@ const ProductModal = ({
           {/* SKU Code and Category */}
           <div className="flex gap-8 items-end">
             <div className="relative w-full">
-              {/* <button
+              <button
                 type="button"
-                onClick={handleSku}
+                onClick={handleGenerateSku}
                 className=" absolute right-0 px-2 py-1 rounded-sm bg-amber-100 text-amber-600 uppercase text-xs font-bold cursor-pointer"
               >
                 Generate
-              </button> */}
+              </button>
 
               <FormInput
                 name={fields.sku_code.name}
-                defaultValue={
-                  fields.sku_code?.initialValue as string | undefined
-                }
+                value={sku as string | undefined}
+                onChange={handleSkuChange}
+                placeholder="NS-0001"
                 error={fields.sku_code.errors}
                 label="SKU/Code"
               />
@@ -234,7 +244,7 @@ const ProductModal = ({
                 defaultValue={product?.category_id}
                 label="Category"
                 placeholder="-- Select Category --"
-                options={categories?.data}
+                options={categories?.data || []}
               />
             )}
           </div>
@@ -256,9 +266,10 @@ const ProductModal = ({
                 name={fields.brand_id.name}
                 error={fields.brand_id.errors}
                 defaultValue={product?.brand_id}
+                required={false}
                 label="Brands"
                 placeholder="-- Select Brands --"
-                options={brands?.data}
+                options={brands?.data || []}
               />
             )}
           </div>
