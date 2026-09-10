@@ -2,7 +2,6 @@
 import { Button, DeleteItem, Icon, ToggleSwitch } from "@/app/_components";
 import { ErrorMessage, NotFoundMessage } from "@/app/_components/ui/Alert";
 import Loading from "@/app/_components/ui/Loading";
-import useFetchWAuth from "@/app/_hooks/useAuthFetch";
 import { HeroSlider } from "@/app/_types/types";
 import Image from "next/image";
 import React, { useState } from "react";
@@ -19,7 +18,13 @@ const HeroSliders = () => {
   }>({ open: false });
 
   // fetch slider
-  const { data, isLoading, error, fetcher } = useActionFetch(fetchHeroSlider);
+  const {
+    data: fetchedData,
+    isLoading,
+    error,
+    fetcher,
+  } = useActionFetch(fetchHeroSlider);
+  const data = fetchedData ?? [];
 
   // switch active
   const switchActive = async (is_active: boolean, id: number) => {
@@ -28,6 +33,7 @@ const HeroSliders = () => {
     const res = await putJSONData({
       endpoint: `/webs/hero-sliders/${id}/active-switch`,
       formData: { is_active },
+      revalidate: "heroSliders",
     });
 
     if (res?.status === "success") {
@@ -50,7 +56,7 @@ const HeroSliders = () => {
     sliderContent = (
       <NotFoundMessage message="Hero slider not found! Create new one" />
     );
-  if (!isLoading && !error && data?.length > 0)
+  if (!isLoading && !error && (data?.length ?? 0) > 0)
     sliderContent = (
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6 lg:gap-8">
         {data?.map((slider) => {
