@@ -160,7 +160,7 @@ const Select: React.FC<SelectProps> = ({
               className="size-6 object-contain"
             />
           )}
-          {selectedValue?.label || placeholder}
+          {selectedValue?.label || selectedValue?.name || placeholder}
         </div>
         <Arrow move="down" />
       </div>
@@ -182,7 +182,9 @@ const Select: React.FC<SelectProps> = ({
                 key={i}
                 className={cn(
                   "px-3 py-2 text-sm font-medium rounded-lg text-gray-700 hover:bg-gray-100 cursor-pointer flex items-center gap-2.5",
-                  option.label === selectedValue?.label &&
+                  (option?.label
+                    ? option?.label === selectedValue?.label
+                    : option?.id === selectedValue?.id) &&
                     "text-primary bg-gray-100",
                 )}
                 onClick={() => handleSelectChange(option)}
