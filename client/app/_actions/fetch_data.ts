@@ -90,7 +90,7 @@ export const fetchBrand = async () => {
 export const fetchHeroSlider = async () => {
   "use cache";
   cacheLife("weeks");
-  cacheTag("branch");
+  cacheTag("heroSliders");
   const res = await fetchData<HeroSlider[]>({
     endpoint: "/webs/hero-sliders",
   });
