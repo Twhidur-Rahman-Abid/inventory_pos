@@ -21,28 +21,30 @@ const Table = ({
       <table className="w-full table-auto">
         <thead className={cn(headerClassName)}>
           <tr className="bg-primary w-full justify-between rounded-t-xl">
-            {headers.map((header, i) => {
-              const isCenter = header.align === "center";
-              const isRight = header.align === "right";
-              const isLeft = !isCenter && !isRight;
+            {headers
+              .filter((header) => !header.isHide)
+              .map((header, i) => {
+                const isCenter = header.align === "center";
+                const isRight = header.align === "right";
+                const isLeft = !isCenter && !isRight;
 
-              return (
-                <th
-                  key={i}
-                  className={cn(
-                    "p-4 text-sm text-soft-white whitespace-nowrap min-w-max select-none",
-                    {
-                      "text-center": isCenter,
-                      "text-right": isRight,
-                      "text-left": isLeft,
-                    },
-                    className,
-                  )}
-                >
-                  {header.label}
-                </th>
-              );
-            })}
+                return (
+                  <th
+                    key={i}
+                    className={cn(
+                      "p-4 text-sm text-soft-white whitespace-nowrap min-w-max select-none",
+                      {
+                        "text-center": isCenter,
+                        "text-right": isRight,
+                        "text-left": isLeft,
+                      },
+                      className,
+                    )}
+                  >
+                    {header.label}
+                  </th>
+                );
+              })}
           </tr>
         </thead>
 
