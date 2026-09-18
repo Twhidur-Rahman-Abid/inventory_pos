@@ -24,6 +24,19 @@ class OrderCreate(BaseModel):
     items: list[OrderItemCreate]
     customer_name : Optional[str] = None
     customer_phone : Optional[str] = None
+    is_percentage: Optional[bool] = False
+
+class OnlineOrderCreate(BaseModel):
+    customer_id: Optional[int] = None
+    coupon_code: Optional[str] = None
+    delivery: float = 0
+    note: Optional[str] = None
+    cash_amount: float = Field(default=0.0, ge=0)
+    other_payment_method: Optional[PaymentMethod] = None
+    other_payment_amount: float = Field(default=0.0, ge=0)
+    items: list[OrderItemCreate]
+    customer_name : Optional[str] = None
+    customer_phone : Optional[str] = None
 
 
 class OrderStatusUpdate(BaseModel):
@@ -85,9 +98,11 @@ class BasicOrderResponse(BaseModel):
     created_at: datetime
     note: Optional[str] = ""
     other_payment_method: Optional[str] = None
-    other_payment_amount: Decimal
-    cash_amount: Decimal
-    total: Decimal
+    other_payment_amount: int =  0
+    cash_amount: int = 0
+    delivery: int = 0
+    total: int = 0
+    extra_discount: int = 0
     status: str | None = None
 
 class BasicOrderPaginatedResponse(BaseModel):
