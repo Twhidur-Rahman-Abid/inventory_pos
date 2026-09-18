@@ -1,6 +1,8 @@
 # user.py
 # order.py
 # stock.py
+from typing import List
+
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import  DateTime,VARCHAR
 from datetime import datetime, timezone
@@ -35,3 +37,9 @@ class Branch(Base):
     back_populates="branch",
     cascade="all, delete-orphan"
     )
+
+    stock_transfers: Mapped[List["StockTransfer"]] = relationship(
+        "StockTransfer", 
+        back_populates="branch"
+    )
+    inbounds = relationship("StockInbound", back_populates="branch")
