@@ -2,7 +2,7 @@
 "use client";
 import { useState } from "react";
 
-import { Button, Icon, Input, Modal } from "@/app/_components";
+import { Button, Icon, Input, Modal, ToggleSwitch } from "@/app/_components";
 import Table, { Td } from "@/app/_components/ui/Table";
 import { cn } from "@/app/_lib/utils";
 import PaymentModal from "./PaymentModal";
@@ -10,6 +10,7 @@ import { CartType, useCart } from "@/app/_context/productOrderCartContext";
 import { useUser } from "@/app/_context/userContext";
 import MoneySymbol from "@/app/_components/ui/MoneySymbol";
 import { MONEY_TITLE } from "@/app/_constants";
+import { set } from "zod";
 
 const tableHeaders = [
   { label: "Item" },
@@ -25,15 +26,22 @@ const RightSide = () => {
   const [delivery, setDelivery] = useState(0);
   const [customer_name, setCustomerName] = useState("");
   const [customer_phone, setCustomerPhone] = useState("");
+  const [isPercentage, setIsPercentage] = useState(false);
 
   const { carts, clearCart } = useCart();
 
   const subtotal = carts.reduce((acc, item) => acc + item.price * item.qty, 0);
-  const total = subtotal + delivery - ((subtotal + delivery) * discount) / 100;
+  // if is percentage discount will be percentage otherwise will be amount
+  const discounted = isPercentage
+    ? ((subtotal + delivery) * discount) / 100
+    : discount;
+
+  const total = subtotal + delivery - discounted;
   const { user } = useUser();
 
   const orderPayload = {
     branch_id: user.branch?.id,
+    is_percentage: discounted > 0 ? isPercentage : null,
     extra_discount: discount,
     delivery: delivery,
     customer_name,
@@ -136,13 +144,15 @@ const RightSide = () => {
           delivery={delivery}
           setDelivery={setDelivery}
           subtotal={subtotal || 0}
+          isPercentage={isPercentage}
+          setIsPercentage={setIsPercentage}
           total={total || 0}
         />
         <Button
           disabled={carts.length === 0}
           onClick={() => setIsPaymentOpen(true)}
         >
-          Pay {total}
+          Pay {Number(total) > 0 ? total : 0}
           <MoneySymbol />
         </Button>
       </div>
@@ -216,6 +226,8 @@ type BillingSummaryProps = {
   setDelivery: (val: number) => void;
   subtotal: number;
   total: number;
+  isPercentage: boolean;
+  setIsPercentage: (val: boolean) => void;
 };
 
 function BillingSummary({
@@ -225,8 +237,11 @@ function BillingSummary({
   setDelivery,
   subtotal = 0,
   total = 0,
+  isPercentage,
+  setIsPercentage,
 }: BillingSummaryProps) {
   const [isDiscountOpen, setIsDiscountOpen] = useState(false);
+
   const [isDeliveryOpen, setIsDeliveryOpen] = useState(false);
 
   return (
@@ -240,33 +255,46 @@ function BillingSummary({
             </td>
             <td className="p-0 pb-8 text-center">:</td>
             <td className="text-right text-sm text-body-text p-0 pb-8">
-              <div className="ml-auto max-w-fit flex items-center gap-2 justify-end">
-                {isDiscountOpen && (
-                  <Input
-                    className="max-w-24 px-1.5"
-                    type="number"
-                    defaultValue={discount}
-                    getInputValue={(val) => setDiscount(Number(val))}
-                  />
-                )}
+              <div className="flex mb-2 gap-2.5 items-center justify-end">
+                <p>Is percentage?</p>
+                <ToggleSwitch
+                  checked={isPercentage}
+                  onChange={() => setIsPercentage(!isPercentage)}
+                />
+              </div>
+              <div>
+                <div className="ml-auto max-w-fit flex items-center gap-2 justify-end">
+                  {isDiscountOpen && (
+                    <Input
+                      className="max-w-24 px-1.5"
+                      type="number"
+                      defaultValue={discount}
+                      getInputValue={(val) => setDiscount(Number(val))}
+                    />
+                  )}
 
-                {isDiscountOpen ? (
-                  <button
-                    className="cursor-pointer text-xl"
-                    onClick={() => setIsDiscountOpen(false)}
-                  >
-                    ✔️
-                  </button>
-                ) : (
-                  <Icon
-                    src="/icon/i-pen.svg"
-                    size={14}
-                    className="cursor-pointer"
-                    onClick={() => setIsDiscountOpen(true)}
-                  />
-                )}
+                  {isDiscountOpen ? (
+                    <button
+                      className="cursor-pointer text-xl"
+                      onClick={() => setIsDiscountOpen(false)}
+                    >
+                      ✔️
+                    </button>
+                  ) : (
+                    <Icon
+                      src="/icon/i-pen.svg"
+                      size={14}
+                      className="cursor-pointer"
+                      onClick={() => setIsDiscountOpen(true)}
+                    />
+                  )}
 
-                {!isDiscountOpen && <span>{discount} %</span>}
+                  {!isDiscountOpen && (
+                    <span>
+                      {discount} {isPercentage ? "%" : "TK"}
+                    </span>
+                  )}
+                </div>
               </div>
             </td>
           </tr>
