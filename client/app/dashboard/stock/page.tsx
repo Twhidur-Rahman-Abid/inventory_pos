@@ -22,28 +22,41 @@ import Image from "next/image";
 import { toast } from "react-toastify";
 import { postJSONData } from "@/app/_actions";
 import { Suspense, useState } from "react";
+import { useUser } from "@/app/_context/userContext";
+import PrintInvoice from "./PrintInvoice";
+import TransferPrint from "./TransferPrint";
 
 // stock transfer table header
 const headers: HeaderType[] = [
   { label: "SL." },
-  { label: "Product Name" },
-  { label: "Thumbnail" },
-  { label: "Quantity" },
-  { label: "Status" },
   { label: "Date" },
+  { label: "Invoice No" },
+  { label: "Product" },
+  { label: "Status" },
   { label: "Action", align: "center" },
 ];
 
+type product = {
+  id: number;
+  name: string;
+  thumbnail?: string;
+};
+
+type Items = {
+  id: number;
+  quantity: number;
+  product: product;
+};
+
 // stock transfer type
-type StockTransferType = {
+export type StockTransferType = {
   id: number;
   created_at: string | Date;
-  quantity: number;
   status: OrderStatus;
-  product: {
+  items: Items[];
+  branch: {
     id: number;
     name: string;
-    thumbnail?: string;
   };
 };
 
@@ -56,6 +69,7 @@ export default function StockPage() {
 }
 
 function StockTransfer() {
+  const { user } = useUser();
   const [refetch, setRefetch] = useState(1);
   const [actionLoading, setActionLoading] = useState(false);
 
@@ -85,11 +99,16 @@ function StockTransfer() {
   const searchParams = useSearchParams();
   const page = searchParams.get("page") || 1;
 
+  let endpoint = `/stocks/transfers?page=${page}`;
+  if (!["warehouse_manager", "admin"].includes(user?.role)) {
+    endpoint += `&status_filter=pending`;
+  }
+
   const { data, isLoading, status, error, fetcher } = useFetchWAuth<{
     count: number;
     data: StockTransferType[];
   }>({
-    endpoint: "/stocks/transfers",
+    endpoint: endpoint,
     isChange: [page, refetch],
   });
 
@@ -107,48 +126,77 @@ function StockTransfer() {
             const {
               id: transfer_id,
               created_at,
-              quantity,
+              items,
               status,
-              product: { id, name, thumbnail },
+              branch,
             } = Order;
             return (
-              <tr key={id}>
+              <tr key={transfer_id}>
                 <Td>{getSerial(1, index)}</Td>
-                <Td>{name}</Td>
+                <Td>{formatDate(created_at)}</Td>
+                <Td>{`NS-${branch?.name}-${transfer_id}`}</Td>
 
                 <Td>
-                  <Image
-                    src={thumbnail || "/placeholder-img.svg"}
-                    alt="name"
-                    width={30}
-                    height={30}
-                  />
+                  <div className="rounded-lg border border-c-gray w-full max-h-38 overflow-auto ">
+                    <table className="w-full ">
+                      <thead>
+                        <tr className="bg-c-gray">
+                          <th className="px-3 py-1.5 text-12  font-black text-secondary border-r border-white">
+                            Product
+                          </th>
+                          <th className="px-3 py-1.5 text-12 text-left font-black text-secondary border-r border-white">
+                            QTY
+                          </th>
+                        </tr>
+                      </thead>
+
+                      <tbody>
+                        {items.map((item) => (
+                          <tr
+                            key={item.id}
+                            className="bg-c-gray/40 border-b border-white"
+                          >
+                            <td className="px-3 py-1.5 border-r border-white  text-12 text-[#3D3D3D]">
+                              {item.product.name}
+                            </td>
+                            <td className="px-3 py-1.5 border-r border-white  text-12 text-[#3D3D3D]">
+                              {item.quantity}
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </Td>
-                <Td>{quantity}</Td>
 
                 <Td>
                   <StatusButton className={getOrderStatusColor(status)}>
                     {status?.split("_").join(" ")}
                   </StatusButton>
                 </Td>
-                <Td>{formatDate(created_at)}</Td>
 
                 <Td>
                   <div className="flex gap-3 w-full justify-center">
-                    <StatusButton
-                      disabled={actionLoading}
-                      className="bg-green-600 rounded-sm"
-                      onClick={() => stockAction(transfer_id, "accept")}
-                    >
-                      Accept
-                    </StatusButton>
-                    <StatusButton
-                      disabled={actionLoading}
-                      className="bg-red-600 rounded-sm"
-                      onClick={() => stockAction(transfer_id, "cancel")}
-                    >
-                      Cancel
-                    </StatusButton>
+                    {["warehouse_manager", "admin"].includes(user?.role) ? (
+                      <TransferPrint data={Order} />
+                    ) : (
+                      <>
+                        <StatusButton
+                          disabled={actionLoading}
+                          className="bg-green-600 rounded-sm"
+                          onClick={() => stockAction(transfer_id, "accept")}
+                        >
+                          Accept
+                        </StatusButton>
+                        <StatusButton
+                          disabled={actionLoading}
+                          className="bg-red-600 rounded-sm"
+                          onClick={() => stockAction(transfer_id, "cancel")}
+                        >
+                          Cancel
+                        </StatusButton>
+                      </>
+                    )}
                   </div>
                 </Td>
               </tr>
@@ -174,11 +222,11 @@ function StockTransfer() {
               </Button>
             </div>
             <div className="flex gap-6 items-center">
-              <ExportTable
+              {/* <ExportTable
                 headers={headers}
                 tableData={data?.data}
                 filename={`stock_transfer${page}`}
-              />
+              /> */}
             </div>
           </div>
           {/* 🔹 Table */}
