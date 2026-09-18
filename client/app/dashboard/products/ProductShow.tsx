@@ -3,15 +3,11 @@ import React, { useRef, useState } from "react";
 
 import Barcode from "react-barcode";
 
-import { toast } from "react-toastify";
 import { useReactToPrint } from "react-to-print";
 import { Button, Input, Modal } from "@/app/_components";
 import Image from "next/image";
-import Loading from "@/app/_components/ui/Loading";
-import { putJSONData } from "@/app/_actions";
+
 import { ProductType } from "@/app/_types/types";
-import { useUser } from "@/app/_context/userContext";
-import { ADMINIS_ROLE } from "@/app/_constants";
 
 const ProductShowModal = ({
   onClose,
@@ -22,40 +18,10 @@ const ProductShowModal = ({
   product: ProductType;
   refetchProduct: () => void;
 }) => {
-  const [isLoading, setIsLoading] = useState(false);
-  const [currentStock, setCurrentStock] = useState();
   const [printCount, setPrintCount] = useState(1);
   const barcodeRef = useRef(null);
 
-  const { id, sku_code, name, price, quantity, thumbnail } = product;
-
-  // Handle add stock
-  const handleAddStock = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-
-    if (!currentStock) {
-      toast.error("Current Stock is required");
-      return;
-    }
-
-    setIsLoading(true);
-    const res = await putJSONData({
-      endpoint: `/products/${id}/add-stock/`,
-      formData: {
-        quantity: currentStock,
-      },
-    });
-
-    if (res?.status === "success") {
-      setIsLoading(false);
-      onClose();
-      toast.success("Set current successfully!");
-      refetchProduct();
-    } else {
-      setIsLoading(false);
-      toast.error(res?.message || "There was an error");
-    }
-  };
+  const { sku_code, name, price, quantity, thumbnail } = product;
 
   // handle print barcode
   const handlePrintBarcode = useReactToPrint({
@@ -74,9 +40,6 @@ const ProductShowModal = ({
       }
     `,
   });
-
-   const { user } = useUser();
-    const isAdminis = ADMINIS_ROLE.includes(user.role);
 
   return (
     <Modal title={"Product Details"} onClose={onClose}>
@@ -142,31 +105,6 @@ const ProductShowModal = ({
           Print Barcode
         </Button>
       </div>
-
-      {/* Add Stock form */}
-      {isAdminis && (
-        <form
-          onSubmit={handleAddStock}
-          className="flex gap-6 items-center mt-6"
-        >
-          <input type="text" hidden defaultValue={sku_code} name="sku_code" />
-          <Input
-            type="number"
-            placeholder="Add new stock"
-            className="w-full"
-            name="quantity"
-            required={true}
-            getInputValue={(value) => setCurrentStock(value)}
-          />
-          <Button
-            disabled={!currentStock || isLoading}
-            type="submit"
-            className="w-fit"
-          >
-            {isLoading ? <Loading /> : "Add Stock"}
-          </Button>
-        </form>
-      )}
     </Modal>
   );
 };
