@@ -1,5 +1,6 @@
 # stock.py
 # brands.py
+# stock.py
 from typing import Optional
 
 from sqlalchemy.orm import Mapped, mapped_column, relationship
@@ -12,7 +13,7 @@ class Product(Base):
     __tablename__ = "products"
 
     id: Mapped[int] = mapped_column(primary_key=True,autoincrement=True, index=True)
-    sku_code: Mapped[str] = mapped_column(String, unique=True,index=True,nullable=False)
+    sku_code: Mapped[str] = mapped_column(String, unique=True,index=True,nullable=True)
     name: Mapped[str] = mapped_column(String, index=True, nullable=False)
 
     category_id: Mapped[int] = mapped_column(
@@ -50,6 +51,9 @@ class Product(Base):
     back_populates="product",
     cascade="all, delete-orphan"
     )
+
+    inbound_items = relationship("StockInboundItem", back_populates="product")
+    transfer_items = relationship("StockTransferItem", back_populates="product")
 
 
 class ProductDetail(Base):
