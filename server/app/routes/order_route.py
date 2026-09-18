@@ -1,3 +1,5 @@
+from datetime import date, datetime, time, timezone
+
 from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, or_, String, update
@@ -90,6 +92,7 @@ async def create_order(
             customer_id=customer_id,
             branch_id=branch_id,
             extra_discount=payload.extra_discount,
+            is_percentage=payload.is_percentage,
             delivery=payload.delivery,
             is_online=payload.is_online,
             cash_amount=payload.cash_amount,
@@ -234,6 +237,9 @@ async def create_order(
         extra_disc_dec = Decimal(str(payload.extra_discount))
         gross_total = total + delivery_dec
 
+        #if is Percentage discount will be Percentage otherwise will be amount
+        if payload.extra_discount and not payload.is_percentage:
+            extra_disc_dec = (Decimal(str(payload.extra_discount)) / gross_total) * 100
         total = gross_total - (gross_total * extra_disc_dec / Decimal("100"))
         if total < 0:
             total = Decimal("0.00")
@@ -282,6 +288,7 @@ async def create_order(
                     Order.cash_amount,
                     Order.other_payment_method,
                     Order.other_payment_amount,
+                    Order.is_percentage,
                     Order.note,
                     Order.status,
                     Order.is_online,
@@ -507,80 +514,101 @@ async def get_basic_orders(
     limit: int = 10,
     search: Optional[str] = None,
     order_type: Literal["offline", "online", "both"] = "offline",
-    order_status: Optional[OrderStatus] = None,  
+    order_status: Optional[OrderStatus] = None,
+    start_date: Optional[date] = Query(None, description="Format: YYYY-MM-DD"),
+    end_date: Optional[date] = Query(None, description="Format: YYYY-MM-DD"),
     current_user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db)
 ):
-    # Strict Access Check: Online & Both mode only for Admin & Warehouse Manager
-    if order_type in ["online", "both"] and current_user.role not in [UserRole.admin, UserRole.warehouse_manager]:
-        raise HTTPException(
-            status_code=403,
-            detail="Only Admin and Warehouse Manager can access online or combined orders."
-        )
+    try:
 
-    offset = (page - 1) * limit
+        offset = (page - 1) * limit
 
-    query = select(Order).options(
-        load_only(
-            Order.id,
-            Order.created_at,
-            Order.note,
-            Order.other_payment_method,
-            Order.other_payment_amount,
-            Order.cash_amount,
-            Order.total,
-            Order.status,
-        )
-    )
-
-    # Order Type Filtering
-    if order_type == "offline":
-        query = query.where(Order.is_online == False)
-    elif order_type == "online":
-        query = query.where(Order.is_online == True)
-
-    # Conditional Status Filter (Ignored if order_type is offline)
-    if order_type != "offline" and order_status:
-        query = query.where(Order.status == order_status)
-
-    # Branch filter for regular branch users
-    if current_user.role not in [UserRole.admin, UserRole.warehouse_manager]:
-        query = query.where(Order.branch_id == current_user.branch_id)
-
-    # Search Logic
-    if search:
-        query = (
-            query
-            .outerjoin(Customer, Order.customer_id == Customer.id)
-            .where(
-                or_(
-                    Order.id.cast(String).ilike(f"%{search}%"),
-                    Customer.phone.ilike(f"%{search}%"),
-                    Customer.name.ilike(f"%{search}%")
-                )
+        # 2. Base Query
+        query = select(Order).options(
+            load_only(
+                Order.id,
+                Order.created_at,
+                Order.note,
+                Order.other_payment_method,
+                Order.other_payment_amount,
+                Order.cash_amount,
+                Order.delivery,
+                Order.extra_discount,
+                Order.total,
+                Order.status,
             )
         )
 
-    # Count Query
-    count_query = select(func.count()).select_from(query.subquery())
-    total = await db.scalar(count_query) or 0
+        # 3. Order Type Filtering
+        if order_type == "offline":
+            query = query.where(Order.is_online == False)
+        elif order_type == "online":
+            query = query.where(Order.is_online == True)
 
-    # Fetch Paginated Data
-    query = (
-        query
-        .order_by(Order.id.desc())
-        .offset(offset)
-        .limit(limit)
-    )
+        # 4. Conditional Status Filter
+        if order_type != "offline" and order_status:
+            query = query.where(Order.status == order_status)
 
-    result = await db.execute(query)
-    orders = result.scalars().all()
+        # 5. Branch Access Restriction
+        if current_user.role not in [UserRole.admin, UserRole.warehouse_manager]:
+            query = query.where(Order.branch_id == current_user.branch_id)
 
-    return {
-        "count": total,
-        "data": orders
-    }
+        # 6. Date Range Filtering
+        if start_date or end_date:
+            # Single-date fallback logic
+            effective_start = start_date or end_date
+            effective_end = end_date or start_date
 
+            assert effective_start is not None
+            assert effective_end is not None
+
+            start_datetime = datetime.combine(effective_start, time.min).replace(tzinfo=timezone.utc)
+            end_datetime = datetime.combine(effective_end, time.max).replace(tzinfo=timezone.utc)
+
+            query = query.where(Order.created_at.between(start_datetime, end_datetime))
+
+        # 7. Search Filter
+        if search:
+            query = (
+                query
+                .outerjoin(Customer, Order.customer_id == Customer.id)
+                .where(
+                    or_(
+                        Order.id.cast(String).ilike(f"%{search}%"),
+                        Customer.phone.ilike(f"%{search}%"),
+                        Customer.name.ilike(f"%{search}%")
+                    )
+                )
+            )
+
+        # 8. Count Query Execution
+        count_query = select(func.count()).select_from(query.subquery())
+        total = await db.scalar(count_query) or 0
+
+        # 9. Paginated Results Execution
+        paginated_query = (
+            query
+            .order_by(Order.id.desc())
+            .offset(offset)
+            .limit(limit)
+        )
+
+        result = await db.execute(paginated_query)
+        orders = result.scalars().all()
+
+        return {
+            "count": total,
+            "data": orders
+        }
+
+    except Exception as e:
+
+        print(f"Error fetching basic orders: {e}")
+        return JSONResponse(
+            status_code=500,
+            content={"message": "Failed to retrieve basic orders", "error": str(e)}
+        )
 # =========================
 # Update Order Status
 # =========================
@@ -651,6 +679,7 @@ async def get_order_details(
         select(Order)
         .options(
             selectinload(Order.customer),
+            selectinload(Order.branch),
             selectinload(Order.items).selectinload(OrderItem.product)
         )
         .where(Order.id == order_id)
