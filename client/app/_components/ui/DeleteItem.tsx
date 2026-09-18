@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/rules-of-hooks */
 "use client";
 import React, { useState } from "react";
 import { SimpleModal } from "./Modal";
@@ -12,12 +13,17 @@ const DeleteItem = ({
   fetcher,
   title = "Item",
   revalidate,
+  isShow = false,
 }: {
   endpoint: string;
   fetcher?: () => void;
   title?: string;
   revalidate?: string;
+  isShow?: boolean;
 }) => {
+  if (!isShow) {
+    return null;
+  }
   const [loading, setLoading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
 
