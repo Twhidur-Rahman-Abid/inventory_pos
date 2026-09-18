@@ -152,12 +152,10 @@ const ProductModal = ({
   //   setSku(newSku);
   // };
 
-  // ১. ইনপুটের টাইপ বা ভ্যালু ম্যানুয়ালি ইনপুট দেওয়ার জন্য
   const handleSkuChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSku(e.target.value);
   };
 
-  // ২. বাটনে ক্লিক করে নতুন SKU জেনারেট করার জন্য
   const handleGenerateSku = (e: React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault();
     const newSku = generate12CharId();
@@ -216,24 +214,13 @@ const ProductModal = ({
 
           {/* SKU Code and Category */}
           <div className="flex gap-8 items-end">
-            <div className="relative w-full">
-              <button
-                type="button"
-                onClick={handleGenerateSku}
-                className=" absolute right-0 px-2 py-1 rounded-sm bg-amber-100 text-amber-600 uppercase text-xs font-bold cursor-pointer"
-              >
-                Generate
-              </button>
-
-              <FormInput
-                name={fields.sku_code.name}
-                value={sku as string | undefined}
-                onChange={handleSkuChange}
-                placeholder="NS-0001"
-                error={fields.sku_code.errors}
-                label="SKU/Code"
-              />
-            </div>
+            <FormInput
+              name={fields.sku_code.name}
+              defaultValue={fields.sku_code?.initialValue as string | undefined}
+              error={fields.sku_code.errors}
+              label="SKU/Code"
+              required={false}
+            />
 
             {isCategoryLoading ? (
               <InputSkeleton label="Category" />
@@ -273,15 +260,6 @@ const ProductModal = ({
               />
             )}
           </div>
-
-          {/* Quantity */}
-          <FormInput
-            name={fields.quantity.name}
-            defaultValue={fields.quantity?.initialValue as string | undefined}
-            error={fields.quantity.errors}
-            type="number"
-            label="Quantity"
-          />
 
           {/* Offer Details */}
           <div className="flex justify-between border-b border-c-gray pb-4">
