@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Button, Logo } from "@/app/_components";
+import { Button, Logo, LogoIcon } from "@/app/_components";
 import { useUser } from "@/app/_context/userContext";
 import { cn, formatDate } from "@/app/_lib/utils";
 import Image from "next/image";
@@ -66,9 +66,10 @@ const PrintInvoice = ({
           {/* <OrderVoucher ref={componentRef} order={orderData} /> */}
           <div
             ref={invoiceRef}
-            className="max-w-fit p-4 print:max-w-none print:mx-0 print:p-0"
+            className="max-w-fit p-4 print:max-w-none print:mx-0 print:p-0 relative z-10"
           >
-            <div className="p-4 print:max-w-none print:mx-0 print:p-0">
+            <LogoIcon className="size-75 absolute top-1/2 left-1/2 -translate-1/2 opacity-10" />
+            <div className="p-4 print:max-w-none print:mx-0 print:p-0 z-20">
               <div className="w-full bg-white border border-gray-300 print:border-gray-800">
                 {/* Header */}
                 <div className="py-6 px-6 border-b border-gray-300 print:border-gray-800 flex items-start justify-between">
@@ -79,32 +80,32 @@ const PrintInvoice = ({
                       ORDER INVOICE
                     </h1>
 
-                    <p className="text-sm text-gray-600">Niamah Shop</p>
+                    <p className="text-sm text-gray-600">#{orderData?.id}</p>
                   </div>
                 </div>
 
                 <div className="p-6 space-y-5">
                   {/* Order Info */}
                   <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div>
+                    <div className="flex gap-1.5 items-baseline">
                       <span className="text-gray-600 font-medium">Name:</span>
                       <p className="font-mono text-xs mt-1 break-all text-gray-900">
                         {orderData?.customer?.name}
                       </p>
                     </div>
-                    <div>
+                    <div className="flex gap-1.5 items-baseline">
                       <span className="text-gray-600 font-medium">Date:</span>
                       <p className="mt-1 text-gray-900 font-semibold">
                         {formatDate(orderData?.created_at)}
                       </p>
                     </div>
-                    <div>
+                    <div className="flex gap-1.5 items-baseline">
                       <span className="text-gray-600 font-medium">Phone:</span>
                       <p className="font-mono text-xs mt-1 break-all text-gray-900">
                         {orderData?.customer?.phone}
                       </p>
                     </div>
-                    <div>
+                    <div className="flex gap-1.5 items-baseline">
                       <span className="text-gray-600 font-medium">Branch:</span>
                       <p className="mt-1 text-gray-900 font-semibold capitalize">
                         {orderData?.branch?.name}
@@ -182,33 +183,43 @@ const PrintInvoice = ({
 
                   {/* Total */}
                   <div className="space-y-3">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Delivery Charge:</span>
-                      <span className="text-gray-900 font-semibold">
-                        {orderData?.delivery || 0}
-                      </span>
-                    </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600">Extra Discount:</span>
-                      <span className="text-gray-900 font-semibold">
-                        {orderData?.extra_discount}%
-                      </span>
-                    </div>
+                    {orderData?.delivery > 0 && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-600">Delivery Charge:</span>
+                        <span className="text-gray-900 font-semibold">
+                          {orderData?.delivery || 0}
+                        </span>
+                      </div>
+                    )}
+
+                    {orderData?.extra_discount > 0 && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-600">Extra Discount:</span>
+                        <span className="text-gray-900 font-semibold">
+                          {orderData?.extra_discount}
+
+                          {orderData?.is_percentage ? "%" : "TK"}
+                        </span>
+                      </div>
+                    )}
+
                     <div className="flex justify-between text-sm">
                       <span className="text-gray-600">Cash Amount:</span>
                       <span className="text-gray-900 font-semibold">
                         {orderData?.cash_amount}
                       </span>
                     </div>
-                    <div className="flex justify-between text-sm">
-                      <span className="text-gray-600 capitalize">
-                        {" "}
-                        {orderData?.other_payment_method || "Other"} Amount:
-                      </span>
-                      <span className="text-gray-900 font-semibold">
-                        {orderData?.other_payment_amount || 0}
-                      </span>
-                    </div>
+                    {orderData?.other_payment_method && (
+                      <div className="flex justify-between text-sm">
+                        <span className="text-gray-600 capitalize">
+                          {" "}
+                          {orderData?.other_payment_method || "Other"} Amount:
+                        </span>
+                        <span className="text-gray-900 font-semibold">
+                          {orderData?.other_payment_amount || 0}
+                        </span>
+                      </div>
+                    )}
 
                     <div className="flex justify-between text-xl font-bold border-t border-gray-300 print:border-gray-800 pt-3">
                       <span className="text-gray-900">Total Amount:</span>
@@ -220,15 +231,32 @@ const PrintInvoice = ({
                   <div className="border-t border-gray-300 print:border-gray-800"></div>
 
                   {/* Footer */}
-                  <div className="text-center space-y-2 pt-2">
-                    <p className="text-sm font-semibold text-gray-900">
-                      Thank you for your order!
+                  <div className="flex justify-between gap-4 text-center space-y-2 pt-2">
+                    <div className="text-center flex-1">
+                      <p className="text-sm font-semibold text-gray-900">
+                        Thank you for your order!
+                      </p>
+                      <p className="text-xs text-gray-600">
+                        Order Reference: #{orderData?.id}
+                      </p>
+                      <p className="text-xs text-gray-500 mt-3">
+                        Please keep this voucher for your records
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="flex w-full text-xs justify-between gap-2.5">
+                    <div className="flex gap-1.5 ">
+                      <p className=" font-medium">📍</p>
+                      <p className="font-medium text-gray-900">
+                        Railway Station Road,Hathazari,Chittagong
+                      </p>
+                    </div>
+                    <p className=" flex-1 font-medium text-gray-900 text-nowrap">
+                      ☎️ +880 1740-717473
                     </p>
-                    <p className="text-xs text-gray-600">
-                      Order Reference: #{orderData?.id}
-                    </p>
-                    <p className="text-xs text-gray-500 mt-3">
-                      Please keep this voucher for your records
+                    <p className=" flex-1 font-medium text-gray-900 text-nowrap">
+                      🌐 niamhashop.com
                     </p>
                   </div>
                 </div>
