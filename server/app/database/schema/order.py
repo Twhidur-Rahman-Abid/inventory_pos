@@ -1,3 +1,5 @@
+from typing import Optional
+
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from sqlalchemy import ForeignKey, Numeric, Enum, DateTime, String
 from ..db import Base
@@ -39,7 +41,7 @@ class Order(Base):
     cash_amount: Mapped[float] = mapped_column(Numeric(10, 2), default=0.0, nullable=False)
     other_payment_method: Mapped[PaymentMethod] = mapped_column(Enum(PaymentMethod), nullable=True)
     other_payment_amount: Mapped[float] = mapped_column(Numeric(10, 2), default=0.0, nullable=False)
-
+    is_percentage: Mapped[Optional[bool]] = mapped_column(nullable=True)
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), 
         default=lambda: datetime.now(timezone.utc), 
@@ -61,8 +63,6 @@ class Order(Base):
         "Branch",
         back_populates="orders",
     )
-
-    branch = relationship("Branch")
 
     items = relationship(
         "OrderItem",
