@@ -1,4 +1,5 @@
 const BASE_URL = process.env.NEXT_PUBLIC_BACKEND_URL;
+const IMGBASE_URL = process.env.NEXT_PUBLIC_IMGBASE_URL;
 
 // MONEY SYMBOL BDT
 const MONEY_SYMBOL = "৳";
@@ -33,6 +34,11 @@ const ADMIN_ROUTE = [
   },
   { label: "Sold", icon: "/icon/i-sold.svg" },
   { label: "Online Order", icon: "/icon/i-online-order.svg" },
+  { label: "Invoice", icon: "/icon/i-receipt.svg" },
+  {
+    label: "Stock",
+    icon: "/icon/i-product.svg",
+  },
   { label: "Category", icon: "/icon/i-category.svg" },
   { label: "Branch", icon: "/icon/i-branch.svg" },
   { label: "Employee", icon: "/icon/i-cashire.svg" },
@@ -54,6 +60,11 @@ const WAREHOUSE_ROUTE = [
   },
   { label: "Sold", icon: "/icon/i-sold.svg" },
   { label: "Online Order", icon: "/icon/i-online-order.svg" },
+  { label: "Invoice", icon: "/icon/i-receipt.svg" },
+  {
+    label: "Stock",
+    icon: "/icon/i-product.svg",
+  },
   { label: "Category", icon: "/icon/i-category.svg" },
   { label: "Brands", icon: "/icon/i-tag.svg" },
   { label: "Reports", icon: "/icon/i-report.svg" },
@@ -134,4 +145,5 @@ export {
   WAREHOUSE_ROUTE,
   ADMIN_ROUTE,
   COUPON_TYPE_OPTIONS,
+  IMGBASE_URL,
 };
