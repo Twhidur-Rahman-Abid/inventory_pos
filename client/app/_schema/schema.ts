@@ -82,14 +82,11 @@ const fileOrUrlSchema = z
 
 export const ProductSchema = z.object({
   name: z
-    .string()
+    .string("Product name is required")
     .min(2, "Product name must be at least 2 characters")
     .max(100, "Product name cannot exceed 100 characters"),
 
-  sku_code: z
-    .string()
-    .min(5, "SKU must be at least 5 characters")
-    .max(180, "SKU cannot exceed 180 characters"),
+  sku_code: z.string().max(180, "SKU cannot exceed 180 characters").optional(),
 
   category_id: z.coerce.number({
     error: "Category is required",
@@ -110,12 +107,6 @@ export const ProductSchema = z.object({
   description: z.string().optional(),
 
   images: z.array(fileOrUrlSchema).optional(),
-
-  quantity: z.coerce
-    .number({
-      error: "Quantity must be a number",
-    })
-    .optional(),
 
   price: z.coerce
     .number({
