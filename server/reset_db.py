@@ -4,7 +4,7 @@ from sqlalchemy import text
 
 # Ekhane apnar database connection string thikmoto bhashan
 # Example: postgresql+asyncpg://postgres:password@localhost:5432/your_db_name
-DATABASE_URL = "postgresql+asyncpg://postgres:admin@localhost/inventory" 
+DATABASE_URL = "postgresql+asyncpg://postgres@localhost:5432/niamahshop" 
 
 async def kill_alembic_history():
     try:
