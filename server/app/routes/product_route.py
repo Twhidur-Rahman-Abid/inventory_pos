@@ -1,10 +1,12 @@
-from fastapi import APIRouter, Depends, UploadFile, File, Form, Query
+from fastapi import APIRouter, Depends, UploadFile, File, Form, Query, status, BackgroundTasks
 from fastapi.responses import JSONResponse
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, func, desc, asc, or_
 from sqlalchemy.orm import selectinload, load_only
 from typing import Literal, Optional, List
 import logging
+import csv
+import io
 
 
 from app.database.db import get_db
@@ -21,7 +23,7 @@ productRouter = APIRouter(prefix="/products", tags=["Products"])
 # --- Create Product ---
 @productRouter.post("/", status_code=201)
 async def create_product(
-    sku_code: str = Form(...),
+    sku_code: Optional[str] = Form(None),
     name: str = Form(...),
     category_id: int = Form(...),
     price: float = Form(...),
@@ -29,24 +31,32 @@ async def create_product(
     is_buy_one_get_one: Optional[bool] = Form(False),
     thumbnail: Optional[UploadFile] = File(None),
     description: Optional[str] = Form(None),
-    quantity: int = Form(0),
-    images: Optional[List[UploadFile]] = File(None, description="At least one image is required"),
+    images: Optional[List[UploadFile]] = File(None),
     current_user: User = Depends(role_required([UserRole.admin, UserRole.warehouse_manager])),
     db: AsyncSession = Depends(get_db)
 ):
     try:
-        sku_check = await db.execute(select(Product).where(Product.sku_code == sku_code))
-        if sku_check.scalar_one_or_none():
-            return JSONResponse(status_code=400, content={"message": "SKU code already exists"})
+        # 1. If custom SKU is provided, validate uniqueness
+        if sku_code:
+            sku_check = await db.execute(select(Product).where(Product.sku_code == sku_code))
+            result = sku_check.scalar_one_or_none()
+            if result:
+                return JSONResponse(
+                    status_code=400,
+                    content={"message": "SKU code already exists"}
+                )
 
+        # 2. Upload Thumbnail if present
+        thumbnail_path = None
         if thumbnail:
             thumbnail_path = await save_image(
                 file=thumbnail,
                 folder="products",
-                filename=name,
+                filename=sku_code or name,
                 quality=80
-                
             )
+
+        # 3. Create initial Product record
         new_product = Product(
             sku_code=sku_code,
             name=name,
@@ -54,26 +64,36 @@ async def create_product(
             price=price,
             discount_percentage=discount_percentage,
             is_buy_one_get_one=is_buy_one_get_one,
-            thumbnail=thumbnail_path if thumbnail else None,
-            quantity=quantity
+            thumbnail=thumbnail_path,
         )
         db.add(new_product)
-        await db.flush() 
+        await db.flush()  # Generates auto-increment ID
 
-        if description:       
-            new_detail = ProductDetail(product_id=new_product.id, description=description)
+        # 4. Fallback: If SKU was not provided, use the generated Product ID as SKU
+        if not new_product.sku_code:
+            new_product.sku_code = str(new_product.id)
+
+        # 5. Create Product Detail if description exists
+        if description:
+            new_detail = ProductDetail(
+                product_id=new_product.id,
+                description=description
+            )
             db.add(new_detail)
 
+        # 6. Upload Gallery Images using final SKU
         if images:
             for idx, img in enumerate(images):
-            
                 img_path = await save_image(
                     file=img,
                     folder="products",
-                    filename=f"{sku_code}-{idx}",
+                    filename=f"{new_product.sku_code}-{idx}",
                     quality=80
                 )
-                new_img = ProductImage(product_id=new_product.id, image_url=img_path)
+                new_img = ProductImage(
+                    product_id=new_product.id,
+                    image_url=img_path
+                )
                 db.add(new_img)
 
         await db.commit()
@@ -83,8 +103,109 @@ async def create_product(
     except Exception as e:
         await db.rollback()
         logger.error(f"Product creation error: {str(e)}")
-        return JSONResponse(status_code=500, content={"message": "Failed to create product"})
+        return JSONResponse(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            content={"message": "Failed to create product"}
+        )
 
+
+# ===================================================================
+# BACKGROUND WORKER FUNCTION
+# ===================================================================
+# async def process_bulk_csv(csv_content: bytes):
+#     """
+#     Background worker that runs separately without blocking the HTTP request.
+#     Creates its own DB session for safe transaction handling.
+#     """
+#     async with AsyncSessionLocal() as db:
+#         try:
+#             csv_file = io.StringIO(csv_content.decode("utf-8-sig"))
+#             reader = csv.DictReader(csv_file)
+
+#             created_count = 0
+#             skipped_count = 0
+
+#             for row in reader:
+#                 name = row.get("name", "").strip()
+#                 category_id = row.get("category_id", "").strip()
+#                 price = row.get("price", "").strip()
+
+#                 if not name or not category_id or not price:
+#                     skipped_count += 1
+#                     continue
+
+#                 raw_sku = row.get("sku_code", "").strip() or None
+#                 if raw_sku:
+#                     existing_sku = await db.scalar(
+#                         select(Product).where(Product.sku_code == raw_sku)
+#                     )
+#                     if existing_sku:
+#                         skipped_count += 1
+#                         continue
+
+#                 brand_id = int(row["brand_id"].strip()) if row.get("brand_id", "").strip() else None
+#                 discount = float(row["discount_percentage"].strip()) if row.get("discount_percentage", "").strip() else 0.0
+#                 is_bogo = row.get("is_buy_one_get_one", "").strip().lower() in ["true", "1", "yes"]
+#                 quantity = int(row["quantity"].strip()) if row.get("quantity", "").strip() else 0
+#                 description = row.get("description", "").strip()
+
+#                 new_product = Product(
+#                     sku_code=raw_sku,
+#                     name=name,
+#                     category_id=int(category_id),
+#                     price=float(price),
+#                     discount_percentage=discount,
+#                     is_buy_one_get_one=is_bogo,
+#                     quantity=quantity,
+#                     brand_id=brand_id
+#                 )
+#                 db.add(new_product)
+#                 await db.flush()
+
+#                 if not new_product.sku_code:
+#                     new_product.sku_code = str(new_product.id)
+
+#                 if description:
+#                     new_detail = ProductDetail(
+#                         product_id=new_product.id,
+#                         description=description
+#                     )
+#                     db.add(new_detail)
+
+#                 created_count += 1
+
+#             await db.commit()
+#             logger.info(f"Bulk CSV upload completed: {created_count} created, {skipped_count} skipped.")
+
+#         except Exception as e:
+#             await db.rollback()
+#             logger.error(f"Error in background bulk upload: {str(e)}")
+
+
+# # ===================================================================
+# # FASTAPI ENDPOINT
+# # ===================================================================
+# @productRouter.post("/csv-upload", status_code=status.HTTP_202_ACCEPTED)
+# async def csv_upload_products(
+#     background_tasks: BackgroundTasks,
+#     file: UploadFile = File(...),
+#     current_user: User = Depends(role_required([UserRole.admin, UserRole.warehouse_manager]))
+# ):
+#     if not file.filename.endswith('.csv'):
+#         return JSONResponse(
+#             status_code=status.HTTP_400_BAD_REQUEST,
+#             content={"message": "Invalid file format. Please upload a CSV file."}
+#         )
+
+#     # Read file content immediately before passing to background task
+#     content = await file.read()
+
+#     # Schedule background task
+#     background_tasks.add_task(process_bulk_csv, content)
+
+#     return {
+#         "message": "File uploaded successfully. Processing started in the background."
+#     }
 
 # --- Get Product List ---
 @productRouter.get("/", response_model=ProductListResponse)
@@ -199,13 +320,69 @@ async def get_product_list(
     except Exception as e:
         logger.error(f"Error fetching product list: {str(e)}")
         return JSONResponse(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            status_code=500,
             content={
                 "message": "Failed to retrieve product list",
                 "error": str(e)
             }
         )
 
+
+# --- Get Product List ---
+@productRouter.get("/sku")
+async def search_product_with_sku(
+    search: str = Query(..., description="Sku code or name", examples="NS-001"),
+    db: AsyncSession = Depends(get_db)
+):
+    try:
+        # Base query definition
+        query = (
+            select(Product)
+            .options(
+                load_only(
+                    Product.id,
+                    Product.sku_code,
+                    Product.name,
+                    Product.thumbnail,
+                    Product.quantity,
+                )
+            )
+        )
+
+        # Base count query
+        count_query = select(func.count()).select_from(Product)
+
+        search_filter = or_(
+                Product.sku_code.ilike(f"%{search}%"),
+                Product.name.ilike(f"%{search}%")
+        )
+        query = query.where(search_filter)
+        count_query = count_query.where(search_filter)
+      
+       
+        # Execute total count
+        total_count = (await db.execute(count_query)).scalar() or 0
+
+
+        result = await db.execute(query)
+        products = result.scalars().all()
+
+        return {
+                "data": products,
+                "count": total_count,
+        }
+
+        
+
+    except Exception as e:
+        logger.error(f"Error fetching product list: {str(e)}")
+        return JSONResponse(
+            status_code=500,
+            content={
+                "message": "Failed to retrieve product list",
+             
+            }
+        )
 
 #  --- Get Product list with category id and name ---
 @productRouter.get("/with-category")
