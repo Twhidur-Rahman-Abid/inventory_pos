@@ -22,8 +22,9 @@ import ProductModal from "./ProductModal";
 import { ProductType } from "@/app/_types/types";
 import Image from "next/image";
 import SendModal from "./SendModal";
-import { ADMINIS_ROLE, MONEY_SYMBOL, USER_ROLE } from "@/app/_constants";
+import { ADMINIS_ROLE, MONEY_SYMBOL } from "@/app/_constants";
 import { useUser } from "@/app/_context/userContext";
+import AddStock from "../../_components/AddStock";
 
 // Table header
 const headers: HeaderType[] = [
@@ -43,11 +44,7 @@ export default function ProductPage() {
     open?: boolean;
   }>(null);
 
-  // send to branch modal state
-  const [sendData, setSendData] = useState({
-    open: false,
-    product: {} as ProductType,
-  });
+  const [isStock, setIsStock] = useState({ open: false, type: "add" });
 
   //
   const { user } = useUser();
@@ -112,13 +109,6 @@ export default function ProductPage() {
                   <div className="inline-flex gap-5 min-w-max">
                     {isWarehouse && (
                       <>
-                        {" "}
-                        <StatusButton
-                          className="rounded-md"
-                          onClick={() => setSendData({ open: true, product })}
-                        >
-                          Send
-                        </StatusButton>
                         <Icon
                           onClick={() =>
                             setModalOpen({ editable: product, open: true })
@@ -173,7 +163,31 @@ export default function ProductPage() {
 
             {/* Import and Export */}
             <div className="flex gap-6 items-center">
-              {isWarehouse && <ImportTable />}
+              {isWarehouse && (
+                <>
+                  <Button
+                    className="bg-purple-500 lg:max-w-fit"
+                    onClick={() => setIsStock({ open: true, type: "add" })}
+                  >
+                    Add Stock
+                    <Icon
+                      src="/icon/i-plus.svg"
+                      className="hidden md:inline-block"
+                    />
+                  </Button>
+                  <Button
+                    className="bg-[#FF6B00] lg:max-w-fit"
+                    onClick={() => setIsStock({ open: true, type: "send" })}
+                  >
+                    Send
+                    <Icon
+                      src="/icon/paper-plane-solid.svg"
+                      className="hidden md:inline-block"
+                    />
+                  </Button>
+                  <ImportTable />
+                </>
+              )}
               <ExportTable
                 headers={headers}
                 tableData={data?.data}
@@ -186,7 +200,7 @@ export default function ProductPage() {
           {content}
 
           {/* 🔹 Pagination */}
-          <Pagination count={data.count} />
+          {!isLoading && data?.count > 0 && <Pagination count={data.count} />}
         </div>
       </div>
       {/* Product create and edit Modal */}
@@ -207,14 +221,11 @@ export default function ProductPage() {
         />
       )}
 
-      {/* Send product to branch */}
-      {sendData.open && sendData.product?.id && (
-        <SendModal
-          onClose={() => {
-            setSendData({ open: false, product: {} as ProductType });
-          }}
-          selectedProduct={sendData.product}
+      {isStock.open && (
+        <AddStock
+          onClose={() => setIsStock({ open: false, type: "add" })}
           fetcher={fetcher}
+          type={isStock.type}
         />
       )}
     </>
